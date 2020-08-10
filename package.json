@@ -8,7 +8,6 @@
     "watch": "webpack -w --config webpack.dev.js"
   },
   "author": "Akshath Sivaprasad",
-  "license": "MIT",
   "devDependencies": {
     "@types/chrome": "^0.0.60",
     "@types/react": "^16.9.32",
