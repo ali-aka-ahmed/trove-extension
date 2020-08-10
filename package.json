@@ -1,7 +1,7 @@
 {
   "name": "tbd",
   "version": "0.0.0",
-  "description": "A hidden layer on the internet.",
+  "description": "A hidden layer of the internet.",
   "scripts": {
     "build": "webpack --config webpack.prod.js",
     "dev": "webpack --config webpack.dev.js",
