@@ -7,4 +7,3 @@ ext.setAttribute('id', 'tbd-ext');
 document.body.appendChild(ext);
 
 ReactDOM.render(<Sidebar />, ext);
-// ReactDOM.render(<Popup />, document.getElementById('popup'));
