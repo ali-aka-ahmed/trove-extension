@@ -6,6 +6,12 @@ module.exports = merge(common, {
   mode: 'development',
   devtool: 'inline-source-map',
   plugins: [
-    new ExtensionReloader({ reloadPage: true })
+    new ExtensionReloader({
+      entries: {
+        background: 'background',
+        contentScript: 'content',
+        extensionPage: 'popup'
+      }
+    })
   ]
 });
