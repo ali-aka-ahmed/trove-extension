@@ -1,11 +1,24 @@
-.tbd-sidebar {
-  background-color: white;
+.TbdSidebar {
+  background-color: gray;
   border: 1px solid red;
   height: auto;
   width: auto;
   position: fixed;
+  // We want sidebar to always show
+  z-index: 9999;
+}
+
+.TbdSidebar--position-right {
   right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  // pointer-events: none;
+  top: 75px;
+}
+
+.TbdSidebar--position-left {
+  left: 10px;
+  top: 75px;
+}
+
+.TbdSidebar--position-bottom {
+  right: 75px;
+  bottom: 10px;
 }
