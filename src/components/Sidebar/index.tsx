@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Draggable from 'react-draggable';
 import { users } from '../../data';
 import Bubble from './bubble';
 import './index.scss';
@@ -76,17 +77,16 @@ export default function Sidebar() {
     return () => { document.removeEventListener('mousemove', onDragMouse); }
   }, [onDragMouse])
 
+  // style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` }}
+
   return (
-    <div
-      className={`TbdSidebar ${getPositionClass()}`}
-      style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` }}
-      onMouseDown={onDragStart}
-      onMouseUp={onDragEnd}
-      onTouchStart={onDragStart}
-      onTouchMove={onDragTouch}
-      onTouchEnd={onDragEnd}
+    <Draggable
+      handle=".TbdBubble"
+      defaultPosition={{x: 0, y: 0}}
     >
-      {bubbles}
-    </div>
+      <div className={`TbdSidebar`}>
+        {bubbles}
+      </div>
+    </Draggable>
   );
 }
