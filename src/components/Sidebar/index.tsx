@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { users } from '../../data';
 import Bubble from './bubble';
 import './index.scss';
@@ -10,17 +10,6 @@ export default function Sidebar() {
   const [position, setPosition] = useState(new Point(0, 0));
   const [offset, setOffset] = useState(new Point(0, 0));
   const [isDragging, setIsDragging] = useState(false);
-
-  const bubbles = users.map((sd) => <Bubble key={sd.id} />);
-
-  // const getStyles = (): React.CSSProperties => {
-  //   const a = DragLayerMonitoroffset, setOffset
-  //   const transform = `translate(${x}px, ${y}px)`;
-  //   return {
-  //     transform,
-  //     WebkitTransform: transform,
-  //   };
-  // }
 
   const getClientXY = (e: React.MouseEvent | React.TouchEvent): Point => {
     const clientX = (e as React.TouchEvent).touches 
@@ -41,14 +30,21 @@ export default function Sidebar() {
     setIsDragging(true);
   };
 
-  const onDrag = (e: React.MouseEvent | React.TouchEvent) => {
+  const onDragTouch = (e: React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isDragging) return;
-
-    const { x: clientX, y: clientY } = getClientXY(e);
-    setOffset(new Point(clientX - position.x, clientY - position.y));
+    if (isDragging) {
+      setOffset(new Point(e.touches[0].clientX - position.x, e.touches[0].clientY - position.y));
+    }
   };
+
+  const onDragMouse = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isDragging) {
+      setOffset(new Point(e.clientX - position.x, e.clientY - position.y));
+    }  
+  }, [isDragging, position]);
 
   const onDragEnd = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
@@ -69,17 +65,25 @@ export default function Sidebar() {
       case SidebarPosition.Drag:
         return '';
     }
-  } 
+  }
+
+  const bubbles = users.map((sd) => <Bubble key={sd.id} />);
+
+  useEffect(() => {
+    // Attach this listener to document so that if cursor leaves sidebar, drag action does not 
+    // abruptly cease.
+    document.addEventListener('mousemove', onDragMouse);
+    return () => { document.removeEventListener('mousemove', onDragMouse); }
+  }, [onDragMouse])
 
   return (
     <div
       className={`TbdSidebar ${getPositionClass()}`}
       style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` }}
       onMouseDown={onDragStart}
-      onMouseMove={onDrag}
       onMouseUp={onDragEnd}
       onTouchStart={onDragStart}
-      onTouchMove={onDrag}
+      onTouchMove={onDragTouch}
       onTouchEnd={onDragEnd}
     >
       {bubbles}
