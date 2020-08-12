@@ -22,25 +22,35 @@ export default function Sidebar() {
   //   };
   // }
 
-  function onDragStart(e: React.DragEvent<HTMLDivElement>) {
+  const getClientXY = (e: React.MouseEvent | React.TouchEvent): Point => {
+    const clientX = (e as React.TouchEvent).touches 
+      ? (e as React.TouchEvent).touches[0].clientX
+      : (e as React.MouseEvent).clientX;
+    const clientY = (e as React.TouchEvent).touches 
+      ? (e as React.TouchEvent).touches[0].clientY
+      : (e as React.MouseEvent).clientY;
+    return new Point(clientX, clientY);
+  }
+
+  function onDragStart(e: React.MouseEvent | React.TouchEvent) {
     e.preventDefault();
     e.stopPropagation();
-
-    setPosition(new Point(e.clientX - offset.x, e.clientY - offset.y));
+    
+    const { x: clientX, y: clientY } = getClientXY(e);
+    setPosition(new Point(clientX - offset.x, clientY - offset.y));
     setIsDragging(true);
   };
 
-  const onDrag = (e: React.DragEvent<HTMLDivElement>) => {
+  const onDrag = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isDragging) return;
 
-    if (isDragging) {
-      setOffset(new Point(e.clientX - position.x, e.clientY - position.y));
-      
-    }
+    const { x: clientX, y: clientY } = getClientXY(e);
+    setOffset(new Point(clientX - position.x, clientY - position.y));
   };
 
-  const onDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+  const onDragEnd = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -68,6 +78,9 @@ export default function Sidebar() {
       onMouseDown={onDragStart}
       onMouseMove={onDrag}
       onMouseUp={onDragEnd}
+      onTouchStart={onDragStart}
+      onTouchMove={onDrag}
+      onTouchEnd={onDragEnd}
     >
       {bubbles}
     </div>

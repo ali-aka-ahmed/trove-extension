@@ -2,10 +2,13 @@
   background-color: gray;
   border: 1px solid red;
   height: auto;
-  width: auto;
   position: fixed;
+  width: auto;
+  // Prevent accidental scrolling
+  touch-action: none;
   // We want sidebar to always show
   z-index: 9999;
+
 }
 
 .TbdSidebar--position-right {
