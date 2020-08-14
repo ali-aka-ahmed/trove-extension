@@ -2,9 +2,10 @@
   height: auto;
   width: 50px;
   touch-action: none;
+  user-select: none;
 }
 
 .TbdSidebar:not(.react-draggable-dragging) {
   -webkit-transition: -webkit-transform 0.5s ease-out; /* Safari */
-  transition: transform 0.25s ease-out;
+  transition: transform 0.12s ease-out;
 }
