@@ -1,24 +1,10 @@
 .TbdSidebar {
-  background-color: gray;
-  border: 1px solid red;
   height: auto;
   width: 50px;
-  // Prevent accidental scrolling
-  // touch-action: none;
-  // user-select: none;
+  touch-action: none;
 }
 
-.TbdSidebar--position-right {
-  right: 10px;
-  top: 75px;
-}
-
-.TbdSidebar--position-left {
-  left: 10px;
-  top: 75px;
-}
-
-.TbdSidebar--position-bottom {
-  right: 75px;
-  bottom: 10px;
+.TbdSidebar:not(.react-draggable-dragging) {
+  -webkit-transition: -webkit-transform 0.5s ease-out; /* Safari */
+  transition: transform 0.25s ease-out;
 }

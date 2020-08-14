@@ -4,3 +4,8 @@
   width: 50px;
   background-color: black;
 }
+
+.TbdBubble:not(.react-draggable-dragging) {
+  -webkit-transition: -webkit-transform 0.5s ease-out; /* Safari */
+  transition: transform 0.5s ease-out;
+}
