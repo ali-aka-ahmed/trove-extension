@@ -6,14 +6,21 @@ import Bubble from './bubble';
 import './index.scss';
 
 export default function Sidebar() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const SIDEBAR_WIDTH = 50;
-  const SIDEBAR_MARGIN = 10;
+  const SIDEBAR_MARGIN = 15;
   const BUBBLE_HEIGHT = 50;
+  
+  const [position, setPosition] = useState({ x: SIDEBAR_MARGIN, y: SIDEBAR_MARGIN });
 
-  const bubbles = users.map((sd) => <Bubble key={sd.id} />);
+  // Get list of bubbles from dummy data
+  const bubbles = users.map((sd) => <Bubble key={sd.id} user={sd} />);
 
-  const onDragStop = (event: DraggableEvent, data: DraggableData) => {
+  /**
+   * Return sidebar to closest edge of screen after being dragged.
+   * @param event 
+   * @param data 
+   */
+  function onDragStop(event: DraggableEvent, data: DraggableData) { console.log('hi')
     // Calc screen bounds
     const height = window.innerHeight || document.documentElement.clientHeight;
     const width = window.innerWidth || document.documentElement.clientWidth;

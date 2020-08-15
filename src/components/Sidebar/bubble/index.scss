@@ -1,11 +1,17 @@
 .TbdBubble {
-  border-radius: 50px;
+  border-radius: 50%;
   height: 50px;
   width: 50px;
   background-color: black;
+  cursor: pointer;
+  margin-bottom: 7px;
 }
 
 .TbdBubble:not(.react-draggable-dragging) {
   -webkit-transition: -webkit-transform 0.5s ease-out; /* Safari */
   transition: transform 0.5s ease-out;
+}
+
+.TbdBubble:last-child {
+  margin-bottom: 0;
 }
