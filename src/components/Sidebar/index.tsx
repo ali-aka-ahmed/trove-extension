@@ -21,12 +21,25 @@ export default function Sidebar() {
     return bubbles.length * BUBBLE_HEIGHT + (bubbles.length - 1) * BUBBLE_MARGIN;
   }
 
+  function onDragStart(event: DraggableEvent, data: DraggableData) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function onDrag(event: DraggableEvent, data: DraggableData) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   /**
    * Return sidebar to closest edge of screen after being dragged.
    * @param event   
    * @param data 
    */
   function onDragStop(event: DraggableEvent, data: DraggableData) {
+    event.preventDefault();
+    event.stopPropagation();
+
     // Calc screen bounds
     const height = window.innerHeight || document.documentElement.clientHeight;
     const width = window.innerWidth || document.documentElement.clientWidth;
@@ -51,6 +64,8 @@ export default function Sidebar() {
     <Draggable
       handle=".TbdBubble"
       position={position}
+      onStart={onDragStart}
+      onDrag={onDrag}
       onStop={onDragStop}
     >
       <div className="TbdSidebar">
