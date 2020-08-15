@@ -6,6 +6,15 @@ export function getScrollbarDx() {
   const html = document.querySelector('html');
   if (html) return window.innerWidth - html.offsetWidth;
 
+  // Check if scrollbar actually exists
+  const overflow = document.body.scrollHeight > document.body.clientHeight;
+  const computed = window.getComputedStyle(document.body, null);
+  const exists = computed.overflow === 'visible'
+    || computed.overflowY === 'visible'
+    || (computed.overflow === 'auto' && overflow)
+    || (computed.overflowY === 'auto' && overflow);
+  if (!exists) return 0;
+
   // Fallback method: append hidden element, force scrollbar, and calc width
   const scrollDiv = document.createElement('div');
   const styles = {
