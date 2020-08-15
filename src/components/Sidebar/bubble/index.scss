@@ -15,3 +15,11 @@
 .TbdBubble:last-child {
   margin-bottom: 0;
 }
+
+.TbdBubble__DisplayChar {
+  text-transform: uppercase;
+  line-height: 50px;
+  text-align: center;
+  color: #fff;
+  font-size: 24px;
+}

@@ -9,7 +9,7 @@ export default function Sidebar() {
   const SIDEBAR_WIDTH = 50;
   const SIDEBAR_MARGIN = 15;
   const BUBBLE_HEIGHT = 50;
-  const BUBBLE_MARGIN = 7;
+  const BUBBLE_MARGIN = 10;
   
   const [position, setPosition] = useState({ x: SIDEBAR_MARGIN, y: SIDEBAR_MARGIN });
 

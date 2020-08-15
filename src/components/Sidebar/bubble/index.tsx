@@ -6,7 +6,16 @@ import './index.scss';
 export default function Bubble(props: BubbleProps) {
   const bgColor = getPastelColor(props.user.name);
 
-  return <div className="TbdBubble" style={{ backgroundColor: bgColor }}/>;
+  const name = () => {
+    if (!props.user.name || props.user.name === '') return '';
+    return props.user.name.charAt(0);
+  }
+
+  return (
+    <div className="TbdBubble" style={{ backgroundColor: bgColor }}>
+      <p className="TbdBubble__DisplayChar">{name()}</p>
+    </div>
+  );
 }
 
 function getPastelColor(seed: string): string {
