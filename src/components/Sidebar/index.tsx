@@ -41,8 +41,10 @@ export default function Sidebar() {
     event.stopPropagation();
 
     // Calc screen bounds
+    console.log( window.innerHeight , document.documentElement.clientHeight, 
+      window.innerWidth-getScrollbarDx() , document.documentElement.clientWidth)
     const height = window.innerHeight || document.documentElement.clientHeight;
-    const width = window.innerWidth || document.documentElement.clientWidth;
+    const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
 
     // Calc distance to each edge
     const leftDx = data.x - 0;
@@ -55,7 +57,7 @@ export default function Sidebar() {
     if (leftDx < rightDx) {
       setPosition({ x: SIDEBAR_MARGIN, y: newY });
     } else {
-      const newX = width - SIDEBAR_WIDTH - SIDEBAR_MARGIN - getScrollbarDx();
+      const newX = width - SIDEBAR_WIDTH - SIDEBAR_MARGIN;
       setPosition({ x: newX, y: newY });
     }
   };

@@ -1,4 +1,9 @@
 .TbdExtension {
+  all: initial;
+  * {
+    all: unset;
+  }
+
   height: 100vh;
   width: 100vw;
   top: 0;

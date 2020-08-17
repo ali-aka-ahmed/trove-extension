@@ -36,7 +36,7 @@ module.exports = {
         ]
       },
       {
-        include: path.resolve(__dirname, 'src/app/index.scss'),
+        include: [path.resolve(__dirname, 'src/app/index.scss')],
         test: /\.scss$/,
         use: [
           {
