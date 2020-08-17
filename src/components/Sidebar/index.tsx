@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
-import { users } from '../../data';
+import { users } from '../../utils/data';
 import { getScrollbarDx } from '../../utils/measurements';
 import Bubble from './bubble';
-import './index.scss';
+// import './index.scss';
 
 export default function Sidebar() {
   const SIDEBAR_WIDTH = 50;

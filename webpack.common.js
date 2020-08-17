@@ -2,8 +2,8 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    background: path.join(__dirname, 'src/background.ts'),
-    content: path.join(__dirname, 'src/content.tsx'),
+    background: path.join(__dirname, 'src/app/background.ts'),
+    content: path.join(__dirname, 'src/app/content.tsx'),
     popup: path.join(__dirname, 'src/popup/index.tsx')
   },
   output: {
@@ -18,11 +18,29 @@ module.exports = {
         use: 'ts-loader'
       },
       {
-        exclude: /node_modules/,
+        exclude: [
+          path.resolve(__dirname, 'node_modules'),
+          path.resolve(__dirname, 'src/app/index.scss')
+        ],
         test: /\.scss$/,
         use: [
           {
-            loader: 'style-loader' // Creates style nodes from JS strings
+            loader: 'to-string-loader' // Back to string
+          },
+          {
+            loader: 'css-loader' // Translates CSS into CommonJS
+          },
+          {
+            loader: 'sass-loader' // Compiles Sass to CSS
+          }
+        ]
+      },
+      {
+        include: path.resolve(__dirname, 'src/app/index.scss'),
+        test: /\.scss$/,
+        use: [
+          {
+            loader: 'style-loader' // Common JS to DOM node
           },
           {
             loader: 'css-loader' // Translates CSS into CommonJS

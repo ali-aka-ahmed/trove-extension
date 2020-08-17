@@ -5,13 +5,13 @@ const ExtensionReloader = require('webpack-extension-reloader');
 module.exports = merge(common, {
   mode: 'development',
   devtool: 'inline-source-map',
-  plugins: [
-    new ExtensionReloader({
-      entries: {
-        background: 'background',
-        contentScript: 'content',
-        extensionPage: 'popup'
-      }
-    })
-  ]
+  // plugins: [
+  //   new ExtensionReloader({
+  //     entries: {
+  //       background: 'background',
+  //       contentScript: 'content',
+  //       extensionPage: 'popup'
+  //     }
+  //   })
+  // ]
 });

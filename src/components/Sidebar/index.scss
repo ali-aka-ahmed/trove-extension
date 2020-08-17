@@ -3,6 +3,7 @@
   width: 50px;
   touch-action: none;
   user-select: none;
+  pointer-events: auto;
 }
 
 .TbdSidebar:not(.react-draggable-dragging) {
