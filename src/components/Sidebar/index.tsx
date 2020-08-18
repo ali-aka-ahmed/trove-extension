@@ -64,16 +64,14 @@ export default function Sidebar() {
 
   return (
     <Draggable
-      handle=".TbdSidebar__Bubble"
+      handle=".TbdSidebar__Handle"
       position={position}
       onStart={onDragStart}
       onDrag={onDrag}
       onStop={onDragStop}
     >
       <div className="TbdSidebar">
-        <div className="TbdSidebar__LogoBubble handle">
-          
-        </div>
+        <div className="TbdSidebar__Handle TbdSidebar__LogoBubble"></div>
         {bubbles}
       </div>
     </Draggable>
