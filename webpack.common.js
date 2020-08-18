@@ -44,17 +44,13 @@ module.exports = {
       },
       {
         exclude: /node_modules/,
-        test: /\.(woff|woff2|eot|ttf|otf)$/,
-        use: 'file-loader'
-      },
-      {
-        exclude: /node_modules/,
         test: /\.(png|svg|jpg|gif)$/i,
         use: [
           {
             loader: 'url-loader',
             options: {
-                limit: 8192 // in bytes
+              limit: 1000, // in bytes
+              name: '[name].[ext]'
             }
           }
         ]
