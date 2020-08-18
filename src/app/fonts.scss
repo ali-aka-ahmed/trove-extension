@@ -1,0 +1,8 @@
+@supports (font-variation-settings: 'wdth' 200) {
+  @font-face {
+    font-family: Spartan;
+    src: url('../../public/fonts/Spartan-VariableFont_wght.ttf');
+    font-weight: 1 999;
+    font-style: normal;
+  }
+}

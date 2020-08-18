@@ -1,8 +1,7 @@
-.TbdBubble {
+.TbdSidebar__Bubble {
   border-radius: 50%;
   height: 50px;
   width: 50px;
-  background-color: black;
   cursor: pointer;
   margin-bottom: 7px;
   -webkit-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
@@ -10,21 +9,22 @@
   box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
 }
 
-.TbdBubble:not(.react-draggable-dragging) {
+.TbdSidebar__Bubble:not(.react-draggable-dragging) {
   -webkit-transition: -webkit-transform 0.5s ease-out; /* Safari */
   transition: transform 0.5s ease-out;
 }
 
-.TbdBubble:last-child {
+.TbdSidebar__Bubble:last-child {
   margin-bottom: 0;
 }
 
-.TbdBubble__DisplayChar {
+.TbdSidebar__Bubble__DisplayChar {
   text-transform: uppercase;
   line-height: 50px;
   text-align: center;
   color: #fff;
   font-size: 19px;
   font-weight: 600;
+  font-family: Spartan;
   margin: 0;
 }
