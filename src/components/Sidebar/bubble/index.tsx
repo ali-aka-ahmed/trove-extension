@@ -11,9 +11,17 @@ export default function Bubble(props: BubbleProps) {
     return props.user.name.charAt(0);
   }
 
+  const handleClick = (e) => {
+    console.log("HELP")
+  }
+
   return (
-    <div className="TbdBubble" style={{ backgroundColor: bgColor }}>
-      <p className="TbdBubble__DisplayChar">{name()}</p>
+    <div 
+      className="TbdSidebar__Handle TbdSidebar__Bubble" 
+      onClick={handleClick} 
+      style={{ backgroundColor: bgColor }}
+    >
+      <p className="TbdSidebar__Bubble__DisplayChar">{name()}</p>
     </div>
   );
 }

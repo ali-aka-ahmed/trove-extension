@@ -8,17 +8,19 @@ import Bubble from './bubble';
 export default function Sidebar() {
   const SIDEBAR_WIDTH = 50;
   const SIDEBAR_MARGIN = 15;
+  const SIDEBAR_MARGIN_Y = 100;
   const BUBBLE_HEIGHT = 50;
-  const BUBBLE_MARGIN = 10;
+  const BUBBLE_MARGIN = 7;
   
-  const [position, setPosition] = useState({ x: SIDEBAR_MARGIN, y: SIDEBAR_MARGIN });
+  const [position, setPosition] = useState({ x: SIDEBAR_MARGIN, y: SIDEBAR_MARGIN_Y });
+  const [isOpen, setIsOpen] = useState(true);
 
   // Get list of bubbles from dummy data
   const bubbles = users.map((sd) => <Bubble key={sd.id} user={sd} />);
 
   function getHeight() {
-    if (bubbles.length === 0) return 0;
-    return bubbles.length * BUBBLE_HEIGHT + (bubbles.length - 1) * BUBBLE_MARGIN;
+    if (bubbles.length === 0) return BUBBLE_HEIGHT;
+    return (bubbles.length + 1) * BUBBLE_HEIGHT + (bubbles.length) * BUBBLE_MARGIN;
   }
 
   function onDragStart(event: DraggableEvent, data: DraggableData) {
@@ -29,6 +31,8 @@ export default function Sidebar() {
   function onDrag(event: DraggableEvent, data: DraggableData) {
     event.preventDefault();
     event.stopPropagation();
+    setIsOpen(false);
+    console.log(data.x, data.y, data.lastX, data.lastY)
   }
 
   /**
@@ -41,8 +45,6 @@ export default function Sidebar() {
     event.stopPropagation();
 
     // Calc screen bounds
-    console.log( window.innerHeight , document.documentElement.clientHeight, 
-      window.innerWidth-getScrollbarDx() , document.documentElement.clientWidth)
     const height = window.innerHeight || document.documentElement.clientHeight;
     const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
 
@@ -64,14 +66,18 @@ export default function Sidebar() {
 
   return (
     <Draggable
-      handle=".TbdBubble"
+      handle=".TbdSidebar__Handle"
       position={position}
       onStart={onDragStart}
       onDrag={onDrag}
       onStop={onDragStop}
     >
       <div className="TbdSidebar">
-        {bubbles}
+        <div 
+          className="TbdSidebar__Handle TbdSidebar__LogoBubble"
+          onMouseDown={() => setIsOpen(true)}
+        ></div>
+        {isOpen && bubbles}
       </div>
     </Draggable>
   );
