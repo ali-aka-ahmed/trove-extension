@@ -1,10 +1,11 @@
 import React from 'react';
-import Sidebar from '../components/sidebar';
-import bubbleStyles from '../components/sidebar/bubble/index.scss';
-import sidebarStyles from '../components/sidebar/index.scss';
 import ErrorBoundary from './ErrorBoundary';
+import './index.scss';
+import Sidebar from './sidebar';
+import bubbleStyles from './sidebar/bubble/index.scss';
+import sidebarStyles from './sidebar/index.scss';
 
-export default function Extension() {
+export default function Content() {
   return (
     <ErrorBoundary>
       <Sidebar />
