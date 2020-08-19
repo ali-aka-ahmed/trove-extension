@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Extension from './Extension';
-import './index.scss';
+import Extension from '../components/content';
 
 const container = document.createElement('div');
 container.setAttribute('class', 'TbdExtension');

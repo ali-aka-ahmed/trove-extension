@@ -4,7 +4,7 @@ module.exports = {
   entry: {
     background: path.join(__dirname, 'src/app/background.ts'),
     content: path.join(__dirname, 'src/app/content.tsx'),
-    popup: path.join(__dirname, 'src/components/popup/index.tsx')
+    popup: path.join(__dirname, 'src/app/popup.tsx')
   },
   output: {
     path: path.join(__dirname, 'dist/js'),
@@ -20,8 +20,8 @@ module.exports = {
       {
         exclude: [
           path.resolve(__dirname, 'node_modules'),
-          path.resolve(__dirname, 'src/app/index.scss'),
-          path.resolve(__dirname, 'src/components/popup/Popup.scss'),
+          path.resolve(__dirname, 'src/components/content/index.scss'),
+          path.resolve(__dirname, 'src/components/popup/index.scss'),
         ],
         test: /\.scss$/,
         use: [
@@ -32,8 +32,8 @@ module.exports = {
       },
       {
         include: [
-          path.resolve(__dirname, 'src/app/index.scss'),
-          path.resolve(__dirname, 'src/components/popup/Popup.scss'),
+          path.resolve(__dirname, 'src/components/content/index.scss'),
+          path.resolve(__dirname, 'src/components/popup/index.scss'),
         ],
         test: /\.scss$/,
         use: [
