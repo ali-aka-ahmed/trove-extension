@@ -3,10 +3,13 @@
   height: 50px;
   width: 50px;
   cursor: pointer;
+  margin-top: 0px;
   margin-bottom: 7px;
   -webkit-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   -moz-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
+  z-index: 1;
+  position: relative;
 }
 
 .TbdSidebar__Bubble:not(.react-draggable-dragging) {
@@ -16,6 +19,25 @@
 
 .TbdSidebar__Bubble:last-child {
   margin-bottom: 0;
+}
+
+.hidden {
+  animation: hide .1s 1 linear forwards;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+
+@keyframes hide {
+  0% {
+    margin-top: 0px;
+    margin-bottom: 7px;
+  }
+
+  100% {
+    margin-top: -50px;
+    margin-bottom: 0px;
+  }
 }
 
 .TbdSidebar__Bubble__DisplayChar {

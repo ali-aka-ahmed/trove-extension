@@ -4,22 +4,33 @@ import { users } from '../../../utils/data';
 import { getScrollbarDx } from '../../../utils/measurements';
 import Bubble from './bubble';
 
+export const SIDEBAR_WIDTH = 50;
+export const SIDEBAR_MARGIN = 15;
+export const SIDEBAR_MARGIN_Y = 100;
+export const BUBBLE_HEIGHT = 50;
+export const BUBBLE_MARGIN = 7;
+
 export default function Sidebar() {
-  const SIDEBAR_WIDTH = 50;
-  const SIDEBAR_MARGIN = 15;
-  const SIDEBAR_MARGIN_Y = 100;
-  const BUBBLE_HEIGHT = 50;
-  const BUBBLE_MARGIN = 7;
-  
   const [position, setPosition] = useState({ x: SIDEBAR_MARGIN, y: SIDEBAR_MARGIN_Y });
   const [isOpen, setIsOpen] = useState(true);
+  const [dragged, setDragged] = useState(false);
 
   // Get list of bubbles from dummy data
-  const bubbles = users.map((sd) => <Bubble key={sd.id} user={sd} />);
+  const bubbles = users.map((sd) => <Bubble key={sd.id} user={sd} visible={isOpen} />);
 
   function getHeight() {
     if (bubbles.length === 0) return BUBBLE_HEIGHT;
     return (bubbles.length + 1) * BUBBLE_HEIGHT + (bubbles.length) * BUBBLE_MARGIN;
+  }
+
+  function onClick(event: React.MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!dragged) {
+      setIsOpen(true);
+    }
+
+    setDragged(false);
   }
 
   function onDragStart(event: DraggableEvent, data: DraggableData) {
@@ -30,8 +41,8 @@ export default function Sidebar() {
   function onDrag(event: DraggableEvent, data: DraggableData) {
     event.preventDefault();
     event.stopPropagation();
+    setDragged(true);
     setIsOpen(false);
-    console.log(data.x, data.y, data.lastX, data.lastY)
   }
 
   /**
@@ -74,9 +85,10 @@ export default function Sidebar() {
       <div className="TbdSidebar">
         <div 
           className="TbdSidebar__Handle TbdSidebar__LogoBubble"
-          onMouseDown={() => setIsOpen(true)}
+          onClick={(e) => onClick(e)}
+          style={{ marginBottom: isOpen ? `${BUBBLE_MARGIN}px` : '0' }}
         ></div>
-        {isOpen && bubbles}
+        {bubbles}
       </div>
     </Draggable>
   );

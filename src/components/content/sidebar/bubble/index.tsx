@@ -16,9 +16,13 @@ export default function Bubble(props: BubbleProps) {
 
   return (
     <div 
-      className="TbdSidebar__Handle TbdSidebar__Bubble" 
+      className={`TbdSidebar__Handle TbdSidebar__Bubble ${props.visible ? '' : 'hidden'}`}
       onClick={handleClick} 
-      style={{ backgroundColor: bgColor }}
+      style={{ 
+        backgroundColor: bgColor, 
+        // marginTop: props.visible ? '0' : `-${BUBBLE_HEIGHT}px`,
+        // marginBottom: props.visible ? `${BUBBLE_MARGIN}px` : '0'
+      }}
     >
       <p className="TbdSidebar__Bubble__DisplayChar">{name()}</p>
     </div>
@@ -33,4 +37,5 @@ function getPastelColor(seed: string): string {
 interface BubbleProps {
   key: number;
   user: User;
+  visible: boolean;
 }
