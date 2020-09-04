@@ -1,8 +1,8 @@
 import { Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect } from 'react';
-import '../../styles/tabs.scss';
 import './index.scss';
+import './tabs.scss';
 
 export default function Popup() {
   useEffect(() => {
