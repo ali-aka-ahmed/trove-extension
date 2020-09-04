@@ -1,4 +1,7 @@
+import { Tabs } from 'antd';
+import 'antd/dist/antd.min.css';
 import React, { useEffect } from 'react';
+import '../../styles/tabs.scss';
 import './index.scss';
 
 export default function Popup() {
@@ -7,5 +10,16 @@ export default function Popup() {
     chrome.runtime.sendMessage({ popupMounted: true });
   }, []);
 
-  return <div className='TbdPopupContainer'>Hello, world!!!</div>;
+  return (
+    <div className='TbdPopupContainer'>
+      <Tabs defaultActiveKey="1">
+        <Tabs.TabPane tab="notifications" key="1">
+          hello world!
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="PROFILE" key="2">
+          hello world!
+        </Tabs.TabPane>
+      </Tabs>
+    </div>
+  );
 }

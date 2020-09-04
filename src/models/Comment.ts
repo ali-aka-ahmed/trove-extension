@@ -1,4 +1,3 @@
-import CommentType from '../enums/CommentType';
 
 interface Like {
   id: string;
@@ -14,7 +13,7 @@ export default interface Comment {
   content?: string;
   likes?: Like[];
   name?: string;
-  type?: CommentType
+  // type?: CommentType
   userId?: string;
   username?: string;
 };
