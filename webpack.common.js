@@ -18,12 +18,8 @@ module.exports = {
         use: 'ts-loader'
       },
       {
-        exclude: [
-          path.resolve(__dirname, 'node_modules'),
-          path.resolve(__dirname, 'src/components/content/index.scss'),
-          path.resolve(__dirname, 'src/components/popup/index.scss'),
-        ],
-        test: /\.scss$/,
+        exclude: path.resolve(__dirname, 'node_modules'),
+        test: /\.inject\.scss$/,
         use: [
           'to-string-loader', // Back to string
           'css-loader',       // Translates CSS into CommonJS
@@ -31,15 +27,19 @@ module.exports = {
         ]
       },
       {
-        include: [
-          path.resolve(__dirname, 'src/components/content/index.scss'),
-          path.resolve(__dirname, 'src/components/popup/index.scss'),
-        ],
+        exclude: path.resolve(__dirname, 'node_modules'),
         test: /\.scss$/,
         use: [
           'style-loader', // Common JS to DOM node
           'css-loader',   // Translates CSS into CommonJS
           'sass-loader'   // Compiles Sass to CSS
+        ]
+      },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader', // Common JS to DOM node
+          'css-loader',   // Translates CSS into CommonJS
         ]
       },
       {

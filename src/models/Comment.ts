@@ -1,9 +1,3 @@
-// interface Like {
-//   id: string;
-//   name?: string;
-//   userId?: string;
-//   username?: string;
-// };
 
 export interface Post {
   id: number;
@@ -36,6 +30,7 @@ export interface Comment {
   replies?: Reply[];
   content?: string;
   name?: string;
+  // type?: CommentType
   userId?: string;
   username?: string;
   taggedUserIds?: string[];
