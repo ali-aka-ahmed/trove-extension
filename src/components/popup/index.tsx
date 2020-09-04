@@ -16,7 +16,7 @@ export default function Popup() {
         <Tabs.TabPane tab="notifications" key="1">
           hello world!
         </Tabs.TabPane>
-        <Tabs.TabPane tab="PROFILE" key="2">
+        <Tabs.TabPane tab="profile" key="2">
           hello world!
         </Tabs.TabPane>
       </Tabs>
