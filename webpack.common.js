@@ -19,20 +19,23 @@ module.exports = {
       },
       {
         exclude: path.resolve(__dirname, 'node_modules'),
-        test: /\.inject\.scss$/,
-        use: [
-          'to-string-loader', // Back to string
-          'css-loader',       // Translates CSS into CommonJS
-          'sass-loader'       // Compiles Sass to CSS
-        ]
-      },
-      {
-        exclude: path.resolve(__dirname, 'node_modules'),
         test: /\.scss$/,
-        use: [
-          'style-loader', // Common JS to DOM node
-          'css-loader',   // Translates CSS into CommonJS
-          'sass-loader'   // Compiles Sass to CSS
+        oneOf: [
+          {
+            resourceQuery: /inject/,
+            use: [
+              'to-string-loader', // Back to string
+              'css-loader',       // Translates CSS into CommonJS
+              'sass-loader'       // Compiles Sass to CSS
+            ]
+          }, 
+          {
+            use: [
+              'style-loader', // Common JS to DOM node
+              'css-loader',   // Translates CSS into CommonJS
+              'sass-loader'   // Compiles Sass to CSS
+            ]    
+          }
         ]
       },
       {
