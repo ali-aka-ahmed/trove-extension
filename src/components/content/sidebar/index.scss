@@ -19,13 +19,46 @@ $accent-color: #0d77e2;
   width: $bubble-width;
   background-image: url('../../../../public/images/logo.png');
   background-size: contain;
-  // background-color: $accent-color;
   border-radius: $bubble-width/2;
   cursor: pointer;
-  margin-bottom: 7px;
   -webkit-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   -moz-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
-  z-index: 2;
   position: relative;
+}
+
+.TbdSidebar__Content {
+  height: 350px;
+  width: 250px;
+  background-color: #fafafa;
+  border-radius: 10px;
+  -webkit-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
+  -moz-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
+  box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
+}
+
+.TbdSidebar__Content:before {
+  position: absolute;
+  top: 77.5px;
+  left: 17.5px;
+  content: '';
+  border-top: 20px solid #fafafa;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  filter: drop-shadow(0px 0px 1.5px rgba(125,125,125,0.4));
+  -webkit-transform: rotate(270deg);
+  -moz-transform: rotate(270deg);
+  -o-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+
+.TbdSidebar__Content:after {
+  position: absolute;
+  top: 85px;
+  left: 25px;
+  content: '';
+  height: 30px;
+  width: 25px;
+  background-color: #fafafa;
 }

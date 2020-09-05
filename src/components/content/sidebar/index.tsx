@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import { getScrollbarDx } from '../../../utils/measurements';
+import Edge from './Edge';
 
-export const SIDEBAR_WIDTH = 50;
+export const SIDEBAR_WIDTH = 60;
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
-export const BUBBLE_HEIGHT = 50;
-export const BUBBLE_MARGIN = 7;
+export const BUBBLE_HEIGHT = 60;
+export const BUBBLE_MARGIN = 25;
 
 export default function Sidebar() {
   const [position, setPosition] = useState({ x: SIDEBAR_MARGIN, y: SIDEBAR_MARGIN_Y });
   const [isOpen, setIsOpen] = useState(true);
   const [dragged, setDragged] = useState(false);
+  const [anchorEdge, setAnchorEdge] = useState(Edge.Left);
 
   function getHeight() {
     return BUBBLE_HEIGHT;
@@ -20,9 +22,9 @@ export default function Sidebar() {
   function onClick(event: React.MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    if (!dragged) {
-      setIsOpen(true);
-    }
+    // if (!dragged) {
+      setIsOpen(!isOpen);
+    // }
 
     setDragged(false);
   }
@@ -62,15 +64,17 @@ export default function Sidebar() {
     const newY = Math.min(Math.max(minY, data.y), maxY);
     if (leftDx < rightDx) {
       setPosition({ x: SIDEBAR_MARGIN, y: newY });
+      setAnchorEdge(Edge.Left);
     } else {
       const newX = width - SIDEBAR_WIDTH - SIDEBAR_MARGIN;
       setPosition({ x: newX, y: newY });
+      setAnchorEdge(Edge.Right);
     }
   };
 
   return (
     <Draggable
-      handle=".TbdSidebar__Handle"
+      handle=".TbdSidebar__LogoBubble"
       position={position}
       onStart={onDragStart}
       onDrag={onDrag}
@@ -78,12 +82,14 @@ export default function Sidebar() {
     >
       <div className="TbdSidebar">
         <div 
-          className="TbdSidebar__Handle TbdSidebar__LogoBubble"
+          className="TbdSidebar__LogoBubble"
           onClick={(e) => onClick(e)}
           style={{ marginBottom: isOpen ? `${BUBBLE_MARGIN}px` : '0' }}
         >
-          {/* <img src="../../../../public/images/logo2.svg" /> */}
         </div>
+        {isOpen && (
+          <div className="TbdSidebar__Content"></div>
+        )}
       </div>
     </Draggable>
   );
