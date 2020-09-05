@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
-import { users } from '../../../utils/data';
 import { getScrollbarDx } from '../../../utils/measurements';
-import Bubble from './bubble';
 
 export const SIDEBAR_WIDTH = 50;
 export const SIDEBAR_MARGIN = 15;
@@ -15,12 +13,8 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const [dragged, setDragged] = useState(false);
 
-  // Get list of bubbles from dummy data
-  const bubbles = users.map((sd) => <Bubble key={sd.id} user={sd} visible={isOpen} />);
-
   function getHeight() {
-    if (bubbles.length === 0) return BUBBLE_HEIGHT;
-    return (bubbles.length + 1) * BUBBLE_HEIGHT + (bubbles.length) * BUBBLE_MARGIN;
+    return BUBBLE_HEIGHT;
   }
 
   function onClick(event: React.MouseEvent) {
@@ -88,7 +82,6 @@ export default function Sidebar() {
           onClick={(e) => onClick(e)}
           style={{ marginBottom: isOpen ? `${BUBBLE_MARGIN}px` : '0' }}
         ></div>
-        {bubbles}
       </div>
     </Draggable>
   );
