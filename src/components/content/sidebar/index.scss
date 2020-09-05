@@ -1,6 +1,9 @@
+$bubble-width: 60px;
+$accent-color: #0d77e2;
+
 .TbdSidebar {
   height: auto;
-  width: 50px;
+  width: $bubble-width;
   touch-action: none;
   user-select: none;
   pointer-events: auto;
@@ -12,11 +15,12 @@
 }
 
 .TbdSidebar__LogoBubble {
-  height: 50px;
-  width: 50px;
-  background-image: url('../../../../public/images/logo.svg');;
-  background-size: cover;
-  border-radius: 5px;
+  height: $bubble-width;
+  width: $bubble-width;
+  background-image: url('../../../../public/images/logo.png');
+  background-size: contain;
+  // background-color: $accent-color;
+  border-radius: $bubble-width/2;
   cursor: pointer;
   margin-bottom: 7px;
   -webkit-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);

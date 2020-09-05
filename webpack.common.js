@@ -18,7 +18,7 @@ module.exports = {
         use: 'ts-loader'
       },
       {
-        exclude: path.resolve(__dirname, 'node_modules'),
+        exclude: /node_modules/,
         test: /\.scss$/,
         oneOf: [
           {
@@ -46,13 +46,12 @@ module.exports = {
         ]
       },
       {
-        exclude: /node_modules/,
         test: /\.(png|svg|jpg|gif)$/i,
         use: [
           {
             loader: 'url-loader',
             options: {
-              limit: 1000, // in bytes
+              limit: 5000, // in bytes
               name: '[name].[ext]'
             }
           }

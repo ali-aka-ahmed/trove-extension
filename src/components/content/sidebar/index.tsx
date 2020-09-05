@@ -81,7 +81,9 @@ export default function Sidebar() {
           className="TbdSidebar__Handle TbdSidebar__LogoBubble"
           onClick={(e) => onClick(e)}
           style={{ marginBottom: isOpen ? `${BUBBLE_MARGIN}px` : '0' }}
-        ></div>
+        >
+          {/* <img src="../../../../public/images/logo2.svg" /> */}
+        </div>
       </div>
     </Draggable>
   );
