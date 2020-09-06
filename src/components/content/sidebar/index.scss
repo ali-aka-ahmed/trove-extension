@@ -1,4 +1,4 @@
-$bubble-width: 60px;
+$bubble-width: 55px;
 $accent-color: #0d77e2;
 
 .TbdSidebar {
@@ -7,6 +7,14 @@ $accent-color: #0d77e2;
   touch-action: none;
   user-select: none;
   pointer-events: auto;
+}
+
+.TbdSidebar--position-left {
+
+}
+
+.TbdSidebar--position-right {
+
 }
 
 .TbdSidebar:not(.react-draggable-dragging) {
@@ -27,22 +35,22 @@ $accent-color: #0d77e2;
   position: relative;
 }
 
-.TbdSidebar__Content {
+.TbdSidebar__MainContent {
   height: 350px;
   width: 250px;
   background-color: #fafafa;
-  border-radius: 10px;
+  border-radius: 5px;
   -webkit-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   -moz-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
 }
 
-.TbdSidebar__Content:before {
+.TbdSidebar__MainContent:before {
   position: absolute;
-  top: 77.5px;
-  left: 17.5px;
+  top: 71.5px;
+  left: 15px;
   content: '';
-  border-top: 20px solid #fafafa;
+  border-top: 22.5px solid #fafafa;
   border-left: 20px solid transparent;
   border-right: 20px solid transparent;
   filter: drop-shadow(0px 0px 1.5px rgba(125,125,125,0.4));
@@ -53,10 +61,10 @@ $accent-color: #0d77e2;
   transform: rotate(270deg);
 }
 
-.TbdSidebar__Content:after {
+.TbdSidebar__MainContent:after {
   position: absolute;
-  top: 85px;
-  left: 25px;
+  top: 75px;
+  left: 22.5px;
   content: '';
   height: 30px;
   width: 25px;
