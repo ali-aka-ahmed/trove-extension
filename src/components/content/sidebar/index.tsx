@@ -1,5 +1,5 @@
 import { Tabs } from 'antd';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import { getScrollbarDx } from '../../../utils/measurements';
 import Edge from './Edge';
@@ -16,26 +16,26 @@ export default function Sidebar() {
   const [dragged, setDragged] = useState(false);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
 
-  function getSidebarHeight() {
+  const getSidebarHeight = () => {
     return BUBBLE_HEIGHT;
   }
 
-  function getSidebarWidth() {
+  const getSidebarWidth = useCallback(() => {
     return isOpen ? CONTENT_WIDTH : BUBBLE_HEIGHT;
-  }
+  }, [isOpen]);
 
-  function onClick(event: React.MouseEvent) {
+  const onClick = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     setDragged(false);
   }
 
-  function onDragStart(event: DraggableEvent, data: DraggableData) {
+  const onDragStart = (event: DraggableEvent, data: DraggableData) => {
     event.preventDefault();
     event.stopPropagation();
   }
 
-  function onDrag(event: DraggableEvent, data: DraggableData) {
+  const onDrag = (event: DraggableEvent, data: DraggableData) => {
     event.preventDefault();
     event.stopPropagation();
     setDragged(true);
@@ -47,7 +47,7 @@ export default function Sidebar() {
    * @param event   
    * @param data 
    */
-  function onDragStop(event: DraggableEvent, data: DraggableData) {
+  const onDragStop = (event: DraggableEvent, data: DraggableData) => {
     event.preventDefault();
     event.stopPropagation();
 console.log(dragged, isOpen)
@@ -78,7 +78,7 @@ console.log('ended', isOpen)
       setClosestEdge(Edge.Right);
     }
     console.log('=======================')
-  };
+  }
 
   const positionClass = `TbdSidebar--position-${closestEdge === Edge.Left ? 'left' : 'right'}`;
   return (
