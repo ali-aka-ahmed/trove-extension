@@ -7,7 +7,7 @@ export interface Creator {
 
 export interface TaggedUser {
   id: string;
-  replyingTag: boolean;
+  isTaggedInReply: boolean;
   username: string;
   color: string;
 };

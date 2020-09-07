@@ -23,7 +23,7 @@ export default class Notification {
 
   get action(): string {
     const currUser = this.taggedUsers.find(taggedUser => taggedUser.id === userStore.userId)
-    return currUser.replyingTag ? 'replied to you' : 'tagged you'
+    return currUser.isTaggedInReply ? 'replied to you' : 'tagged you'
   }
   
   // what they did
