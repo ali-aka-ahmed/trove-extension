@@ -1,5 +1,6 @@
 import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { getScrollbarDx } from '../../../utils/measurements';
 import Edge from './Edge';
 import Point from './Point';
 
@@ -45,7 +46,28 @@ export default function Sidebar() {
     e.stopPropagation();
     setPosition(Point.fromEvent(e).getOffset(offset));
     setIsDragging(false);
-  }, [offset]);
+
+    // Calc screen bounds
+    const height = window.innerHeight || document.documentElement.clientHeight;
+    const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
+
+    // Calc distance to each edge
+    const leftDx = position.x - 0;
+    const rightDx = width - (position.x + getSidebarWidth());
+
+    // Set new position on closest edge
+    const minY = SIDEBAR_MARGIN;
+    const maxY = height - getSidebarHeight() - SIDEBAR_MARGIN;
+    const newY = Math.min(Math.max(minY, position.y), maxY);
+    if (leftDx < rightDx) {
+      setPosition(new Point(SIDEBAR_MARGIN, newY));
+      setClosestEdge(Edge.Left);
+    } else { console.log(isOpen, width, getSidebarWidth(), SIDEBAR_MARGIN)
+      const newX = width - getSidebarWidth() - SIDEBAR_MARGIN;
+      setPosition(new Point(newX, newY));
+      setClosestEdge(Edge.Right);
+    }
+  }, [offset, position, getSidebarWidth]);
 
   useEffect(() => {
     if (isDragging) {
@@ -60,18 +82,18 @@ export default function Sidebar() {
       document.removeEventListener('mousemove', onDrag);
       document.removeEventListener('mouseup', onDragEnd);
     }
-  }, [isDragging, onDrag]);
+  }, [isDragging, onDrag, onDragEnd]);
 
   // Determine class denoting position of sidebar
   const positionClass = `TbdSidebar--position-${closestEdge === Edge.Left ? 'left' : 'right'}`;
 
   const sidebarStyles = useMemo(() => ({
     transform: `translate(${position.x}px, ${position.y}px)`,
-    transition: isDragging ? 'none' : 'transform 100ms'
+    transition: isDragging ? 'none' : 'transform 150ms'
   }), [isDragging, position]);
 
   const logoBubbleStyles = useMemo(() => ({
-    cursor: isMouseDown ? '-webkit-grabbing' : '-webkit-grab',
+    cursor: isMouseDown ? 'grabbing' : '-webkit-grab',
     marginBottom: `${isOpen ? BUBBLE_MARGIN : 0}px`
   }), [isOpen, isMouseDown]);
 
