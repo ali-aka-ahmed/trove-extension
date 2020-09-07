@@ -1,0 +1,26 @@
+export interface Creator {
+  id: string;
+  displayName: string;
+  username: string;
+  color: string;
+};
+
+export interface TaggedUser {
+  id: string;
+  replyingTag: boolean;
+  username: string;
+  color: string;
+};
+
+export default interface Post {
+  id: string;
+  content: string;
+  creationDatetime: number;
+  creator: Creator;
+  creatorUserId: string;
+  parentId?: string;
+  replies?: Post[];
+  taggedUserIds?: string[]; // includes parent user ids (for replies)
+  taggedUsers?: TaggedUser[];
+  url?: string;
+};
