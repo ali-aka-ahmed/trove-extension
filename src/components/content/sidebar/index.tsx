@@ -1,5 +1,5 @@
 import { Tabs } from 'antd';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getScrollbarDx } from '../../../utils/measurements';
 import Edge from './Edge';
 import Point from './Point';
@@ -18,6 +18,7 @@ export default function Sidebar() {
   const [wasDragged, setWasDragged] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
+  const bubbleRef = useRef();
   
   const getSidebarHeight = useCallback(() => {
     return isOpen ? BUBBLE_HEIGHT + BUBBLE_MARGIN + CONTENT_HEIGHT : BUBBLE_HEIGHT;
@@ -50,11 +51,11 @@ export default function Sidebar() {
     }
   }, [position, getSidebarWidth, getSidebarHeight]);
 
-  const onClick = useCallback((e: React.MouseEvent) => {
+  const onClickBubble = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.info('clickbubble')
 
-    console.info('click')
     if (wasDragged) {
       // Click event firing after drag
       setWasDragged(false);
@@ -64,10 +65,23 @@ export default function Sidebar() {
     }
   }, [isOpen, wasDragged, anchorSidebar]);
 
+  const onClickPage = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.info('clickpage')
+
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true
+    });
+    (bubbleRef.current as HTMLElement).dispatchEvent(event);
+  }, [bubbleRef]);
+
   const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     console.info('ondragstart')
+
     setOffset(Point.fromEvent(e).getOffset(position));
     setIsDragging(true);
   }, [position]);
@@ -109,6 +123,16 @@ export default function Sidebar() {
   }, [isDragging, onDrag, onDragEnd]);
 
   useEffect(() => {
+    if (wasDragged) {
+      document.addEventListener('click', onClickPage);
+    } else {
+      document.removeEventListener('click', onClickPage);
+    }
+
+    return () => { document.removeEventListener('click', onClickPage); }
+  }, [wasDragged, onClickPage]);
+
+  useEffect(() => {
     anchorSidebar();
   }, [isOpen])
 
@@ -131,8 +155,10 @@ export default function Sidebar() {
       style={sidebarStyles}
     >
       <div 
+        id="hi"
+        ref={bubbleRef}
         className="TbdSidebar__LogoBubble"
-        onClick={onClick}
+        onClick={onClickBubble}
         onMouseDown={onDragStart}
         style={logoBubbleStyles}
       >
