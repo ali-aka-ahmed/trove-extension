@@ -8,15 +8,15 @@ export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
 export const BUBBLE_HEIGHT = 55;
 export const BUBBLE_MARGIN = 20;
-export const CONTENT_WIDTH = 300;
+export const CONTENT_WIDTH = 250;
 
 export default function Sidebar() {
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
   const [offset, setOffset] = useState(new Point(0, 0));
   const [isDragging, setIsDragging] = useState(false);
+  const [wasDragged, setWasDragged] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
-  const [isMouseDown, setIsMouseDown] = useState(false);
   
   const getSidebarHeight = () => {
     return BUBBLE_HEIGHT;
@@ -26,34 +26,7 @@ export default function Sidebar() {
     return isOpen ? CONTENT_WIDTH : BUBBLE_HEIGHT;
   }, [isOpen]);
 
-  const onClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // if (!isDragging) setIsOpen(!isOpen);
-    setIsDragging(false);
-  }, [isDragging, isOpen]);
-
-  const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOffset(Point.fromEvent(e).getOffset(position));
-    setIsDragging(true);
-  }, [position]);
-
-  const onDrag = useCallback((e: MouseEvent | TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isDragging) {
-      setPosition(Point.fromEvent(e).getOffset(offset));
-    }
-  }, [isDragging, offset]);
-
-  const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setPosition(Point.fromEvent(e).getOffset(offset));
-    setIsDragging(false);
-
+  const anchorSidebar = useCallback(() => {
     // Calc screen bounds
     const height = window.innerHeight || document.documentElement.clientHeight;
     const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
@@ -69,12 +42,52 @@ export default function Sidebar() {
     if (leftDx < rightDx) {
       setPosition(new Point(SIDEBAR_MARGIN, newY));
       setClosestEdge(Edge.Left);
-    } else { console.log(isOpen, width, getSidebarWidth(), SIDEBAR_MARGIN)
+    } else { 
+      console.log(isOpen, width, getSidebarWidth(), SIDEBAR_MARGIN)
       const newX = width - getSidebarWidth() - SIDEBAR_MARGIN;
       setPosition(new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
-  }, [offset, position, getSidebarWidth]);
+  }, [position, getSidebarWidth]);
+
+  const onClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wasDragged) {
+      // Click event firing after drag
+      setWasDragged(false);
+    } else {
+      // Normal click
+      setIsOpen(!isOpen);
+    }
+  }, [isOpen, wasDragged, anchorSidebar]);
+
+  const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOffset(Point.fromEvent(e).getOffset(position));
+    setIsDragging(true);
+  }, [position]);
+
+  const onDrag = useCallback((e: MouseEvent | TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isDragging) {
+      setIsOpen(false);
+      setWasDragged(true);
+      setPosition(Point.fromEvent(e).getOffset(offset));
+    }
+  }, [isDragging, offset]);
+
+  const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPosition(Point.fromEvent(e).getOffset(offset));
+    setIsDragging(false);
+
+    // onClick isn't called after a drag if mouseup is beyond bounds of window 
+    if (wasDragged) anchorSidebar();
+  }, [offset, wasDragged, anchorSidebar]);
 
   useEffect(() => {
     if (isDragging) {
@@ -90,6 +103,10 @@ export default function Sidebar() {
       document.removeEventListener('mouseup', onDragEnd);
     }
   }, [isDragging, onDrag, onDragEnd]);
+
+  useEffect(() => {
+    anchorSidebar();
+  }, [isOpen])
 
   // Determine class denoting position of sidebar
   const positionClass = `TbdSidebar--position-${closestEdge === Edge.Left ? 'left' : 'right'}`;
@@ -111,8 +128,8 @@ export default function Sidebar() {
     >
       <div 
         className="TbdSidebar__LogoBubble"
-        onClick={(e) => onClick(e)}
-        onMouseDown={(e) => onDragStart(e)}
+        onClick={onClick}
+        onMouseDown={onDragStart}
         style={logoBubbleStyles}
       >
       </div>
