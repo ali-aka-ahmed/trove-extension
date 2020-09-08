@@ -53,6 +53,7 @@ export default function Sidebar() {
   const onClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
     console.info('click')
     if (wasDragged) {
       // Click event firing after drag
@@ -86,7 +87,6 @@ export default function Sidebar() {
     e.preventDefault();
     e.stopPropagation();
     console.info('ondragend')
-    setPosition(Point.fromEvent(e).getOffset(offset));
     setIsDragging(false);
 
     // onClick isn't called after a drag if mouseup is beyond bounds of window 
@@ -121,9 +121,9 @@ export default function Sidebar() {
   }), [isDragging, position]);
 
   const logoBubbleStyles = useMemo(() => ({
-    cursor: isDragging ? 'move' : 'pointer',
+    cursor: wasDragged ? 'move' : 'pointer',
     marginBottom: `${isOpen ? BUBBLE_MARGIN : 0}px`
-  }), [isOpen, isDragging]);
+  }), [isOpen, wasDragged]);
 
   return (
     <div 
@@ -133,7 +133,7 @@ export default function Sidebar() {
       <div 
         className="TbdSidebar__LogoBubble"
         onClick={onClick}
-        // onMouseDown={onDragStart}
+        onMouseDown={onDragStart}
         style={logoBubbleStyles}
       >
       </div>
