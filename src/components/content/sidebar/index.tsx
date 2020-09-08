@@ -8,6 +8,7 @@ export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
 export const BUBBLE_HEIGHT = 55;
 export const BUBBLE_MARGIN = 20;
+export const CONTENT_HEIGHT = 350;
 export const CONTENT_WIDTH = 250;
 
 export default function Sidebar() {
@@ -18,9 +19,9 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
   
-  const getSidebarHeight = () => {
-    return BUBBLE_HEIGHT;
-  }
+  const getSidebarHeight = useCallback(() => {
+    return isOpen ? BUBBLE_HEIGHT + BUBBLE_MARGIN + CONTENT_HEIGHT : BUBBLE_HEIGHT;
+  }, [isOpen]);
 
   const getSidebarWidth = useCallback(() => {
     return isOpen ? CONTENT_WIDTH : BUBBLE_HEIGHT;
@@ -43,16 +44,16 @@ export default function Sidebar() {
       setPosition(new Point(SIDEBAR_MARGIN, newY));
       setClosestEdge(Edge.Left);
     } else { 
-      console.log(isOpen, width, getSidebarWidth(), SIDEBAR_MARGIN)
       const newX = width - getSidebarWidth() - SIDEBAR_MARGIN;
       setPosition(new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
-  }, [position, getSidebarWidth]);
+  }, [position, getSidebarWidth, getSidebarHeight]);
 
   const onClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.info('click')
     if (wasDragged) {
       // Click event firing after drag
       setWasDragged(false);
@@ -65,6 +66,7 @@ export default function Sidebar() {
   const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.info('ondragstart')
     setOffset(Point.fromEvent(e).getOffset(position));
     setIsDragging(true);
   }, [position]);
@@ -72,6 +74,7 @@ export default function Sidebar() {
   const onDrag = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.info('ondrag')
     if (isDragging) {
       setIsOpen(false);
       setWasDragged(true);
@@ -82,6 +85,7 @@ export default function Sidebar() {
   const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.info('ondragend')
     setPosition(Point.fromEvent(e).getOffset(offset));
     setIsDragging(false);
 
@@ -129,7 +133,7 @@ export default function Sidebar() {
       <div 
         className="TbdSidebar__LogoBubble"
         onClick={onClick}
-        onMouseDown={onDragStart}
+        // onMouseDown={onDragStart}
         style={logoBubbleStyles}
       >
       </div>
