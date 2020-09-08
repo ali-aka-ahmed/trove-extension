@@ -26,6 +26,13 @@ export default function Sidebar() {
     return isOpen ? CONTENT_WIDTH : BUBBLE_HEIGHT;
   }, [isOpen]);
 
+  const onClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // if (!isDragging) setIsOpen(!isOpen);
+    setIsDragging(false);
+  }, [isDragging, isOpen]);
+
   const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -93,9 +100,9 @@ export default function Sidebar() {
   }), [isDragging, position]);
 
   const logoBubbleStyles = useMemo(() => ({
-    cursor: isMouseDown ? 'grabbing' : '-webkit-grab',
+    cursor: isDragging ? 'move' : 'pointer',
     marginBottom: `${isOpen ? BUBBLE_MARGIN : 0}px`
-  }), [isOpen, isMouseDown]);
+  }), [isOpen, isDragging]);
 
   return (
     <div 
@@ -104,7 +111,7 @@ export default function Sidebar() {
     >
       <div 
         className="TbdSidebar__LogoBubble"
-        // onClick={(e) => onClick(e)}
+        onClick={(e) => onClick(e)}
         onMouseDown={(e) => onDragStart(e)}
         style={logoBubbleStyles}
       >
