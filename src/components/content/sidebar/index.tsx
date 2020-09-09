@@ -10,7 +10,7 @@ export const BUBBLE_HEIGHT = 55;
 export const BUBBLE_MARGIN = 20;
 export const CONTENT_HEIGHT = 350;
 export const CONTENT_WIDTH = 250;
-export const CLOSE_BUBBLE_WIDTH = 65;
+export const EXIT_BUBBLE_WIDTH = 65;
 
 export default function Sidebar() {
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
@@ -52,17 +52,17 @@ export default function Sidebar() {
     }
   }, [position, getSidebarWidth, getSidebarHeight]);
 
-  const snapToCloseBubble = (e: MouseEvent | TouchEvent) => {
+  const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
     const point = Point.fromEvent(e)
     
-    // Get close bubble point
+    // Get exit bubble point
     const height = window.innerHeight || document.documentElement.clientHeight;
     const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
-    const closeCenter = new Point(width/2, height * 0.9 - CLOSE_BUBBLE_WIDTH/2);
+    const exitCenter = new Point(width/2, height * 0.9 - EXIT_BUBBLE_WIDTH/2);
 
-    // Snap to center of close bubble if cursor is dragging logo bubble w/in a 40px radius
-    if (point.getDistance(closeCenter) < 40) {
-      return closeCenter.getOffset(new Point(BUBBLE_HEIGHT/2, BUBBLE_HEIGHT/2));
+    // Snap to center of exit bubble if cursor is dragging logo bubble w/in a 40px radius
+    if (point.getDistance(exitCenter) < 40) {
+      return exitCenter.getOffset(new Point(BUBBLE_HEIGHT/2, BUBBLE_HEIGHT/2));
     }
 
     return null;
@@ -112,8 +112,8 @@ export default function Sidebar() {
       setIsOpen(false);
       setWasDragged(true);
 
-      // Snap to close bubble if applicable
-      setPosition(snapToCloseBubble(e) || Point.fromEvent(e).getOffset(offset));
+      // Snap to exit bubble if applicable
+      setPosition(snapToExitBubble(e) || Point.fromEvent(e).getOffset(offset));
     }
   }, [isDragging, offset]);
 
@@ -204,8 +204,8 @@ export default function Sidebar() {
           </div>
         )}
       </div>
-      {isDragging && (
-        <div className="TbdCloseBubble"></div>
+      {wasDragged && (
+        <div className="TbdExitBubble"></div>
       )}
     </>
   );

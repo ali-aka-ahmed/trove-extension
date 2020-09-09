@@ -1,7 +1,7 @@
 $bubble-width: 55px;
 $content-width: 250px;
 $sidebar-margin: 15px;
-$close-bubble-width: $bubble-width + 10px;
+$exit-bubble-width: $bubble-width + 10px;
 $accent-color: #0d77e2;
 $background-color: #fafafa;
 
@@ -96,16 +96,16 @@ $triangle-base: 40px;
   left: 202.5px;
 }
 
-.TbdCloseBubble {
-  height: $close-bubble-width;
-  width: $close-bubble-width;
-  border-radius: $close-bubble-width/2;
+.TbdExitBubble {
+  height: $exit-bubble-width;
+  width: $exit-bubble-width;
+  border-radius: $exit-bubble-width/2;
   background-color: rgba(0,0,0,0.8);
   z-index: -1;
   position: fixed;
-  left: calc(50% - #{$close-bubble-width/2});
+  left: calc(50% - #{$exit-bubble-width/2});
   bottom: 10%;
-  background-image: url('../../../../public/images/close.svg');
+  background-image: url('../../../../public/images/exit.svg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 30px 30px;
