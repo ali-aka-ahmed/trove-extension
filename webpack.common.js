@@ -40,9 +40,20 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [
-          'style-loader', // Common JS to DOM node
-          'css-loader',   // Translates CSS into CommonJS
+        oneOf: [
+          {
+            resourceQuery: /inject/,
+            use: [
+              'to-string-loader', // Back to string
+              'css-loader',       // Translates CSS into CommonJS
+            ]
+          }, 
+          {
+            use: [
+              'style-loader', // Common JS to DOM node
+              'css-loader',   // Translates CSS into CommonJS
+            ]    
+          }
         ]
       },
       {

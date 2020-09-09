@@ -177,7 +177,7 @@ export default function Sidebar() {
           style={contentStyles}
         >
           <Tabs defaultActiveKey="1">
-            <Tabs.TabPane tab="notifications" key="1">
+            <Tabs.TabPane tab="comments" key="1">
               
             </Tabs.TabPane>
           </Tabs>

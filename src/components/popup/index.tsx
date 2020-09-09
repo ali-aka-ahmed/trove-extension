@@ -1,10 +1,10 @@
 import { Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect } from 'react';
+import '../tabs.scss';
 import './index.scss';
 import Notifications from './notifications';
 import Profile from './profile';
-import './tabs.scss';
 
 export default function Popup() {
   useEffect(() => {
