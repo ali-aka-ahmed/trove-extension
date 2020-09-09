@@ -1,6 +1,7 @@
 $bubble-width: 55px;
 $content-width: 250px;
 $sidebar-margin: 15px;
+$close-bubble-width: $bubble-width + 10px;
 $accent-color: #0d77e2;
 $background-color: #fafafa;
 
@@ -93,4 +94,24 @@ $triangle-base: 40px;
 
 .TbdSidebar__MainContent--position-right:after {
   left: 202.5px;
+}
+
+.TbdCloseBubble {
+  height: $close-bubble-width;
+  width: $close-bubble-width;
+  border-radius: $close-bubble-width/2;
+  background-color: rgba(0,0,0,0.8);
+  z-index: -1;
+  position: fixed;
+  left: calc(50% - #{$close-bubble-width/2});
+  bottom: 10%;
+  background-image: url('../../../../public/images/close.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 30px 30px;
+  border: 5px solid rgba(0,0,0,0.8);
+  box-shadow: inset 0px 0px 0px 1.5px $background-color;
+  box-sizing: border-box;
+  -webkit-background-clip: padding-box; /* for Safari */
+  background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
 }

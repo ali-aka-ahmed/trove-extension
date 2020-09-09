@@ -7,6 +7,11 @@ export default class Point {
     this.y = y;
   }
 
+  public getDistance = (p: Point): number => {
+    const offset = this.getOffset(p);
+    return Math.sqrt(offset.x * offset.x + offset.y * offset.y);
+  }
+
   public getOffset = (p: Point) => {
     return new Point(this.x - p.x, this.y - p.y);
   }

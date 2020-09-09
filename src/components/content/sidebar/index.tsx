@@ -10,6 +10,7 @@ export const BUBBLE_HEIGHT = 55;
 export const BUBBLE_MARGIN = 20;
 export const CONTENT_HEIGHT = 350;
 export const CONTENT_WIDTH = 250;
+export const CLOSE_BUBBLE_WIDTH = 65;
 
 export default function Sidebar() {
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
@@ -18,7 +19,7 @@ export default function Sidebar() {
   const [wasDragged, setWasDragged] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
-  const bubbleRef = useRef();
+  const bubbleRef = useRef(null);
   
   const getSidebarHeight = useCallback(() => {
     return isOpen ? BUBBLE_HEIGHT + BUBBLE_MARGIN + CONTENT_HEIGHT : BUBBLE_HEIGHT;
@@ -51,6 +52,22 @@ export default function Sidebar() {
     }
   }, [position, getSidebarWidth, getSidebarHeight]);
 
+  const snapToCloseBubble = (e: MouseEvent | TouchEvent) => {
+    const point = Point.fromEvent(e)
+    
+    // Get close bubble point
+    const height = window.innerHeight || document.documentElement.clientHeight;
+    const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
+    const closeCenter = new Point(width/2, height * 0.9 - CLOSE_BUBBLE_WIDTH/2);
+
+    // Snap to center of close bubble if cursor is dragging logo bubble w/in a 40px radius
+    if (point.getDistance(closeCenter) < 40) {
+      return closeCenter.getOffset(new Point(BUBBLE_HEIGHT/2, BUBBLE_HEIGHT/2));
+    }
+
+    return null;
+  }
+
   const onClickBubble = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -74,7 +91,7 @@ export default function Sidebar() {
       bubbles: true,
       cancelable: true
     });
-    (bubbleRef.current as HTMLElement).dispatchEvent(event);
+    (bubbleRef.current! as HTMLElement).dispatchEvent(event);
   }, [bubbleRef]);
 
   const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
@@ -94,7 +111,9 @@ export default function Sidebar() {
     if (isDragging) {
       setIsOpen(false);
       setWasDragged(true);
-      setPosition(Point.fromEvent(e).getOffset(offset));
+
+      // Snap to close bubble if applicable
+      setPosition(snapToCloseBubble(e) || Point.fromEvent(e).getOffset(offset));
     }
   }, [isDragging, offset]);
 
@@ -159,30 +178,35 @@ export default function Sidebar() {
   }, [closestEdge, isOpen]);
 
   return (
-    <div 
-      className="TbdSidebar"
-      style={sidebarStyles}
-    >
-      <div
-        className="TbdSidebar__LogoBubble"
-        onClick={onClickBubble}
-        onMouseDown={onDragStart}
-        ref={bubbleRef}
-        style={logoBubbleStyles}
+    <>
+      <div 
+        className="TbdSidebar"
+        style={sidebarStyles}
       >
-      </div>
-      {isOpen && (
-        <div 
-          className={`TbdSidebar__MainContent ${contentPositionClass}`}
-          style={contentStyles}
+        <div
+          className="TbdSidebar__LogoBubble"
+          onClick={onClickBubble}
+          onMouseDown={onDragStart}
+          ref={bubbleRef}
+          style={logoBubbleStyles}
         >
-          <Tabs defaultActiveKey="1">
-            <Tabs.TabPane tab="comments" key="1">
-              
-            </Tabs.TabPane>
-          </Tabs>
         </div>
+        {isOpen && (
+          <div 
+            className={`TbdSidebar__MainContent ${contentPositionClass}`}
+            style={contentStyles}
+          >
+            <Tabs defaultActiveKey="1">
+              <Tabs.TabPane tab="comments" key="1">
+                
+              </Tabs.TabPane>
+            </Tabs>
+          </div>
+        )}
+      </div>
+      {isDragging && (
+        <div className="TbdCloseBubble"></div>
       )}
-    </div>
+    </>
   );
 }
