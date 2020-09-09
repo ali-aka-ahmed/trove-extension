@@ -39,6 +39,7 @@ $background-color: #fafafa;
   -moz-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   position: relative;
+  z-index: -2;
 }
 
 $triangle-height: 22px;
@@ -52,6 +53,7 @@ $triangle-base: 40px;
   border-top: $triangle-height solid $background-color;
   border-left: $triangle-base/2 solid transparent;
   border-right: $triangle-base/2 solid transparent;
+  z-index: -1;
 }
 
 .TbdSidebar__MainContent--position-left:before {
@@ -79,6 +81,7 @@ $triangle-base: 40px;
   height: 30px;
   width: 25px;
   background-color: $background-color;
+  z-index: -1;
 }
 
 .TbdSidebar__MainContent--position-left:after {
