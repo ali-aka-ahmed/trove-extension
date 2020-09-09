@@ -45,7 +45,7 @@ export default function Sidebar() {
       setPosition(new Point(SIDEBAR_MARGIN, newY));
       setClosestEdge(Edge.Left);
     } else { 
-      const newX = width - getSidebarWidth() - SIDEBAR_MARGIN;
+      const newX = width - BUBBLE_HEIGHT - SIDEBAR_MARGIN;
       setPosition(new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
@@ -90,6 +90,7 @@ export default function Sidebar() {
     e.preventDefault();
     e.stopPropagation();
     console.info('ondrag')
+    
     if (isDragging) {
       setIsOpen(false);
       setWasDragged(true);
@@ -136,8 +137,9 @@ export default function Sidebar() {
     anchorSidebar();
   }, [isOpen])
 
-  // Determine class denoting position of sidebar
-  const positionClass = `TbdSidebar--position-${closestEdge === Edge.Left ? 'left' : 'right'}`;
+  // Determine class denoting position of sidebar components
+  const positionText = closestEdge === Edge.Left ? 'left' : 'right';
+  const contentPositionClass = `TbdSidebar__MainContent--position-${positionText}`;
 
   const sidebarStyles = useMemo(() => ({
     transform: `translate(${position.x}px, ${position.y}px)`,
@@ -149,22 +151,31 @@ export default function Sidebar() {
     marginBottom: `${isOpen ? BUBBLE_MARGIN : 0}px`
   }), [isOpen, wasDragged]);
 
+  const contentStyles = useMemo(() => {
+    const transform = (closestEdge === Edge.Right && isOpen)
+      ? `translate(${-CONTENT_WIDTH + BUBBLE_HEIGHT}px, 0px)`
+      : 'translate(0px, 0px)';
+    return { transform }; 
+  }, [closestEdge, isOpen]);
+
   return (
     <div 
-      className={`TbdSidebar ${positionClass}`}
+      className="TbdSidebar"
       style={sidebarStyles}
     >
-      <div 
-        id="hi"
-        ref={bubbleRef}
+      <div
         className="TbdSidebar__LogoBubble"
         onClick={onClickBubble}
         onMouseDown={onDragStart}
+        ref={bubbleRef}
         style={logoBubbleStyles}
       >
       </div>
       {isOpen && (
-        <div className="TbdSidebar__MainContent">
+        <div 
+          className={`TbdSidebar__MainContent ${contentPositionClass}`}
+          style={contentStyles}
+        >
           <Tabs defaultActiveKey="1">
             <Tabs.TabPane tab="notifications" key="1">
               
@@ -175,60 +186,3 @@ export default function Sidebar() {
     </div>
   );
 }
-
-
-// const onClick = (event: React.MouseEvent) => {
-//   event.preventDefault();
-//   event.stopPropagation();
-//   setDragged(false);
-// }
-
-// const onDragStart = (event: DraggableEvent, data: DraggableData) => {
-//   event.preventDefault();
-//   event.stopPropagation();
-// }
-
-// const onDrag = (event: DraggableEvent, data: DraggableData) => {
-//   event.preventDefault();
-//   event.stopPropagation();
-//   setDragged(true);
-//   setIsOpen(false);
-// }
-
-// /**
-//  * Return sidebar to closest edge of screen after being dragged.
-//  * @param event   
-//  * @param data 
-//  */
-// const onDragStop = useCallback((event: DraggableEvent, data: DraggableData) => {
-//   event.preventDefault();
-//   event.stopPropagation();
-// console.log(dragged, isOpen)
-//   if (!dragged) {
-//     const temp = !isOpen;
-//     console.log(dragged, isOpen, temp)
-//     setIsOpen(temp);
-//   }
-// console.log('ended', isOpen)
-//   // Calc screen bounds
-//   const height = window.innerHeight || document.documentElement.clientHeight;
-//   const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
-
-//   // Calc distance to each edge
-//   const leftDx = data.x - 0;
-//   const rightDx  = width - (data.x + getSidebarWidth());
-
-//   // Set new position on closest edge
-//   const minY = SIDEBAR_MARGIN;
-//   const maxY = height - getSidebarHeight() - SIDEBAR_MARGIN;
-//   const newY = Math.min(Math.max(minY, data.y), maxY);
-//   if (leftDx < rightDx) {
-//     setPosition({ x: SIDEBAR_MARGIN, y: newY });
-//     setClosestEdge(Edge.Left);
-//   } else { console.log(isOpen, width, getSidebarWidth(), SIDEBAR_MARGIN)
-//     const newX = width - getSidebarWidth() - SIDEBAR_MARGIN;
-//     setPosition({ x: newX, y: newY });
-//     setClosestEdge(Edge.Right);
-//   }
-//   console.log('=======================')
-// }, [getSidebarWidth, dragged, isOpen]);
