@@ -3,8 +3,10 @@ import { Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import { observer } from 'mobx-react';
 import React, { useState } from 'react';
+import IPost from '../../models/Post';
+import NotificationObject from '../../objects/Notification';
 import { users } from '../../utils/data';
-import Notification from './notification';
+import Notification from './Notification';
 import './style.scss';
 import './tabs.scss';
 
@@ -15,7 +17,7 @@ const Popup = observer(() => {
   //   chrome.runtime.sendMessage({ popupMounted: true });
   // }, []);
 
-  const [notifications, setNotifications] = useState<any[]>([])
+  const [notifications, setNotifications] = useState<NotificationObject[]>([])
   const [showEdit, setShowEdit] = useState<string | null>(null)
 
   // userStore
@@ -29,9 +31,31 @@ const Popup = observer(() => {
   setDisplayName(user.displayName)
   setUsername(user.username)
 
-  // const n = new Notification(posts[0])
-  // let ns = [n,n,n,n,n,n,n,n,n]
-  // setNotifications(ns)
+  const post: IPost = {
+    id: '4ff4be94-b0ac-4da5-9224-652993095c25',
+    content: '@aki yo check this out',
+    creationDatetime: 1599521212817,
+    creator: {
+      id: '30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93',
+      username: 'aki',
+      displayName: 'Akshath Sivaprasad',
+      color: '#9900EF'
+    },
+    creatorUserId: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
+    replies: [],
+    taggedUserIds: ['30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93'],
+    taggedUsers: [
+      {
+        id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
+        isTaggedInReply: false,
+        username: 'ali',
+        color: '#52B2FA'
+      }
+    ],
+    url: 'https://github.com/airbnb/css#comments'
+  }
+  const n = new NotificationObject(post)
+  setNotifications([n, n, n, n, n, n, n, n, n, n])
 
   return (
     <div className='TbdPopupContainer'>

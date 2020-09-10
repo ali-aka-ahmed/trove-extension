@@ -1,5 +1,5 @@
+import userStore from '../objects/stores/UserStore';
 import { rLogin } from '../server';
-import userStore from '../state/stores/UserStore';
 
 // Listen to messages sent from other parts of the extension.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
