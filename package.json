@@ -31,8 +31,6 @@
     "alea": "^1.0.0",
     "antd": "^4.6.2",
     "axios": "^0.20.0",
-    "mobx": "^5.15.6",
-    "mobx-react": "^6.3.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-draggable": "^4.4.3",
