@@ -18,9 +18,9 @@ export default interface Post {
   creationDatetime: number;
   creator: Creator;
   creatorUserId: string;
+  url: string;
   parentId?: string;
   replies?: Post[];
   taggedUserIds?: string[]; // includes parent user ids (for replies)
   taggedUsers?: TaggedUser[];
-  url?: string;
 };
