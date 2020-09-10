@@ -3,26 +3,35 @@ import { Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import { observer } from 'mobx-react';
 import React, { useState } from 'react';
-import { rLogin } from '../../server';
-import { useStores } from '../../state';
+import { users } from '../../utils/data';
 import Notification from './notification';
 import './style.scss';
 import './tabs.scss';
 
 const Popup = observer(() => {
-  const { userStore, popupStore } = useStores();
+
   // useEffect(() => {
   //   // Example of how to send a message to eventPage.ts.
   //   chrome.runtime.sendMessage({ popupMounted: true });
   // }, []);
 
+  const [notifications, setNotifications] = useState<any[]>([])
   const [showEdit, setShowEdit] = useState<string | null>(null)
 
-  console.log('>>>>>>', userStore)
-  console.log('hola')
+  // userStore
+  const [color, setColor] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [username, setUsername] = useState('')
 
-  const user = rLogin()
-  userStore.update(user)
+  // need to actually pull data from server.. decide on how we deal with frontend data
+  const user = users.find(user => user.username === 'ali')!
+  setColor(user.color)
+  setDisplayName(user.displayName)
+  setUsername(user.username)
+
+  // const n = new Notification(posts[0])
+  // let ns = [n,n,n,n,n,n,n,n,n]
+  // setNotifications(ns)
 
   return (
     <div className='TbdPopupContainer'>
@@ -30,7 +39,7 @@ const Popup = observer(() => {
         <Tabs.TabPane tab='notifications' key='1'>
           <div className='TbdPopupContainer__notification-wrapper'>
           {
-            popupStore.notifications.map(n => {
+            notifications.map(n => {
               return <Notification key={n.id} notification={n} />
             })
           }
@@ -41,9 +50,9 @@ const Popup = observer(() => {
             <div className='TbdPopupContainer__header'>
               <div 
                 className='TbdText--large TbdPopupContainer__profile-img'
-                style={{backgroundColor: userStore.color}} 
+                style={{backgroundColor: color}} 
               >
-                {userStore.displayName[0]}
+                {displayName[0]}
               </div>
               <div className='TbdPopupContainer__profile-header-content'>
                 <div 
@@ -52,7 +61,7 @@ const Popup = observer(() => {
                   onMouseLeave={() => setShowEdit(null)}
                   className='TbdText--medium TbdPopupContainer__display-name'
                 >
-                  {userStore.displayName}
+                  {displayName}
                   <div 
                     style={showEdit !== 'displayName' ? {opacity: 0} : {}}
                     className='TbdPopupContainer__edit-icon'
@@ -66,7 +75,7 @@ const Popup = observer(() => {
                   onMouseLeave={() => setShowEdit(null)}
                   className='TbdText TbdPopupContainer__username'
                 >
-                  {`@${userStore.username}`}
+                  {`@${username}`}
                   <div 
                     style={showEdit !== 'username' ? {opacity: 0} : {}}
                     className='TbdPopupContainer__edit-icon'
@@ -81,7 +90,7 @@ const Popup = observer(() => {
               <div 
                 onClick={() => {}}
                 className='TbdPopupContainer__color'
-                style={{backgroundColor: userStore.color}}
+                style={{backgroundColor: color}}
               />
             </div>
           </div>

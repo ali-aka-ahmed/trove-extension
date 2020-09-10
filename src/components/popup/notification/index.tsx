@@ -1,15 +1,16 @@
 import React from 'react';
-import INotification from '../../../state/stores/objects/Notification';
+// import INotification from '../../../state/stores/objects/Notification';
 import './style.scss';
 
 interface NotificationProps {
-  notification: INotification
+  notification: any
+  // notification: INotification
 }
 
 const Notification = ({ notification }: NotificationProps) => {
   
   const renderContent = (content: string) => {
-    let displayContent = [];
+    let displayContent: any[] = [];
     let prevStopIndex = 0;
     let findingTag = false;
     for (let i=0; i<content.length; i++) {
@@ -33,7 +34,7 @@ const Notification = ({ notification }: NotificationProps) => {
     // div issue here unique key
     return <div>{ displayContent.map(div => div) }</div>
   }
-
+ 
 	return (
     <div className='TbdNotificationContainer'>
       <div className='TbdNotificationContainer__header-wrapper'>
