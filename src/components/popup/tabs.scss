@@ -2,12 +2,18 @@
 
 // Tabs
 .ant-tabs-tab {
-  margin-right: 22.5px;
+  // margin-right: 35px;
+  margin-right: 55px;
+}
+
+.ant-tabs-nav {
+  margin: 0 !important;
 }
 
 // First tab
 .ant-tabs-tab:first-child {
-  margin-left: 22.5px;
+  // margin-left: 35px;
+  margin-left: 55px;
 }
 
 // Tab text

@@ -1,5 +1,5 @@
-import IPost from '../state/models/Post';
-import IUser from '../state/models/User';
+import IPost from '../models/Post';
+import IUser from '../models/User';
 
 export const users: IUser[] = [
   {
@@ -8,7 +8,7 @@ export const users: IUser[] = [
     username: 'ali',
     normalizedUsername: 'ali', // lowercase version for search   
     creationDatetime: 1599520905274,
-    color: '#0D77E2',
+    color: '#52B2FA',
   },
   {
     id: '30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93', // needs to be unique
@@ -45,7 +45,7 @@ export const posts: IPost[] = [
       id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
       displayName: 'Ali Ahmed',
       username: 'ali',
-      color: '#0D77E2'
+      color: '#52B2FA'
     },
     creatorUserId: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
     replies: [],

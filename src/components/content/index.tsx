@@ -9,8 +9,8 @@ export default function Content() {
   return (
     <ErrorBoundary>
       {/* <Sidebar />
-      <style type="text/css">{sidebarStyles}</style>
-      <style type="text/css">{bubbleStyles}</style> */}
+      <style type='text/css'>{sidebarStyles}</style>
+      <style type='text/css'>{bubbleStyles}</style> */}
     </ErrorBoundary>
   );
 }

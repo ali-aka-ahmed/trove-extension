@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
-import { users } from '../../../utils/data';
-import { getScrollbarDx } from '../../../utils/measurements';
+import { users } from '../../../data';
+import { getScrollbarDx } from '../../../state/utils';
 import Bubble from './bubble';
 
 export const SIDEBAR_WIDTH = 50;
@@ -76,15 +76,15 @@ export default function Sidebar() {
 
   return (
     <Draggable
-      handle=".TbdSidebar__Handle"
+      handle='.TbdSidebar__Handle'
       position={position}
       onStart={onDragStart}
       onDrag={onDrag}
       onStop={onDragStop}
     >
-      <div className="TbdSidebar">
+      <div className='TbdSidebar'>
         <div 
-          className="TbdSidebar__Handle TbdSidebar__LogoBubble"
+          className='TbdSidebar__Handle TbdSidebar__LogoBubble'
           onClick={(e) => onClick(e)}
           style={{ marginBottom: isOpen ? `${BUBBLE_MARGIN}px` : '0' }}
         ></div>
