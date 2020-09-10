@@ -1,7 +1,6 @@
 import { EditOutlined } from '@ant-design/icons';
 import { Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
-import { observer } from 'mobx-react';
 import React, { useEffect, useState } from 'react';
 import IPost from '../../models/Post';
 import { users } from '../../utils/data';
@@ -10,7 +9,7 @@ import Notification from './Notification';
 import './style.scss';
 import './tabs.scss';
 
-const Popup = observer(() => {
+const Popup = () => {
 
   // useEffect(() => {
   //   // Example of how to send a message to eventPage.ts.
@@ -124,6 +123,6 @@ const Popup = observer(() => {
       </Tabs>
     </div>
   );
-});
+};
 
 export default Popup;
