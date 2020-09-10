@@ -10,7 +10,7 @@ export const BUBBLE_HEIGHT = 55;
 export const BUBBLE_MARGIN = 20;
 export const CONTENT_HEIGHT = 350;
 export const CONTENT_WIDTH = 250;
-export const EXIT_BUBBLE_WIDTH = 65;
+export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
@@ -60,7 +60,7 @@ export default function Sidebar() {
     // Get exit bubble point
     const height = window.innerHeight || document.documentElement.clientHeight;
     const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
-    const exitCenter = new Point(width/2, height * 0.9 - EXIT_BUBBLE_WIDTH/2);
+    const exitCenter = new Point(width/2, height * 0.9);
 
     // Snap to center of exit bubble if cursor is dragging logo bubble w/in a 40px radius
     if (point.getDistance(exitCenter) < 40) {
@@ -168,6 +168,7 @@ export default function Sidebar() {
   // Determine class denoting position of sidebar components
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
   const contentPositionClass = `TbdSidebar__MainContent--position-${positionText}`;
+  const exitBubbleHoveredClass = shouldExit ? 'TbdExitBubble--hovered' : '';
 
   const sidebarStyles = useMemo(() => ({
     transform: `translate(${position.x}px, ${position.y}px)`,
@@ -185,11 +186,6 @@ export default function Sidebar() {
       : 'translate(0px, 0px)';
     return { transform }; 
   }, [closestEdge, isOpen]);
-
-  const exitBubbleStyles = useMemo(() => {
-    const boxShadow = shouldExit ? 'none' : 'inset 0px 0px 0px 1.5px #fafafa';
-    return { boxShadow }; 
-  }, [shouldExit]);
 
   return (
     <>
@@ -217,7 +213,7 @@ export default function Sidebar() {
           )}
         </div>
       )}
-      {wasDragged && <div className="TbdExitBubble" style={exitBubbleStyles}></div>}
+      {wasDragged && <div className={`TbdExitBubble ${exitBubbleHoveredClass}`}></div>}
     </>
   );
 }
