@@ -18,6 +18,8 @@ export default function Sidebar() {
   const [isDragging, setIsDragging] = useState(false);
   const [wasDragged, setWasDragged] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [shouldExit, setShouldExit] = useState(false);
+  const [isExited, setIsExited] = useState(false);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
   const bubbleRef = useRef(null);
   
@@ -62,9 +64,11 @@ export default function Sidebar() {
 
     // Snap to center of exit bubble if cursor is dragging logo bubble w/in a 40px radius
     if (point.getDistance(exitCenter) < 40) {
+      setShouldExit(true);
       return exitCenter.getOffset(new Point(BUBBLE_HEIGHT/2, BUBBLE_HEIGHT/2));
     }
 
+    setShouldExit(false);
     return null;
   }
 
@@ -80,7 +84,12 @@ export default function Sidebar() {
       // Normal click
       setIsOpen(!isOpen);
     }
-  }, [isOpen, wasDragged, anchorSidebar]);
+
+    if (shouldExit) {
+      setShouldExit(false);
+      setIsExited(true);
+    }
+  }, [isOpen, shouldExit, wasDragged, anchorSidebar]);
 
   const onClickPage = useCallback((e: MouseEvent) => {
     e.preventDefault();
@@ -179,31 +188,33 @@ export default function Sidebar() {
 
   return (
     <>
-      <div 
-        className="TbdSidebar"
-        style={sidebarStyles}
-      >
-        <div
-          className="TbdSidebar__LogoBubble"
-          onClick={onClickBubble}
-          onMouseDown={onDragStart}
-          ref={bubbleRef}
-          style={logoBubbleStyles}
+      {!isExited && (
+        <div 
+          className="TbdSidebar"
+          style={sidebarStyles}
         >
-        </div>
-        {isOpen && (
-          <div 
-            className={`TbdSidebar__MainContent ${contentPositionClass}`}
-            style={contentStyles}
+          <div
+            className="TbdSidebar__LogoBubble"
+            onClick={onClickBubble}
+            onMouseDown={onDragStart}
+            ref={bubbleRef}
+            style={logoBubbleStyles}
           >
-            <Tabs defaultActiveKey="1">
-              <Tabs.TabPane tab="comments" key="1">
-                
-              </Tabs.TabPane>
-            </Tabs>
           </div>
-        )}
-      </div>
+          {isOpen && (
+            <div 
+              className={`TbdSidebar__MainContent ${contentPositionClass}`}
+              style={contentStyles}
+            >
+              <Tabs defaultActiveKey="1">
+                <Tabs.TabPane tab="comments" key="1">
+                  
+                </Tabs.TabPane>
+              </Tabs>
+            </div>
+          )}
+        </div>
+      )}
       {wasDragged && (
         <div className="TbdExitBubble"></div>
       )}
