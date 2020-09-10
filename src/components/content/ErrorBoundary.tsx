@@ -3,8 +3,8 @@ import React from 'react';
 interface ErrorBoundaryProps {}
 interface ErrorBoundaryState {
   hasError: boolean;
-  error: Error;
-  info: React.ErrorInfo;
+  error: Error | null;
+  info: React.ErrorInfo | null;
 }
 
 export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -30,8 +30,8 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
       return (
         <div>
           <h1>Oops, something went wrong :(</h1>
-          <p>The error: {this.state.error.toString()}</p>
-          <p>Where it occured: {this.state.info.componentStack}</p>
+          <p>The error: {this.state.error?.toString()}</p>
+          <p>Where it occured: {this.state.info?.componentStack}</p>
         </div>
       );
     }
