@@ -4,11 +4,11 @@ $sidebar-margin: 15px;
 $accent-color: #0d77e2;
 $background-color: #fafafa;
 
-$triangle-height: 22px;
-$triangle-base: 40px;
+$_triangle-height: 22px;
+$_triangle-base: 40px;
 
-$exit-bubble-border-small: 5px;
-$exit-bubble-border-big: 15px;
+$_exit-bubble-border-small: 5px;
+$_exit-bubble-border-big: 15px;
 
 .TbdSidebar {
   height: auto;
@@ -29,7 +29,7 @@ $exit-bubble-border-big: 15px;
 .TbdSidebar__LogoBubble {
   height: $bubble-width;
   width: $bubble-width;
-  background-image: url('../../../../public/images/logo.png');
+   background-image: url('../../../../public/images/logo.png');
   background-size: contain;
   border-radius: $bubble-width/2;
   cursor: pointer;
@@ -56,9 +56,9 @@ $exit-bubble-border-big: 15px;
   top: -2.5px;
   content: '';
   filter: drop-shadow(0px 0px 1.5px rgba(125,125,125,0.4));
-  border-top: $triangle-height solid $background-color;
-  border-left: $triangle-base/2 solid transparent;
-  border-right: $triangle-base/2 solid transparent;
+  border-top: $_triangle-height solid $background-color;
+  border-left: $_triangle-base/2 solid transparent;
+  border-right: $_triangle-base/2 solid transparent;
   z-index: -1;
 }
 
@@ -105,9 +105,9 @@ $exit-bubble-border-big: 15px;
   background-color: rgba(0,0,0,0.8);
   z-index: -1;
   position: fixed;
-  border: $exit-bubble-border-small solid rgba(0,0,0,0.8);
-  left: calc(50% - #{($bubble-width + $exit-bubble-border-small*2)/2});
-  bottom: calc(10% - #{($bubble-width + $exit-bubble-border-small*2)/2});
+  border: $_exit-bubble-border-small solid rgba(0,0,0,0.8);
+  left: calc(50% - #{($bubble-width + $_exit-bubble-border-small*2)/2});
+  bottom: calc(10% - #{($bubble-width + $_exit-bubble-border-small*2)/2});
   background-image: url('../../../../public/images/exit.svg');
   background-position: center;
   background-repeat: no-repeat;
@@ -121,7 +121,7 @@ $exit-bubble-border-big: 15px;
 
 .TbdExitBubble--hovered {
   box-shadow: none;
-  border-width: $exit-bubble-border-big;
-  left: calc(50% - #{($bubble-width + $exit-bubble-border-big*2)/2});
-  bottom: calc(10% - #{($bubble-width + $exit-bubble-border-big*2)/2});
+  border-width: $_exit-bubble-border-big;
+  left: calc(50% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
+  bottom: calc(10% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
 }
