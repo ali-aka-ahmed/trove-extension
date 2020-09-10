@@ -18,38 +18,51 @@ module.exports = {
         use: 'ts-loader'
       },
       {
-        exclude: path.resolve(__dirname, 'node_modules'),
-        test: /\.inject\.scss$/,
-        use: [
-          'to-string-loader', // Back to string
-          'css-loader',       // Translates CSS into CommonJS
-          'sass-loader'       // Compiles Sass to CSS
-        ]
-      },
-      {
-        exclude: path.resolve(__dirname, 'node_modules'),
+        exclude: /node_modules/,
         test: /\.scss$/,
-        use: [
-          'style-loader', // Common JS to DOM node
-          'css-loader',   // Translates CSS into CommonJS
-          'sass-loader'   // Compiles Sass to CSS
+        oneOf: [
+          {
+            resourceQuery: /inject/,
+            use: [
+              'to-string-loader', // Back to string
+              'css-loader',       // Translates CSS into CommonJS
+              'sass-loader'       // Compiles Sass to CSS
+            ]
+          }, 
+          {
+            use: [
+              'style-loader', // Common JS to DOM node
+              'css-loader',   // Translates CSS into CommonJS
+              'sass-loader'   // Compiles Sass to CSS
+            ]    
+          }
         ]
       },
       {
         test: /\.css$/,
-        use: [
-          'style-loader', // Common JS to DOM node
-          'css-loader',   // Translates CSS into CommonJS
+        oneOf: [
+          {
+            resourceQuery: /inject/,
+            use: [
+              'to-string-loader', // Back to string
+              'css-loader',       // Translates CSS into CommonJS
+            ]
+          }, 
+          {
+            use: [
+              'style-loader', // Common JS to DOM node
+              'css-loader',   // Translates CSS into CommonJS
+            ]    
+          }
         ]
       },
       {
-        exclude: /node_modules/,
         test: /\.(png|svg|jpg|gif)$/i,
         use: [
           {
             loader: 'url-loader',
             options: {
-              limit: 1000, // in bytes
+              limit: 5000, // in bytes
               name: '[name].[ext]'
             }
           }

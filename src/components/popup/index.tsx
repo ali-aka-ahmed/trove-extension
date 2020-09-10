@@ -1,8 +1,10 @@
 import { Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect } from 'react';
+import '../tabs.scss';
 import './index.scss';
-import './tabs.scss';
+import Notifications from './notifications';
+import Profile from './profile';
 
 export default function Popup() {
   useEffect(() => {
@@ -14,10 +16,10 @@ export default function Popup() {
     <div className='TbdPopupContainer'>
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="notifications" key="1">
-          hello world!
+          <Notifications />
         </Tabs.TabPane>
         <Tabs.TabPane tab="profile" key="2">
-          hello world!
+          <Profile />
         </Tabs.TabPane>
       </Tabs>
     </div>
