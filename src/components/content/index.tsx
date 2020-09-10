@@ -1,9 +1,9 @@
 import antdStyles from 'antd/dist/antd.min.css?inject';
 import React from 'react';
-import tabStyles from '../popup/tabs.scss?inject';
+import tabStyles from '../styles/tabs.scss?inject';
 import ErrorBoundary from './ErrorBoundary';
 import './index.scss';
-import Sidebar from './sidebar';
+import Sidebar from './Sidebar';
 import bubbleStyles from './sidebar/bubble/index.scss?inject';
 import sidebarStyles from './sidebar/index.scss?inject';
 
