@@ -105,25 +105,23 @@ $exit-bubble-border-big: 15px;
   background-color: rgba(0,0,0,0.8);
   z-index: -1;
   position: fixed;
+  border: $exit-bubble-border-small solid rgba(0,0,0,0.8);
   left: calc(50% - #{($bubble-width + $exit-bubble-border-small*2)/2});
   bottom: calc(10% - #{($bubble-width + $exit-bubble-border-small*2)/2});
   background-image: url('../../../../public/images/exit.svg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 30px 30px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: rgba(0,0,0,0.8);
   box-shadow: inset 0px 0px 0px 1.5px #fafafa;
   box-sizing: content-box;
   -webkit-background-clip: padding-box; /* for Safari */
   background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
-  transition: all 0.12s ease-out;
+  transition: all 0.15s linear;
 }
 
 .TbdExitBubble--hovered {
   box-shadow: none;
-  border-width: 15px;
+  border-width: $exit-bubble-border-big;
   left: calc(50% - #{($bubble-width + $exit-bubble-border-big*2)/2});
   bottom: calc(10% - #{($bubble-width + $exit-bubble-border-big*2)/2});
 }
