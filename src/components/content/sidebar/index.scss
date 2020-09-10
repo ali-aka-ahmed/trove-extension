@@ -1,9 +1,14 @@
 $bubble-width: 55px;
 $content-width: 250px;
 $sidebar-margin: 15px;
-$exit-bubble-width: $bubble-width + 10px;
 $accent-color: #0d77e2;
 $background-color: #fafafa;
+
+$triangle-height: 22px;
+$triangle-base: 40px;
+
+$exit-bubble-border-small: 5px;
+$exit-bubble-border-big: 15px;
 
 .TbdSidebar {
   height: auto;
@@ -45,9 +50,6 @@ $background-color: #fafafa;
   position: relative;
   z-index: -2;
 }
-
-$triangle-height: 22px;
-$triangle-base: 40px;
 
 .TbdSidebar__MainContent:before {
   position: absolute;
@@ -97,20 +99,31 @@ $triangle-base: 40px;
 }
 
 .TbdExitBubble {
-  height: $exit-bubble-width;
-  width: $exit-bubble-width;
-  border-radius: $exit-bubble-width/2;
+  height: $bubble-width;
+  width: $bubble-width;
+  border-radius: 50%;
   background-color: rgba(0,0,0,0.8);
   z-index: -1;
   position: fixed;
-  left: calc(50% - #{$exit-bubble-width/2});
-  bottom: 10%;
+  left: calc(50% - #{($bubble-width + $exit-bubble-border-small*2)/2});
+  bottom: calc(10% - #{($bubble-width + $exit-bubble-border-small*2)/2});
   background-image: url('../../../../public/images/exit.svg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 30px 30px;
-  border: 5px solid rgba(0,0,0,0.8);
-  box-sizing: border-box;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(0,0,0,0.8);
+  box-shadow: inset 0px 0px 0px 1.5px #fafafa;
+  box-sizing: content-box;
   -webkit-background-clip: padding-box; /* for Safari */
   background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
+  transition: all 0.12s ease-out;
+}
+
+.TbdExitBubble--hovered {
+  box-shadow: none;
+  border-width: 15px;
+  left: calc(50% - #{($bubble-width + $exit-bubble-border-big*2)/2});
+  bottom: calc(10% - #{($bubble-width + $exit-bubble-border-big*2)/2});
 }
