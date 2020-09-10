@@ -1,5 +1,4 @@
-import IPost from '../models/Post';
-import IUser from '../models/User';
+import { Post as IPost, User as IUser } from '../models';
 
 export const users: IUser[] = [
   {
@@ -45,6 +44,8 @@ export const posts: IPost[] = [
       id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
       displayName: 'Ali Ahmed',
       username: 'ali',
+      normalizedUsername: 'ali',
+      creationDatetime: 1599521094670,
       color: '#52B2FA'
     },
     creatorUserId: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
