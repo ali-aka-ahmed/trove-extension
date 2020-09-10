@@ -1,95 +1,223 @@
-import React, { useState } from 'react';
-import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
-import { users } from '../../../data';
-import { getScrollbarDx } from '../../../state/utils';
-import Bubble from './bubble';
+import { Tabs } from 'antd';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getScrollbarDx } from '../../../utils/measurements';
+import Edge from './Edge';
+import Point from './Point';
 
-export const SIDEBAR_WIDTH = 50;
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
-export const BUBBLE_HEIGHT = 50;
-export const BUBBLE_MARGIN = 7;
+export const BUBBLE_HEIGHT = 55;
+export const BUBBLE_MARGIN = 20;
+export const CONTENT_HEIGHT = 350;
+export const CONTENT_WIDTH = 250;
+export const EXIT_BUBBLE_WIDTH = 65;
 
 export default function Sidebar() {
-  const [position, setPosition] = useState({ x: SIDEBAR_MARGIN, y: SIDEBAR_MARGIN_Y });
-  const [isOpen, setIsOpen] = useState(true);
-  const [dragged, setDragged] = useState(false);
+  const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
+  const [offset, setOffset] = useState(new Point(0, 0));
+  const [isDragging, setIsDragging] = useState(false);
+  const [wasDragged, setWasDragged] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [shouldExit, setShouldExit] = useState(false);
+  const [isExited, setIsExited] = useState(false);
+  const [closestEdge, setClosestEdge] = useState(Edge.Left);
+  const bubbleRef = useRef(null);
+  
+  const getSidebarHeight = useCallback(() => {
+    return isOpen ? BUBBLE_HEIGHT + BUBBLE_MARGIN + CONTENT_HEIGHT : BUBBLE_HEIGHT;
+  }, [isOpen]);
 
-  // Get list of bubbles from dummy data
-  const bubbles = users.map((sd) => <Bubble key={sd.id} user={sd} visible={isOpen} />);
+  const getSidebarWidth = useCallback(() => {
+    return isOpen ? CONTENT_WIDTH : BUBBLE_HEIGHT;
+  }, [isOpen]);
 
-  function getHeight() {
-    if (bubbles.length === 0) return BUBBLE_HEIGHT;
-    return (bubbles.length + 1) * BUBBLE_HEIGHT + (bubbles.length) * BUBBLE_MARGIN;
-  }
-
-  function onClick(event: React.MouseEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!dragged) {
-      setIsOpen(true);
-    }
-
-    setDragged(false);
-  }
-
-  function onDragStart(event: DraggableEvent, data: DraggableData) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  function onDrag(event: DraggableEvent, data: DraggableData) {
-    event.preventDefault();
-    event.stopPropagation();
-    setDragged(true);
-    setIsOpen(false);
-  }
-
-  /**
-   * Return sidebar to closest edge of screen after being dragged.
-   * @param event   
-   * @param data 
-   */
-  function onDragStop(event: DraggableEvent, data: DraggableData) {
-    event.preventDefault();
-    event.stopPropagation();
-
+  const anchorSidebar = useCallback(() => {
     // Calc screen bounds
     const height = window.innerHeight || document.documentElement.clientHeight;
     const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
 
     // Calc distance to each edge
-    const leftDx = data.x - 0;
-    const rightDx = width - (data.x + SIDEBAR_WIDTH);
+    const leftDx = position.x - 0;
+    const rightDx = width - (position.x + getSidebarWidth());
 
     // Set new position on closest edge
     const minY = SIDEBAR_MARGIN;
-    const maxY = height - getHeight() - SIDEBAR_MARGIN;
-    const newY = Math.min(Math.max(minY, data.y), maxY);
+    const maxY = height - getSidebarHeight() - SIDEBAR_MARGIN;
+    const newY = Math.min(Math.max(minY, position.y), maxY);
     if (leftDx < rightDx) {
-      setPosition({ x: SIDEBAR_MARGIN, y: newY });
-    } else {
-      const newX = width - SIDEBAR_WIDTH - SIDEBAR_MARGIN;
-      setPosition({ x: newX, y: newY });
+      setPosition(new Point(SIDEBAR_MARGIN, newY));
+      setClosestEdge(Edge.Left);
+    } else { 
+      const newX = width - BUBBLE_HEIGHT - SIDEBAR_MARGIN;
+      setPosition(new Point(newX, newY));
+      setClosestEdge(Edge.Right);
     }
-  };
+  }, [position, getSidebarWidth, getSidebarHeight]);
+
+  const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
+    const point = Point.fromEvent(e)
+    
+    // Get exit bubble point
+    const height = window.innerHeight || document.documentElement.clientHeight;
+    const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
+    const exitCenter = new Point(width/2, height * 0.9 - EXIT_BUBBLE_WIDTH/2);
+
+    // Snap to center of exit bubble if cursor is dragging logo bubble w/in a 40px radius
+    if (point.getDistance(exitCenter) < 40) {
+      setShouldExit(true);
+      return exitCenter.getOffset(new Point(BUBBLE_HEIGHT/2, BUBBLE_HEIGHT/2));
+    }
+
+    setShouldExit(false);
+    return null;
+  }
+
+  const onClickBubble = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.info('clickbubble')
+
+    if (wasDragged) {
+      // Click event firing after drag
+      setWasDragged(false);
+    } else {
+      // Normal click
+      setIsOpen(!isOpen);
+    }
+
+    if (shouldExit) {
+      setShouldExit(false);
+      setIsExited(true);
+    }
+  }, [isOpen, shouldExit, wasDragged, anchorSidebar]);
+
+  const onClickPage = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.info('clickpage')
+
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true
+    });
+    (bubbleRef.current! as HTMLElement).dispatchEvent(event);
+  }, [bubbleRef]);
+
+  const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.info('ondragstart')
+
+    setOffset(Point.fromEvent(e).getOffset(position));
+    setIsDragging(true);
+  }, [position]);
+
+  const onDrag = useCallback((e: MouseEvent | TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.info('ondrag')
+    
+    if (isDragging) {
+      setIsOpen(false);
+      setWasDragged(true);
+
+      // Snap to exit bubble if applicable
+      setPosition(snapToExitBubble(e) || Point.fromEvent(e).getOffset(offset));
+    }
+  }, [isDragging, offset]);
+
+  const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.info('ondragend')
+    setIsDragging(false);
+
+    // onClick isn't called after a drag if mouseup is beyond bounds of window 
+    if (wasDragged) anchorSidebar();
+  }, [offset, wasDragged, anchorSidebar]);
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', onDrag);
+      document.addEventListener('mouseup', onDragEnd);
+    } else {
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('mouseup', onDragEnd);
+    }
+
+    return () => { 
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('mouseup', onDragEnd);
+    }
+  }, [isDragging, onDrag, onDragEnd]);
+
+  useEffect(() => {
+    if (wasDragged) {
+      document.addEventListener('click', onClickPage);
+    } else {
+      document.removeEventListener('click', onClickPage);
+    }
+
+    return () => { document.removeEventListener('click', onClickPage); }
+  }, [wasDragged, onClickPage]);
+
+  useEffect(() => {
+    anchorSidebar();
+  }, [isOpen])
+
+  // Determine class denoting position of sidebar components
+  const positionText = closestEdge === Edge.Left ? 'left' : 'right';
+  const contentPositionClass = `TbdSidebar__MainContent--position-${positionText}`;
+
+  const sidebarStyles = useMemo(() => ({
+    transform: `translate(${position.x}px, ${position.y}px)`,
+    transition: isDragging ? 'none' : 'transform 150ms'
+  }), [isDragging, position]);
+
+  const logoBubbleStyles = useMemo(() => ({
+    cursor: wasDragged ? 'move' : 'pointer',
+    marginBottom: `${isOpen ? BUBBLE_MARGIN : 0}px`
+  }), [isOpen, wasDragged]);
+
+  const contentStyles = useMemo(() => {
+    const transform = (closestEdge === Edge.Right && isOpen)
+      ? `translate(${-CONTENT_WIDTH + BUBBLE_HEIGHT}px, 0px)`
+      : 'translate(0px, 0px)';
+    return { transform }; 
+  }, [closestEdge, isOpen]);
+
+  const exitBubbleStyles = useMemo(() => {
+    const boxShadow = shouldExit ? 'none' : 'inset 0px 0px 0px 1.5px #fafafa';
+    return { boxShadow }; 
+  }, [shouldExit]);
 
   return (
-    <Draggable
-      handle='.TbdSidebar__Handle'
-      position={position}
-      onStart={onDragStart}
-      onDrag={onDrag}
-      onStop={onDragStop}
-    >
-      <div className='TbdSidebar'>
-        <div 
-          className='TbdSidebar__Handle TbdSidebar__LogoBubble'
-          onClick={(e) => onClick(e)}
-          style={{ marginBottom: isOpen ? `${BUBBLE_MARGIN}px` : '0' }}
-        ></div>
-        {bubbles}
-      </div>
-    </Draggable>
+    <>
+      {!isExited && (
+        <div className="TbdSidebar" style={sidebarStyles}>
+          <div
+            className="TbdSidebar__LogoBubble"
+            onClick={onClickBubble}
+            onMouseDown={onDragStart}
+            ref={bubbleRef}
+            style={logoBubbleStyles}
+          >
+          </div>
+          {isOpen && (
+            <div 
+              className={`TbdSidebar__MainContent ${contentPositionClass}`}
+              style={contentStyles}
+            >
+              <Tabs defaultActiveKey="1">
+                <Tabs.TabPane tab="comments" key="1">
+                  
+                </Tabs.TabPane>
+              </Tabs>
+            </div>
+          )}
+        </div>
+      )}
+      {wasDragged && <div className="TbdExitBubble" style={exitBubbleStyles}></div>}
+    </>
   );
 }
