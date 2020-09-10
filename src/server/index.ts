@@ -1,6 +1,4 @@
 import axios from 'axios';
-import { users } from '../data';
-import User from '../models/User';
 
 const api_inst = axios.create({
     baseURL: process.env.REACT_APP_BACKEND_URL,
@@ -10,10 +8,10 @@ const api_inst = axios.create({
 
 // export const rSignup = async () => {};
 
-export const rLogin = (): User => {
+export const rLogin = () => {
     // const responseData = await api_inst.post('/login', {username, password});
     // return responseData.data;
-    return users.find(user => user.username === 'ali')
+    // return users.find(user => user.username === 'ali')
 };
 
 export const rLogout = async () => {

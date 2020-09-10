@@ -1,5 +1,3 @@
-import userStore from '../objects/stores/UserStore';
-import { rLogin } from '../server';
 
 // Listen to messages sent from other parts of the extension.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -17,8 +15,6 @@ chrome.runtime.onStartup.addListener(async () => {
   console.log('onStartup')
   // Check if user token exists
   // If it does, then log the user in and fetch their details (auth = true)
-  const user = await rLogin()
-  userStore.update(user)
   // If not, then show signup page (auth = false)
 })
 
@@ -27,9 +23,5 @@ chrome.runtime.onInstalled.addListener(() => {
   console.log('onInstalled')
   // Check if user token exists
   // If it does, then log the user in and fetch their details (auth = true)
-  const user = rLogin()
-  console.log('user', user)
-  userStore.update(user)
-  console.log('userStore', userStore)
   // If not, then show signup page (auth = false)
 })
