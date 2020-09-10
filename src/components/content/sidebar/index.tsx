@@ -186,13 +186,15 @@ export default function Sidebar() {
     return { transform }; 
   }, [closestEdge, isOpen]);
 
+  const exitBubbleStyles = useMemo(() => {
+    const boxShadow = shouldExit ? 'none' : 'inset 0px 0px 0px 1.5px #fafafa';
+    return { boxShadow }; 
+  }, [shouldExit]);
+
   return (
     <>
       {!isExited && (
-        <div 
-          className="TbdSidebar"
-          style={sidebarStyles}
-        >
+        <div className="TbdSidebar" style={sidebarStyles}>
           <div
             className="TbdSidebar__LogoBubble"
             onClick={onClickBubble}
@@ -215,9 +217,7 @@ export default function Sidebar() {
           )}
         </div>
       )}
-      {wasDragged && (
-        <div className="TbdExitBubble"></div>
-      )}
+      {wasDragged && <div className="TbdExitBubble" style={exitBubbleStyles}></div>}
     </>
   );
 }
