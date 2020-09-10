@@ -1,5 +1,5 @@
-import IPost from '../state/models/Post';
-import IUser from '../state/models/User';
+import IPost from '../models/Post';
+import IUser from '../models/User';
 
 export const users: IUser[] = [
   {
