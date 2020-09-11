@@ -1,6 +1,6 @@
 import antdStyles from 'antd/dist/antd.min.css?inject';
 import React from 'react';
-import tabStyles from '../styles/tabs.scss?inject';
+import tabStyles from '../../styles/tabs.scss?inject';
 import ErrorBoundary from './ErrorBoundary';
 import './index.scss';
 import Sidebar from './Sidebar';
