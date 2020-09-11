@@ -19,6 +19,7 @@ export interface CS {
  * Sample usage:
  * ```
  * localGet('key').then(items => items.key);
+ * localGet(['key1', 'key2']).then(items => items.key);
  * localGet({ key: 'hello' }).then(items => items.key);
  * localGet(null).then(allItems => allItems.someKey);
  * ```

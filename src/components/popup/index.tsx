@@ -44,7 +44,11 @@ function Popup() {
             ))}
           </div>
           <div className="TbdPopupContainer__OnOffWrapper">
-            <Switch checkedChildren="On" unCheckedChildren="Off" defaultChecked />      
+            <div className="TbdPopupContainer__OnOffTextWrapper">
+              <div>Turn Accord</div>
+              <div className="TbdPopupContainer__OnOff">{true ? 'OFF' : 'ON'}</div>
+            </div>
+            <Switch defaultChecked />      
           </div>
         </Tabs.TabPane>
         <Tabs.TabPane tab="profile" key="2">
@@ -52,7 +56,11 @@ function Popup() {
             {user && <Profile user={user} />}
           </div>
           <div className="TbdPopupContainer__OnOffWrapper">
-            <Switch checkedChildren="On" unCheckedChildren="Off" defaultChecked />
+            <div className="TbdPopupContainer__OnOffTextWrapper">
+              <div>Turn Accord</div>
+              <div className="TbdPopupContainer__OnOff">{true ? 'OFF' : 'ON'}</div>
+            </div>
+            <Switch defaultChecked />      
           </div>
         </Tabs.TabPane>
       </Tabs>
