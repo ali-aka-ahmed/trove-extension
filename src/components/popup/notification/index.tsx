@@ -41,13 +41,12 @@ const Notification = ({ notification }: NotificationProps) => {
         <div 
           className="TbdProfile__Img"
           style={{ backgroundColor: notification.sender.color }}
-        />
+        >
+          {notification.sender.displayName[0]}
+        </div>
         <div className="TbdNotificationContainer__HeaderContentWrapper">
           <div className="TbdNotificationContainer__Notification">
-            <span 
-              style={{color: notification.sender.color}}
-              className="TbdNotificationContainer__DisplayName"
-            >
+            <span className="TbdNotificationContainer__DisplayName">
               {`${notification.sender.displayName} `}
             </span>
             {notification.action}
