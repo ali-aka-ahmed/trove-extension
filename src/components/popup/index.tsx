@@ -1,4 +1,4 @@
-import { Tabs } from 'antd';
+import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
 import { Notification as INotification, User as IUser } from '../../models';
@@ -43,10 +43,16 @@ function Popup() {
               <Notification key={n.id} notification={n} />
             ))}
           </div>
+          <div className="TbdPopupContainer__OnOffWrapper">
+            <Switch checkedChildren="On" unCheckedChildren="Off" defaultChecked />      
+          </div>
         </Tabs.TabPane>
         <Tabs.TabPane tab="profile" key="2">
           <div className="TbdPopupContainer__TabWrapper">
             {user && <Profile user={user} />}
+          </div>
+          <div className="TbdPopupContainer__OnOffWrapper">
+            <Switch checkedChildren="On" unCheckedChildren="Off" defaultChecked />
           </div>
         </Tabs.TabPane>
       </Tabs>
