@@ -24,7 +24,7 @@ export default function Bubble(props: BubbleProps) {
         // marginBottom: props.visible ? `${BUBBLE_MARGIN}px` : '0'
       }}
     >
-      <p className='TbdSidebar__Bubble__DisplayChar'>{name()}</p>
+      <p className="TbdSidebar__Bubble__DisplayChar">{name()}</p>
     </div>
   );
 }
