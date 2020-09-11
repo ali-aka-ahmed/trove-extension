@@ -1,3 +1,5 @@
+@import '../../../styles/general.scss';
+
 // Profile tab
 .TbdProfile__Wrapper {
   width: 100%;
@@ -12,16 +14,6 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-}
-
-.TbdProfile__Img {
-  border-radius: 100px;
-  min-height: 50px;
-  min-width: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  @include TbdFont--Large; 
 }
 
 .TbdProfile__HeaderContent {
@@ -41,7 +33,7 @@
   border-radius: 10px;
   cursor: pointer;
   transition: 150ms;
-  @include TbdFont--Medium
+  @include TbdFont--medium
 }
 
 .TbdProfile__DisplayName:hover {
