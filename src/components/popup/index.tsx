@@ -15,23 +15,23 @@ function Popup() {
    * Fetch current User.
    */
   useEffect(() => {
-    const fetchUser = async (): Promise<void> => {
+    const getUser = async (): Promise<void> => {
       // fetch from globalStore, which is chrome storage. re-render when that changes (in dependency list)
       const user = userData.find(user => user.username === 'ali')!
       setUser(user)
     }
-    fetchUser();
+    getUser();
   }, [])
 
   /**
    * Establish socket to receive notifications.
    */
   useEffect(() => {
-    const fetchNotifications = async (): Promise<void> => {
+    const getNotifications = async (): Promise<void> => {
       const n = notificationData[0]
       setNotifications([n, n, n, n, n, n, n, n, n, n, n])
     }
-    fetchNotifications();
+    getNotifications();
   }, [])
 
   return (
