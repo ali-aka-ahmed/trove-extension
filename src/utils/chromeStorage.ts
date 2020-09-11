@@ -19,7 +19,6 @@ export interface CS {
  * Sample usage:
  * ```
  * localGet('key').then(items => items.key);
- * localGet(['key1', 'key2']).then(items => items.key);
  * localGet({ key: 'hello' }).then(items => items.key);
  * localGet(null).then(allItems => allItems.someKey);
  * ```
@@ -96,12 +95,18 @@ export function localClear(): Promise<void> {
   });
 }
 
-// Not sure if we need this/if it works, will test 
-export function addListener() {
+/**
+ * Listener for chrome.storage. Whenever anything changes in storage, this event fires.
+ */
+export function addListener(): Promise<{ 
+  changes: { [key: string]: chrome.storage.StorageChange; }, 
+  areaName: string 
+}> {
   return new Promise((resolve, reject) => {
     chrome.storage.onChanged.addListener((changes, areaName) => {
       const err = chrome.runtime.lastError;
       if (err) {
+        console.error(`Failed to retrieve change to chrome.storage.local. Error: ${err.message}`);
         reject(err);
       } else {
         resolve({changes, areaName}); 
