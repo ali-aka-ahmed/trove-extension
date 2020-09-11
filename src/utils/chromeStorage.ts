@@ -8,22 +8,22 @@ import Point from '../components/content/sidebar/Point';
  * 
  * Sample usage:
  * ```
- * csGet('key').then(items => items.key);
- * csGet({ key: 'hello' }).then(items => items.key);
- * csGet(null).then(allItems => allItems.someKey);
+ * localGet('key').then(items => items.key);
+ * localGet({ key: 'hello' }).then(items => items.key);
+ * localGet(null).then(allItems => allItems.someKey);
  * ```
  * 
  * @param key
  */
-export function csGet(key: null): Promise<CS>;
-export function csGet<K extends keyof CS>(key: K | K[]): Promise<{[key in K]: CS[key]}>;
-export function csGet<J extends K, K extends keyof CS>(key: {[k in K]: CS[k]}): Promise<{[j in J]: CS[j]}>;
-export function csGet<K extends keyof CS>(key: K | K[] | {[k in K]: CS[k]}) {
+export function localGet(key: null): Promise<CS>;
+export function localGet<K extends keyof CS>(key: K | K[]): Promise<{[key in K]: CS[key]}>;
+export function localGet<J extends K, K extends keyof CS>(key: {[k in K]: CS[k]}): Promise<{[j in J]: CS[j]}>;
+export function localGet<K extends keyof CS>(key: K | K[] | {[k in K]: CS[k]}) {
   return new Promise((resolve, reject) => {
     chrome.storage.local.get(key, (items) => {
       const err = chrome.runtime.lastError;
       if (err) {
-        console.error(err.message);
+        console.error(`Failed to get ${key} from chrome.storage.local. Error: ${err.message}`);
         reject(err.message);
       } else {
         resolve(items);
@@ -33,28 +33,56 @@ export function csGet<K extends keyof CS>(key: K | K[] | {[k in K]: CS[k]}) {
 }
 
 /**
- * Write given key-value pair to local storage. Returns whether or not write
- * was successful. Any thrown errors are suppressed and redirected to console.
- * @param key 
- * @param val 
+ * Set given key-value pairs in chrome.storage.local.
+ * @param items
  */
-export function csWrite<K extends keyof CS>(key: K, val: CS[K]): boolean {
-  try {
-    localStorage.setItem(key, JSON.stringify(val));
-    return true;
-  } catch(err) {
-    console.error(`Failed to write ${key} to local storage. Error: ${err}`);
-    return false;
-  }
+export function localSet<K extends keyof CS>(items: {[k in K]: CS[k]}): Promise<void> {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.set(items, () => {
+      const err = chrome.runtime.lastError;
+      if (err) {
+        console.error(`Failed to set ${items} to chrome.storage.local. Error: ${err.message}`);
+        reject(err.message);
+      } else {
+        resolve();
+      }
+    });
+  });
 }
 
 /**
- * Remove key-value pair with given key from local storage.
- * @param key 
+ * Remove given key or list of keys from chrome.storage.local.
+ * @param keys
  */
-export function csDelete<K extends keyof CS>(keys: K | K[]): void {
-  const keyList = toArray(keys);
-  for (const key of keyList) localStorage.removeItem(key);
+export function localRemove<K extends keyof CS>(keys: K | K[]): Promise<void> {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.remove(keys, () => {
+      const err = chrome.runtime.lastError;
+      if (err) {
+        console.error(`Failed to remove ${keys} from chrome.storage.local. Error: ${err.message}`);
+        reject(err.message);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+/**
+ * Clear chrome.storage.local.
+ */
+export function localClear(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.clear(() => {
+      const err = chrome.runtime.lastError;
+      if (err) {
+        console.error(`Failed to clear chrome.storage.local. Error: ${err.message}`);
+        reject(err.message);
+      } else {
+        resolve();
+      }
+    });
+  });
 }
 
 /**
