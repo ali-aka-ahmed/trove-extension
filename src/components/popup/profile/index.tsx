@@ -1,7 +1,8 @@
 import { EditOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { User } from '../../../models';
-import './index.scss';
+import '../style.scss';
+import './style.scss';
 
 interface ProfileProps {
   user: User;

@@ -1,11 +1,13 @@
-import { User } from '.';
+import { TaggedUser, User } from '.';
 
 export default interface Notification {
   id: string;
-  postId: string;
-  receiverId: string;
-  senders: User[]; // id, displayName, username, color (no normalizedUsername, creationDatetime)
   action: string;
   creationDatetime: number;
+  postId: string;
+  receiverId: string;
+  sender: User;
   url: string;
+  content?: string;
+  taggedUsers?: TaggedUser[];
 };

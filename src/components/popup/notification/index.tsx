@@ -1,64 +1,64 @@
 import React from 'react';
-// import INotification from '../../../state/stores/objects/Notification';
+import { Notification as INotification } from '../../../models';
+import { displayRelativeTime } from '../../../utils';
 import './style.scss';
+import '../style.scss';
 
 interface NotificationProps {
-  notification: any
-  // notification: INotification
+  notification: INotification
 }
 
 const Notification = ({ notification }: NotificationProps) => {
   
   const renderContent = (content: string) => {
-    let displayContent: any[] = [];
-    let prevStopIndex = 0;
-    let findingTag = false;
-    for (let i=0; i<content.length; i++) {
-      if (!findingTag && content[i] !== '@') continue
-      else if (!findingTag && content[i] === '@') {
-        findingTag = true
-        displayContent.push(<div>{content.substring(prevStopIndex, i)}</div>)
-        prevStopIndex = i
-      } else if (findingTag && i - prevStopIndex >= 3) {
-        const potentialUsername = content.substring(prevStopIndex, i)
-        const user = notification.taggedUsers.find(user => user.username === potentialUsername)
-        if (!user) continue
-        else {
-          findingTag = false
-          displayContent.push(<div>{content.substring(prevStopIndex, i)}</div>)
-          prevStopIndex = i
-        }
-      }
+    const regex = new RegExp(`(${notification.taggedUsers?.map(user => `@${user.username}`).join('|')})`);
+    const tokenizedContent = content.split(regex).filter(str => !!str);
+    const isUsername = (str: string) => { return str[0] === '@' };
+    const getColor = (tag: string) => { 
+      return notification.taggedUsers?.find(user => user.username === tag.slice(1))?.color; 
     }
-    displayContent.push(<div>{content.substring(prevStopIndex, content.length)}</div>)
-    // div issue here unique key
-    return <div>{ displayContent.map(div => div) }</div>
+    return (
+      <div>
+        {tokenizedContent.map(subString => 
+          <span 
+            key={subString}
+            className={isUsername(subString)
+              ? 'TbdNotificationContent--Username' 
+              : 'TbdNotificationContent--Normal'
+            }
+            style={isUsername(subString) ? { color: getColor(subString) } : {}}
+          >
+            {subString}
+          </span>
+        )}
+      </div>
+    )
   }
  
 	return (
     <div className='TbdNotificationContainer'>
-      <div className='TbdNotificationContainer__header-wrapper'>
+      <div className='TbdNotificationContainer__HeaderWrapper'>
         <div 
-          className='TbdPopupContainer__profile-img'
-          style={{backgroundColor: notification.creator.color}}
+          className='TbdProfile__Img'
+          style={{ backgroundColor: notification.sender.color }}
         />
-        <div className='TbdNotificationContainer__header-content-wrapper'>
-          <div className='TbdNotificationContainer__notification'>
+        <div className='TbdNotificationContainer__HeaderContentWrapper'>
+          <div className='TbdNotificationContainer__Notification'>
             <span 
-              style={{color: notification.creator.color}}
-              className='TbdText--medium TbdNotificationContainer__display-name'
+              style={{color: notification.sender.color}}
+              className='TbdNotificationContainer__DisplayName'
             >
-              {`${notification.creator.displayName} `}
+              {`${notification.sender.displayName} `}
             </span>
             {notification.action}
           </div>
-          <div className='TbdNotificationContainer__notification-details'>
-            {`${notification.time} · ${notification.url}`}
+          <div className='TbdNotificationContainer__NotificationDetails'>
+            {`${displayRelativeTime(notification.creationDatetime)} · ${notification.url}`}
           </div>
         </div>
       </div>
-      <div className='TbdNotificationContainer__content'>
-        { renderContent(notification.content) }
+      <div className='TbdNotificationContainer__Content'>
+        {notification.content && renderContent(notification.content)}
       </div>
     </div>
 	)

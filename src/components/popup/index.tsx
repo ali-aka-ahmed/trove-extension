@@ -1,30 +1,37 @@
 import { Tabs } from 'antd';
+import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
 import { Notification as INotification, User as IUser } from '../../models';
-import { users } from '../../utils/data';
+import { notifications as notificationData, users as userData } from '../../utils/data';
 import Notification from './Notification';
 import Profile from './Profile';
 import './style.scss';
-import './tabs.scss';
 
 function Popup() {
   const [user, setUser] = useState<IUser | null>(null)
   const [notifications, setNotifications] = useState<INotification[]>([])
 
+  /**
+   * Fetch current User.
+   */
   useEffect(() => {
     const fetchUser = async (): Promise<void> => {
       // fetch from globalStore, which is chrome storage. re-render when that changes (in dependency list)
-      const user = users.find(user => user.username === 'ali')!
+      const user = userData.find(user => user.username === 'ali')!
       setUser(user)
     }
-    fetchUser()
+    fetchUser();
   }, [])
 
+  /**
+   * Establish socket to receive notifications.
+   */
   useEffect(() => {
     const fetchNotifications = async (): Promise<void> => {
-      setNotifications([])
+      const n = notificationData[0]
+      setNotifications([n, n, n, n, n, n, n, n, n, n, n])
     }
-    fetchNotifications()
+    fetchNotifications();
   }, [])
 
   return (

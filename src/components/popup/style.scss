@@ -1,14 +1,26 @@
-$primary-color: darkblue;
+@import '../../styles/tabs.scss';
+@import '../../styles/general.scss';
 
 body {
   background-color: #fafafa;
   margin: 0px;
 }
 
+// Shared
+.TbdProfile__Img {
+  border-radius: 100px;
+  min-height: 50px;
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include TbdFont--large; 
+}
+
 // Popup
 .TbdPopupContainer {
   border: none;
-  color: $primary-color;
+  color: black;
   width: 350px;
   max-height: 300px;
 }
