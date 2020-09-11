@@ -39,6 +39,7 @@ export default function Profile({ user }: ProfileProps) {
             onClick={() => {}}
             onMouseEnter={() => { setShowEdit('username') }} 
             onMouseLeave={() => { setShowEdit(null) }}
+            style={{ color: user.color }}
             className="TbdProfile__Username"
           >
             {`@${user.username}`}

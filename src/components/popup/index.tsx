@@ -38,12 +38,16 @@ function Popup() {
     <div className="TbdPopupContainer">
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="notifications" key="1">
-          {notifications.map(n => (
-            <Notification key={n.id} notification={n} />
-          ))}
+          <div className="TbdPopupContainer__TabWrapper">
+            {notifications.map(n => (
+              <Notification key={n.id} notification={n} />
+            ))}
+          </div>
         </Tabs.TabPane>
         <Tabs.TabPane tab="profile" key="2">
-          {user && <Profile user={user} />}
+          <div className="TbdPopupContainer__TabWrapper">
+            {user && <Profile user={user} />}
+          </div>
         </Tabs.TabPane>
       </Tabs>
     </div>
