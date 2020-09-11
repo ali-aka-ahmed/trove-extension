@@ -2,16 +2,16 @@
 
 // Tabs
 .ant-tabs-tab {
-  margin-right: 55px;
+  margin: 0 20px;
+}
+
+.ant-tabs-nav-wrap {
+  align-items: center;
+  justify-content: center;
 }
 
 .ant-tabs-nav {
   margin: 0 !important;
-}
-
-// First tab
-.ant-tabs-tab:first-child {
-  margin-left: 55px;
 }
 
 // Tab text
