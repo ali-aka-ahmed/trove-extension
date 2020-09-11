@@ -1,9 +1,14 @@
 $bubble-width: 55px;
 $content-width: 250px;
 $sidebar-margin: 15px;
-$exit-bubble-width: $bubble-width + 10px;
 $accent-color: #0d77e2;
 $background-color: #fafafa;
+
+$_triangle-height: 22px;
+$_triangle-base: 40px;
+
+$_exit-bubble-border-small: 5px;
+$_exit-bubble-border-big: 15px;
 
 .TbdSidebar {
   height: auto;
@@ -24,7 +29,7 @@ $background-color: #fafafa;
 .TbdSidebar__LogoBubble {
   height: $bubble-width;
   width: $bubble-width;
-  background-image: url('../../../../public/images/logo.png');
+   background-image: url('../../../../public/images/logo.png');
   background-size: contain;
   border-radius: $bubble-width/2;
   cursor: pointer;
@@ -46,17 +51,14 @@ $background-color: #fafafa;
   z-index: -2;
 }
 
-$triangle-height: 22px;
-$triangle-base: 40px;
-
 .TbdSidebar__MainContent:before {
   position: absolute;
   top: -2.5px;
   content: '';
   filter: drop-shadow(0px 0px 1.5px rgba(125,125,125,0.4));
-  border-top: $triangle-height solid $background-color;
-  border-left: $triangle-base/2 solid transparent;
-  border-right: $triangle-base/2 solid transparent;
+  border-top: $_triangle-height solid $background-color;
+  border-left: $_triangle-base/2 solid transparent;
+  border-right: $_triangle-base/2 solid transparent;
   z-index: -1;
 }
 
@@ -97,20 +99,29 @@ $triangle-base: 40px;
 }
 
 .TbdExitBubble {
-  height: $exit-bubble-width;
-  width: $exit-bubble-width;
-  border-radius: $exit-bubble-width/2;
+  height: $bubble-width;
+  width: $bubble-width;
+  border-radius: 50%;
   background-color: rgba(0,0,0,0.8);
   z-index: -1;
   position: fixed;
-  left: calc(50% - #{$exit-bubble-width/2});
-  bottom: 10%;
+  border: $_exit-bubble-border-small solid rgba(0,0,0,0.8);
+  left: calc(50% - #{($bubble-width + $_exit-bubble-border-small*2)/2});
+  bottom: calc(10% - #{($bubble-width + $_exit-bubble-border-small*2)/2});
   background-image: url('../../../../public/images/exit.svg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 30px 30px;
-  border: 5px solid rgba(0,0,0,0.8);
-  box-sizing: border-box;
+  box-shadow: inset 0px 0px 0px 1.5px #fafafa;
+  box-sizing: content-box;
   -webkit-background-clip: padding-box; /* for Safari */
   background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
+  transition: all 0.15s linear;
+}
+
+.TbdExitBubble--hovered {
+  box-shadow: none;
+  border-width: $_exit-bubble-border-big;
+  left: calc(50% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
+  bottom: calc(10% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
 }

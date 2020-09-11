@@ -1,6 +1,5 @@
 import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getScrollbarDx } from '../../../utils/measurements';
 import Edge from './Edge';
 import Point from './Point';
 
@@ -10,7 +9,7 @@ export const BUBBLE_HEIGHT = 55;
 export const BUBBLE_MARGIN = 20;
 export const CONTENT_HEIGHT = 350;
 export const CONTENT_WIDTH = 250;
-export const EXIT_BUBBLE_WIDTH = 65;
+export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
@@ -30,6 +29,41 @@ export default function Sidebar() {
   const getSidebarWidth = useCallback(() => {
     return isOpen ? CONTENT_WIDTH : BUBBLE_HEIGHT;
   }, [isOpen]);
+
+  /**
+   * Get width of vertical scrollbar.
+   * TODO: Can prob be faster, memoize per page.
+   */
+  const getScrollbarDx = () => {
+    const html = document.querySelector('html');
+    if (html) return window.innerWidth - html.offsetWidth;
+
+    // Check if scrollbar actually exists
+    const overflow = document.body.scrollHeight > document.body.clientHeight;
+    const computed = window.getComputedStyle(document.body, null);
+    const exists = computed.overflow === 'visible'
+      || computed.overflowY === 'visible'
+      || (computed.overflow === 'auto' && overflow)
+      || (computed.overflowY === 'auto' && overflow);
+    if (!exists) return 0;
+
+    // Fallback method: append hidden element, force scrollbar, and calc width
+    const scrollDiv = document.createElement('div');
+    const styles = {
+      width: '100px',
+      height: '100px',
+      overflow: 'scroll',
+      position: 'absolute',
+      top: '-9999px'
+    };
+    Object.assign(scrollDiv.style, styles);
+    document.body.appendChild(scrollDiv);
+
+    // Calc width and remove element
+    const scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+    document.body.removeChild(scrollDiv);
+    return scrollbarWidth;
+  }
 
   const anchorSidebar = useCallback(() => {
     // Calc screen bounds
@@ -60,7 +94,7 @@ export default function Sidebar() {
     // Get exit bubble point
     const height = window.innerHeight || document.documentElement.clientHeight;
     const width = (window.innerWidth - getScrollbarDx()) || document.documentElement.clientWidth;
-    const exitCenter = new Point(width/2, height * 0.9 - EXIT_BUBBLE_WIDTH/2);
+    const exitCenter = new Point(width/2, height * 0.9);
 
     // Snap to center of exit bubble if cursor is dragging logo bubble w/in a 40px radius
     if (point.getDistance(exitCenter) < 40) {
@@ -168,6 +202,7 @@ export default function Sidebar() {
   // Determine class denoting position of sidebar components
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
   const contentPositionClass = `TbdSidebar__MainContent--position-${positionText}`;
+  const exitBubbleHoveredClass = shouldExit ? 'TbdExitBubble--hovered' : '';
 
   const sidebarStyles = useMemo(() => ({
     transform: `translate(${position.x}px, ${position.y}px)`,
@@ -185,11 +220,6 @@ export default function Sidebar() {
       : 'translate(0px, 0px)';
     return { transform }; 
   }, [closestEdge, isOpen]);
-
-  const exitBubbleStyles = useMemo(() => {
-    const boxShadow = shouldExit ? 'none' : 'inset 0px 0px 0px 1.5px #fafafa';
-    return { boxShadow }; 
-  }, [shouldExit]);
 
   return (
     <>
@@ -217,7 +247,7 @@ export default function Sidebar() {
           )}
         </div>
       )}
-      {wasDragged && <div className="TbdExitBubble" style={exitBubbleStyles}></div>}
+      {wasDragged && <div className={`TbdExitBubble ${exitBubbleHoveredClass}`}></div>}
     </>
   );
 }
