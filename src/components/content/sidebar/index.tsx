@@ -120,7 +120,9 @@ export default function Sidebar() {
       setWasDragged(false);
     } else {
       // Normal click
-      setIsOpen(!isOpen);
+      const toggleIsOpen = !isOpen;
+      setIsOpen(toggleIsOpen);
+      localSet({ sidebarOpen: toggleIsOpen });
     }
 
     if (shouldExit) {
@@ -157,6 +159,7 @@ export default function Sidebar() {
     
     if (isDragging) {
       setIsOpen(false);
+      localSet({ sidebarOpen: false });
       setWasDragged(true);
 
       // Snap to exit bubble if applicable
@@ -181,8 +184,8 @@ export default function Sidebar() {
   ) => {
     if (message.type === 'onActivated') {
       localGet(['sidebarOpen', 'sidebarPosition']).then((items) => {
-        if (items.sidebarOpen !== undefined) setIsOpen(items.sidebarOpen);
         if (items.sidebarPosition !== undefined) setPosition(items.sidebarPosition);
+        if (items.sidebarOpen !== undefined) setIsOpen(items.sidebarOpen);
       });
     }
   }, []);
