@@ -1,17 +1,17 @@
 import seedrandom from 'alea';
 import React from 'react';
-import User from '../../../../models/User';
+import { User } from '../../../../models';
 
 export default function Bubble(props: BubbleProps) {
-  const bgColor = getPastelColor(props.user.name);
+  const bgColor = getPastelColor(props.user.displayName);
 
   const name = () => {
-    if (!props.user.name || props.user.name === '') return '';
-    return props.user.name.charAt(0);
+    if (!props.user.displayName || props.user.displayName === '') return '';
+    return props.user.displayName.charAt(0);
   }
 
   const handleClick = (e) => {
-    console.log("HELP")
+    console.log('HELP')
   }
 
   return (
@@ -35,7 +35,7 @@ function getPastelColor(seed: string): string {
 }
 
 interface BubbleProps {
-  key: number;
+  key: string;
   user: User;
   visible: boolean;
 }

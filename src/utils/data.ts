@@ -1,5 +1,4 @@
-import IPost from '../models/Post';
-import IUser from '../models/User';
+import { Notification as INotification, Post as IPost, User as IUser } from '../models';
 
 export const users: IUser[] = [
   {
@@ -8,7 +7,7 @@ export const users: IUser[] = [
     username: 'ali',
     normalizedUsername: 'ali', // lowercase version for search   
     creationDatetime: 1599520905274,
-    color: '#0D77E2',
+    color: '#52B2FA',
   },
   {
     id: '30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93', // needs to be unique
@@ -45,7 +44,9 @@ export const posts: IPost[] = [
       id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
       displayName: 'Ali Ahmed',
       username: 'ali',
-      color: '#0D77E2'
+      normalizedUsername: 'ali',
+      creationDatetime: 1599521094670,
+      color: '#52B2FA'
     },
     creatorUserId: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
     replies: [],
@@ -59,5 +60,33 @@ export const posts: IPost[] = [
       }
     ],
     url: 'https://github.com/airbnb/css#comments'
+  }
+];
+
+export const notifications: INotification[] = [
+  {
+    id: '1fe4be94-b0ac-4da5-8224-652993095c25',
+    postId: '4ff4be94-b0ac-4da5-9224-652993095c25',
+    receiverId: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
+    sender: {
+        id: '30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93',
+        displayName: 'Akshath Sivaprasad',
+        username: 'aki',
+        normalizedUsername: 'aki',
+        creationDatetime: 1599520968596,
+        color: '#9900EF',
+    },
+    action: 'mentioned you',
+    creationDatetime: 1599774135941,
+    url: 'https://github.com/airbnb/css#comments',
+    content: '@ali yo what is upith my homie g',
+    taggedUsers: [
+      {
+        id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
+        username: 'ali',
+        isTaggedInReply: false,
+        color: '#52B2FA'
+      }
+    ]
   }
 ];
