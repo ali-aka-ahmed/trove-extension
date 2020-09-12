@@ -2,7 +2,7 @@ import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
 import { Notification as INotification, User as IUser } from '../../models';
-import { localGet, localSet } from '../../utils/chromeStorage';
+import { get, set } from '../../utils/chromeStorage';
 import { notifications as notificationData } from '../../utils/data';
 import Notification from './Notification';
 import Profile from './Profile';
@@ -22,7 +22,7 @@ function Popup() {
   const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
-    localGet(null).then(items => {
+    get(null).then(items => {
       if (items['extensionOn']) setExtensionOn(items['extensionOn'])
       if (items['authenticated']) setAuthenticated(items['authenticated'])
       if (items['user']) setUser(items['user'])
@@ -58,7 +58,7 @@ function Popup() {
    * @param checked New global on/off value.
    */
   const handleOnOff = async (checked: boolean) => {
-    await localSet({ extensionOn: checked })
+    await set({ extensionOn: checked })
   }
 
   return (

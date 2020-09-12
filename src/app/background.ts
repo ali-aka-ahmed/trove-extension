@@ -1,4 +1,4 @@
-import { localSet } from '../utils/chromeStorage';
+import { set } from '../utils/chromeStorage';
 import { users } from '../utils/data';
 
 // Listen to messages sent from other parts of the extension.
@@ -16,7 +16,7 @@ chrome.runtime.onStartup.addListener(async () => {
 
   // If it does, then log the user in and fetch their details (auth = true)
   const userDetails = users.find(user => user.id === 'fce65bd0-8af5-4504-a19d-8cbc767693f7')!;
-  await localSet({ user: userDetails, authenticated: true });
+  await set({ user: userDetails, authenticated: true });
 
   // If not, then show signup page (auth = false)
 })
@@ -29,7 +29,12 @@ chrome.runtime.onInstalled.addListener(async () => {
 
   // If it does, then log the user in and fetch their details (auth = true)
   const userDetails = users.find(user => user.id === 'fce65bd0-8af5-4504-a19d-8cbc767693f7')!;
-  await localSet({ user: userDetails, authenticated: true });
+  await set({ user: userDetails, authenticated: true });
 
   // If not, then show signup page (auth = false)
 })
+
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  console.log(`Tab ${activeInfo.tabId} active.`);
+  chrome.tabs.sendMessage(activeInfo.tabId, { type: 'onActivated' });
+});

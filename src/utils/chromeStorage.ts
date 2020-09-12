@@ -12,6 +12,8 @@ export interface CS {
   sidebarPosition: Point;
 }
 
+type AreaName = 'local' | 'sync' | 'managed';
+
 /**
  * Get values corresponding to given keys from local storage. This method takes in a single key, 
  * a list of keys, or an object containing the keys mapped to their default values, and returns a
@@ -20,19 +22,19 @@ export interface CS {
  * 
  * Sample usage:
  * ```
- * localGet('key').then(items => items.key);
- * localGet({ key: 'hello' }).then(items => items.key);
- * localGet(null).then(allItems => allItems.someKey);
+ * get('key').then(items => items.key);
+ * get({ key: 'hello' }).then(items => items.key);
+ * get(null).then(allItems => allItems.someKey);
  * ```
  * 
  * @param key
  */
-export function localGet(key: null): Promise<CS>;
-export function localGet<K extends keyof CS>(key: K | K[]): Promise<{[key in K]: CS[key]}>;
-export function localGet<J extends K, K extends keyof CS>(key: {[k in K]: CS[k]}): Promise<{[j in J]: CS[j]}>;
-export function localGet<K extends keyof CS>(key: K | K[] | {[k in K]: CS[k]}) {
+export function get(key: null): Promise<CS>;
+export function get<K extends keyof CS>(key: K | K[]): Promise<{[key in K]: CS[key]}>;
+export function get<J extends K, K extends keyof CS>(key: {[k in K]: CS[k]}): Promise<{[j in J]: CS[j]}>;
+export function get<K extends keyof CS>(key: K | K[] | {[k in K]: CS[k]}, area: AreaName='local') {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get(key, (items) => {
+    chrome.storage[area].get(key, (items) => {
       const err = chrome.runtime.lastError;
       if (err) {
         console.error(`Failed to get ${key} from chrome.storage.local. Error: ${err.message}`);
@@ -48,9 +50,9 @@ export function localGet<K extends keyof CS>(key: K | K[] | {[k in K]: CS[k]}) {
  * Set given key-value pairs in chrome.storage.local.
  * @param items
  */
-export function localSet<K extends keyof CS>(items: {[k in K]: CS[k]}): Promise<void> {
+export function set<K extends keyof CS>(items: {[k in K]: CS[k]}, area: AreaName='local'): Promise<void> {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.set(items, () => {
+    chrome.storage[area].set(items, () => {
       const err = chrome.runtime.lastError;
       if (err) {
         console.error(`Failed to set ${items} to chrome.storage.local. Error: ${err.message}`);
@@ -66,9 +68,9 @@ export function localSet<K extends keyof CS>(items: {[k in K]: CS[k]}): Promise<
  * Remove given key or list of keys from chrome.storage.local.
  * @param keys
  */
-export function localRemove<K extends keyof CS>(keys: K | K[]): Promise<void> {
+export function remove<K extends keyof CS>(keys: K | K[], area: AreaName='local'): Promise<void> {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.remove(keys, () => {
+    chrome.storage[area].remove(keys, () => {
       const err = chrome.runtime.lastError;
       if (err) {
         console.error(`Failed to remove ${keys} from chrome.storage.local. Error: ${err.message}`);
@@ -83,9 +85,9 @@ export function localRemove<K extends keyof CS>(keys: K | K[]): Promise<void> {
 /**
  * Clear chrome.storage.local.
  */
-export function localClear(): Promise<void> {
+export function clear(area: AreaName='local'): Promise<void> {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.clear(() => {
+    chrome.storage[area].clear(() => {
       const err = chrome.runtime.lastError;
       if (err) {
         console.error(`Failed to clear chrome.storage.local. Error: ${err.message}`);

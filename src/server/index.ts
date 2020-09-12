@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { User } from '../models';
-import { localGet } from '../utils/chromeStorage';
+import { get } from '../utils/chromeStorage';
 
 const api_inst = axios.create({
     baseURL: process.env.REACT_APP_BACKEND_URL,
@@ -16,7 +16,7 @@ export const updateDisplayName = async (displayName: string): Promise<{
   error?: Error, 
   user: User | null,
 }> => {
-  let user = (await localGet('user')).user;
+  let user = (await get('user')).user;
   user.displayName = displayName;
   return { user };
 }
@@ -25,7 +25,7 @@ export const updateUsername = async (username: string): Promise<{
   error?: Error, 
   user: User | null,
 }> => {
-  let user = (await localGet('user')).user;
+  let user = (await get('user')).user;
   user.username = username;
   return { user };
 }
@@ -34,7 +34,7 @@ export const updateColor = async (color: string): Promise<{
   error?: Error, 
   user: User | null,
 }> => {
-  let user = (await localGet('user')).user;
+  let user = (await get('user')).user;
   user.color = color;
   return { user };
 }
