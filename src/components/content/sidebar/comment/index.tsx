@@ -1,6 +1,6 @@
 // import seedrandom from 'alea';
 // import React from 'react';
-// import User from '../../../../models/User';
+// import {User} from '../../../../models';
 
 // export default function Comment() {
 //   const bgColor = getPastelColor(props.user.name);

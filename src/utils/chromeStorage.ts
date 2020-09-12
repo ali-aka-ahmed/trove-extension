@@ -1,11 +1,13 @@
 import Point from '../components/content/sidebar/Point';
+import { User } from '../models';
 
 /**
  * Key to type mapping.
  */
 export interface CS {
+  user: User;
   extensionOn: boolean;
-  loggedIn: boolean;
+  authenticated: boolean;
   sidebarOpen: boolean;
   sidebarPosition: Point;
 }
@@ -92,20 +94,6 @@ export function clear(area: AreaName='local'): Promise<void> {
         reject(err);
       } else {
         resolve();
-      }
-    });
-  });
-}
-
-// Not sure if we need this/if it works, will test 
-export function addListener() {
-  return new Promise((resolve, reject) => {
-    chrome.storage.onChanged.addListener((changes, areaName) => {
-      const err = chrome.runtime.lastError;
-      if (err) {
-        reject(err);
-      } else {
-        resolve({changes, areaName}); 
       }
     });
   });
