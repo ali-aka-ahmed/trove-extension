@@ -2,12 +2,19 @@
 
 // Tabs
 .ant-tabs-tab {
-  margin-right: 22.5px;
+  margin: 0 20px;
 }
 
-// First tab
-.ant-tabs-tab:first-child {
-  margin-left: 22.5px;
+.ant-tabs-nav-wrap {
+  align-items: center;
+  justify-content: center;
+}
+
+.ant-tabs-nav {
+  margin: 0 !important;
+  position: fixed !important;
+  width: 100%;
+  background-color: #fafafa;
 }
 
 // Tab text
