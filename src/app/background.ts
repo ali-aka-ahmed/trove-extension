@@ -9,3 +9,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   return isResponseAsync;
 });
+
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  console.log(`Tab ${activeInfo.tabId} active.`);
+  chrome.tabs.sendMessage(activeInfo.tabId, { type: 'onActivated' });
+});
