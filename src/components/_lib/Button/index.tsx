@@ -6,7 +6,7 @@ import './style.scss';
 interface ButtonProps {
   disabled?: boolean,
   icon?: React.ReactNode,
-  label: string,
+  label?: string,
   className?: string,
   loading?: boolean,
   onClick: ((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => Promise<void> | void),
@@ -60,13 +60,13 @@ const Button = ({
       style={customStyle}
     >
       {loading && <div className="TbdLibButton__Loading"><LoadingOutlined /></div>}
-      {icon && <div className="TbdLibButton__Icon">{icon}</div>}
+      {label && icon && <div className="TbdLibButton__Icon">{icon}</div>}
       <button
         className="TbdLibButton__Button"
         disabled={disabled}
         style={disabled ? disabledStyle : {}}
       >
-        {label}
+        {label ? label : icon}
       </button>
     </div>
   )
