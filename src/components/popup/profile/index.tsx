@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { User } from '../../../models';
 import { updateColor, updateDisplayName, updateUsername } from '../../../server';
 import { validateDisplayName, validateUsername } from '../../../utils';
-import { localSet } from '../../../utils/chromeStorage';
+import { set } from '../../../utils/chromeStorage';
 import '../style.scss';
 import ColorPicker from './ColorPicker';
 import './style.scss';
@@ -40,7 +40,7 @@ export default function Profile({ user }: ProfileProps) {
     }
     const res = await updateDisplayName(displayName);
     if (!res.error && res.user) {
-      await localSet({ user: res.user });
+      await set({ user: res.user });
       setEditable(null);
     } else if (res.error) {
       setShowError('displayName');
@@ -60,7 +60,7 @@ export default function Profile({ user }: ProfileProps) {
     }
     const res = await updateUsername(username);
     if (!res.error && res.user) {
-      await localSet({ user: res.user });
+      await set({ user: res.user });
       setEditable(null);
     } else if (res.error) {
       setShowError('username');
@@ -73,7 +73,7 @@ export default function Profile({ user }: ProfileProps) {
     setLoading('color');
     const res = await updateColor(newColor);
     if (!res.error && res.user) {
-      await localSet({ user: res.user });
+      await set({ user: res.user });
       setEditable(null);
     } else if (res.error) {
       setShowError('color');
