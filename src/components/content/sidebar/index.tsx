@@ -1,6 +1,6 @@
 import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { localGet, localSet } from '../../../utils/chromeStorage';
+import { get, set } from '../../../utils/chromeStorage';
 import Edge from './Edge';
 import Point from './Point';
 
@@ -89,7 +89,7 @@ export default function Sidebar() {
       setClosestEdge(Edge.Right);
     }
 
-    localSet({ sidebarPosition: pos });
+    set({ sidebarPosition: pos });
   }, [position, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -122,7 +122,7 @@ export default function Sidebar() {
       // Normal click
       const toggleIsOpen = !isOpen;
       setIsOpen(toggleIsOpen);
-      localSet({ sidebarOpen: toggleIsOpen });
+      set({ sidebarOpen: toggleIsOpen });
     }
 
     if (shouldExit) {
@@ -159,7 +159,7 @@ export default function Sidebar() {
     
     if (isDragging) {
       setIsOpen(false);
-      localSet({ sidebarOpen: false });
+      set({ sidebarOpen: false });
       setWasDragged(true);
 
       // Snap to exit bubble if applicable
@@ -183,7 +183,7 @@ export default function Sidebar() {
     sendResponse: (response: any) => void
   ) => {
     if (message.type === 'onActivated') {
-      localGet(['sidebarOpen', 'sidebarPosition']).then((items) => {
+      get(['sidebarOpen', 'sidebarPosition']).then((items) => {
         if (items.sidebarPosition !== undefined) setPosition(items.sidebarPosition);
         if (items.sidebarOpen !== undefined) setIsOpen(items.sidebarOpen);
       });

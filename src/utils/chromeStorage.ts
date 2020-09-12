@@ -10,7 +10,7 @@ export interface CS {
   sidebarPosition: Point;
 }
 
-type StorageArea = 'local' | 'sync' | 'managed';
+type AreaName = 'local' | 'sync' | 'managed';
 
 /**
  * Get values corresponding to given keys from local storage. This method takes in a single key, 
@@ -30,7 +30,7 @@ type StorageArea = 'local' | 'sync' | 'managed';
 export function get(key: null): Promise<CS>;
 export function get<K extends keyof CS>(key: K | K[]): Promise<{[key in K]: CS[key]}>;
 export function get<J extends K, K extends keyof CS>(key: {[k in K]: CS[k]}): Promise<{[j in J]: CS[j]}>;
-export function get<K extends keyof CS>(key: K | K[] | {[k in K]: CS[k]}, area: StorageArea='local') {
+export function get<K extends keyof CS>(key: K | K[] | {[k in K]: CS[k]}, area: AreaName='local') {
   return new Promise((resolve, reject) => {
     chrome.storage[area].get(key, (items) => {
       const err = chrome.runtime.lastError;
@@ -48,7 +48,7 @@ export function get<K extends keyof CS>(key: K | K[] | {[k in K]: CS[k]}, area: 
  * Set given key-value pairs in chrome.storage.local.
  * @param items
  */
-export function set<K extends keyof CS>(items: {[k in K]: CS[k]}, area: StorageArea='local'): Promise<void> {
+export function set<K extends keyof CS>(items: {[k in K]: CS[k]}, area: AreaName='local'): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.storage[area].set(items, () => {
       const err = chrome.runtime.lastError;
@@ -66,7 +66,7 @@ export function set<K extends keyof CS>(items: {[k in K]: CS[k]}, area: StorageA
  * Remove given key or list of keys from chrome.storage.local.
  * @param keys
  */
-export function remove<K extends keyof CS>(keys: K | K[], area: StorageArea='local'): Promise<void> {
+export function remove<K extends keyof CS>(keys: K | K[], area: AreaName='local'): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.storage[area].remove(keys, () => {
       const err = chrome.runtime.lastError;
@@ -83,7 +83,7 @@ export function remove<K extends keyof CS>(keys: K | K[], area: StorageArea='loc
 /**
  * Clear chrome.storage.local.
  */
-export function clear(area: StorageArea='local'): Promise<void> {
+export function clear(area: AreaName='local'): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.storage[area].clear(() => {
       const err = chrome.runtime.lastError;
