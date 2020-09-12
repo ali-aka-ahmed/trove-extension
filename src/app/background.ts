@@ -1,3 +1,5 @@
+import { triggerSync } from "../components/content/sidebar/Syncer";
+
 // Listen to messages sent from other parts of the extension.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // onMessage must return "true" if response is async.
@@ -12,5 +14,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
   console.log(`Tab ${activeInfo.tabId} active.`);
-  chrome.tabs.sendMessage(activeInfo.tabId, { type: 'onActivated' });
+  triggerSync(activeInfo.tabId, ['isOpen', 'position']);
 });

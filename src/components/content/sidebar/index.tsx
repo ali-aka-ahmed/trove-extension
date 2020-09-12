@@ -1,8 +1,10 @@
 import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { get, set } from '../../../utils/chromeStorage';
+import { set } from '../../../utils/chrome/storage';
+import { Message } from '../../../utils/chrome/tabs';
 import Edge from './Edge';
 import Point from './Point';
+import Syncer from './Syncer';
 
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
@@ -89,7 +91,7 @@ export default function Sidebar() {
       setClosestEdge(Edge.Right);
     }
 
-    set({ sidebarPosition: pos });
+    set({ position: pos });
   }, [position, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -122,7 +124,7 @@ export default function Sidebar() {
       // Normal click
       const toggleIsOpen = !isOpen;
       setIsOpen(toggleIsOpen);
-      set({ sidebarOpen: toggleIsOpen });
+      set({ isOpen: toggleIsOpen });
     }
 
     if (shouldExit) {
@@ -159,7 +161,7 @@ export default function Sidebar() {
     
     if (isDragging) {
       setIsOpen(false);
-      set({ sidebarOpen: false });
+      set({ isOpen: false });
       setWasDragged(true);
 
       // Snap to exit bubble if applicable
@@ -176,19 +178,6 @@ export default function Sidebar() {
     // onClick isn't called after a drag if mouseup is beyond bounds of window 
     if (wasDragged) anchorSidebar();
   }, [offset, wasDragged, anchorSidebar]);
-
-  const onMessage = useCallback((
-    message: any, 
-    sender: chrome.runtime.MessageSender, 
-    sendResponse: (response: any) => void
-  ) => {
-    if (message.type === 'onActivated') {
-      get(['sidebarOpen', 'sidebarPosition']).then((items) => {
-        if (items.sidebarPosition !== undefined) setPosition(items.sidebarPosition);
-        if (items.sidebarOpen !== undefined) setIsOpen(items.sidebarOpen);
-      });
-    }
-  }, []);
 
   useEffect(() => {
     if (isDragging) {
@@ -217,7 +206,22 @@ export default function Sidebar() {
 
   useEffect(() => {
     anchorSidebar();
-  }, [isOpen])
+  }, [isOpen]);
+
+  const syncer = new Syncer({
+    isOpen: setIsOpen,
+    position: setPosition
+  });
+
+  const onMessage = useCallback((
+    message: Message, 
+    sender: chrome.runtime.MessageSender, 
+    sendResponse: (response: any) => void
+  ) => {
+    if (message.type.slice(0, 5) === 'sync.') {
+      syncer.sync(message);
+    }
+  }, []);
 
   useEffect(() => {
     chrome.runtime.onMessage.addListener(onMessage);
