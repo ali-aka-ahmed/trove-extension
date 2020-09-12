@@ -4,5 +4,5 @@ export default interface User {
   username: string; // no spaces, 3 < username < 20 characters
   normalizedUsername: string; // lowercase version for search   
   creationDatetime: number;
-  color: string;
+  color: string; // hex, includes #
 };
