@@ -5,58 +5,55 @@ import '../style.scss';
 import './style.scss';
 
 interface NotificationProps {
-  notification: INotification
+  notification: INotification;
 }
 
 const Notification = ({ notification }: NotificationProps) => {
   
   const renderContent = (content: string) => {
-    const regex = new RegExp(`(${notification.taggedUsers?.map(user => `@${user.username}`).join("|")})`);
+    const regex = new RegExp(`(${notification.taggedUsers?.map(user => `@${user.username}`).join('|')})`);
     const tokenizedContent = content.split(regex).filter(str => !!str);
-    const isUsername = (str: string) => { return str[0] === "@" };
-    const getColor = (tag: string) => { 
+    const isUsername = (str: string): boolean => { return str[0] === '@' };
+    const getUserColor = (tag: string): string | undefined => { 
       return notification.taggedUsers?.find(user => user.username === tag.slice(1))?.color; 
     }
     return (
-      <div>
+      <>
         {tokenizedContent.map(subString => 
           <span 
             key={subString}
-            className={isUsername(subString)
-              ? "TbdNotificationContent--Username" 
-              : "TbdNotificationContent--Normal"
-            }
-            style={isUsername(subString) ? { color: getColor(subString) } : {}}
+            className={`TbdNotificationToken ${isUsername(subString) && 'TbdNotificationToken--Username'}`}
+            style={isUsername(subString) ? { color: getUserColor(subString) } : {}}
           >
             {subString}
           </span>
         )}
-      </div>
+      </>
     )
   }
  
 	return (
-    <div className="TbdNotificationContainer">
-      <div className="TbdNotificationContainer__HeaderWrapper">
+    <div className="TbdNotificationWrapper">
+      <div className="TbdNotificationWrapper__HeaderWrapper">
         <div 
           className="TbdProfile__Img"
           style={{ backgroundColor: notification.sender.color }}
         >
           {notification.sender.displayName[0]}
         </div>
-        <div className="TbdNotificationContainer__HeaderContentWrapper">
-          <div className="TbdNotificationContainer__Notification">
-            <span className="TbdNotificationContainer__DisplayName">
+        <div className="TbdNotificationWrapper__HeaderContentWrapper">
+          <div className="TbdNotificationWrapper__Notification">
+            <span className="TbdNotificationWrapper__DisplayName">
               {`${notification.sender.displayName} `}
             </span>
             {notification.action}
           </div>
-          <div className="TbdNotificationContainer__NotificationDetails">
+          <div className="TbdNotificationWrapper__NotificationDetails">
             {`${displayRelativeTime(notification.creationDatetime)} · ${notification.url}`}
           </div>
         </div>
       </div>
-      <div className="TbdNotificationContainer__Content">
+      <div className="TbdNotificationWrapper__Content">
         {notification.content && renderContent(notification.content)}
       </div>
     </div>

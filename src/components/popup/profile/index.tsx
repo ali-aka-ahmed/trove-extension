@@ -9,42 +9,64 @@ interface ProfileProps {
 }
 
 export default function Profile({ user }: ProfileProps) {
-  const [showEdit, setShowEdit] = useState<string | null>(null)
+  const [showEditIcon, setShowEditIcon] = useState<'displayName' | 'username' | null>(null);
+
+  const [editable, setEditable] = useState<'displayName' | 'username' | null>(null);
+
+  const [displayName, setDisplayName] = useState(user.displayName);
+  const [username, setUsername] = useState(user.username);
+  const [color, setColor] = useState(user.color);
 
   return (
     <div className="TbdProfile__Wrapper">
       <div className="TbdProfile__Header">
         <div 
           className="TbdProfile__Img"
-          style={{ backgroundColor: user.color }} 
+          style={{ backgroundColor: color }} 
         >
-          {user.displayName[0]}
+          {displayName[0]}
         </div>
         <div className="TbdProfile__HeaderContent">
-          <div 
-            onClick={() => {}}
-            onMouseEnter={() => { setShowEdit('displayName') }}
-            onMouseLeave={() => { setShowEdit(null) }}
-            className="TbdProfile__DisplayName"
-          >
-            {user.displayName}
+          {editable === 'displayName' ? (
             <div 
-              style={showEdit !== 'displayName' ? { opacity: 0 } : {}}
-              className="TbdProfile__EditIcon"
+              onClick={() => { setEditable('displayName') }}
+              className="TbdProfile__DisplayName"
             >
-              <EditOutlined />
+              {displayName}
+              <div 
+                style={showEditIcon !== 'displayName' ? { opacity: 0 } : {}}
+                className="TbdProfile__EditIcon"
+              >
+                <EditOutlined />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div 
+              onClick={() => { setEditable('displayName') }}
+              onMouseEnter={() => { setShowEditIcon('displayName') }}
+              onMouseLeave={() => { setShowEditIcon(null) }}
+              className="TbdProfile__DisplayName"
+            >
+              {displayName}
+              <div 
+                style={showEditIcon !== 'displayName' ? { opacity: 0 } : {}}
+                className="TbdProfile__EditIcon"
+              >
+                <EditOutlined />
+              </div>
+            </div>
+          )}
+
           <div
-            onClick={() => {}}
-            onMouseEnter={() => { setShowEdit('username') }} 
-            onMouseLeave={() => { setShowEdit(null) }}
-            style={{ color: user.color }}
+            onClick={() => { setEditable('username') }}
+            onMouseEnter={() => { setShowEditIcon('username') }} 
+            onMouseLeave={() => { setShowEditIcon(null) }}
+            style={{ color }}
             className="TbdProfile__Username"
           >
-            {`@${user.username}`}
+            {`@${username}`}
             <div 
-              style={showEdit !== 'username' ? { opacity: 0 } : {}}
+              style={showEditIcon !== 'username' ? { opacity: 0 } : {}}
               className="TbdProfile__EditIcon"
             >
               <EditOutlined />
@@ -57,7 +79,7 @@ export default function Profile({ user }: ProfileProps) {
         <div 
           onClick={() => {}}
           className="TbdProfile__Color"
-          style={{ backgroundColor: user.color }}
+          style={{ backgroundColor: color }}
         />
       </div>
     </div>

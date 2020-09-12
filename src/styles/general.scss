@@ -1,3 +1,4 @@
+// Fonts
 @mixin TbdFont {
   font-size: 14px;
   font-weight: 400;
@@ -10,4 +11,39 @@
 
 @mixin TbdFont--large {
   font-size: 24px;
+}
+
+// Utilities
+@mixin numLines($lines) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+}
+
+@mixin transition($args...) {
+  -webkit-transition: $args;
+  -moz-transition: $args;
+  -ms-transition: $args;
+  -o-transition: $args;
+  transition: $args;
+}
+
+@mixin transform($args...) {
+  -webkit-transform: $args;
+  -moz-transform: $args;
+  -ms-transform: $args;
+  -o-transform: $args;
+  transform: $args;
+}
+
+@mixin opacity($opacity) {
+  opacity: $opacity;
+  $opacity-ie: $opacity * 100;
+  filter: alpha(opacity=$opacity-ie); //IE8
+}
+
+@mixin boxShadow($args...) {
+  -webkit-box-shadow: $args;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+  -moz-box-shadow: $args;  /* Firefox 3.5 - 3.6 */
+  box-shadow: $args;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
 }
