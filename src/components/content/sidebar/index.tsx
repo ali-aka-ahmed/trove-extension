@@ -1,5 +1,6 @@
 import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { localGet, localSet } from '../../../utils/chromeStorage';
 import Edge from './Edge';
 import Point from './Point';
 
@@ -75,17 +76,20 @@ export default function Sidebar() {
     const rightDx = width - (position.x + getSidebarWidth());
 
     // Set new position on closest edge
+    let pos: Point;
     const minY = SIDEBAR_MARGIN;
     const maxY = height - getSidebarHeight() - SIDEBAR_MARGIN;
     const newY = Math.min(Math.max(minY, position.y), maxY);
     if (leftDx < rightDx) {
-      setPosition(new Point(SIDEBAR_MARGIN, newY));
+      setPosition(pos = new Point(SIDEBAR_MARGIN, newY));
       setClosestEdge(Edge.Left);
     } else { 
       const newX = width - BUBBLE_HEIGHT - SIDEBAR_MARGIN;
-      setPosition(new Point(newX, newY));
+      setPosition(pos = new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
+
+    localSet({ sidebarPosition: pos });
   }, [position, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -170,6 +174,19 @@ export default function Sidebar() {
     if (wasDragged) anchorSidebar();
   }, [offset, wasDragged, anchorSidebar]);
 
+  const onMessage = useCallback((
+    message: any, 
+    sender: chrome.runtime.MessageSender, 
+    sendResponse: (response: any) => void
+  ) => {
+    if (message.type === 'onActivated') {
+      localGet(['sidebarOpen', 'sidebarPosition']).then((items) => {
+        if (items.sidebarOpen !== undefined) setIsOpen(items.sidebarOpen);
+        if (items.sidebarPosition !== undefined) setPosition(items.sidebarPosition);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', onDrag);
@@ -192,12 +209,17 @@ export default function Sidebar() {
       document.removeEventListener('click', onClickPage);
     }
 
-    return () => { document.removeEventListener('click', onClickPage); }
+    return () => { document.removeEventListener('click', onClickPage); };
   }, [wasDragged, onClickPage]);
 
   useEffect(() => {
     anchorSidebar();
   }, [isOpen])
+
+  useEffect(() => {
+    chrome.runtime.onMessage.addListener(onMessage);
+    return () => { chrome.runtime.onMessage.removeListener(onMessage); };
+  }, [onMessage]);
 
   // Determine class denoting position of sidebar components
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
