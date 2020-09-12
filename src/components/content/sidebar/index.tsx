@@ -1,5 +1,6 @@
 import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { get, set } from '../../../utils/chromeStorage';
 import Edge from './Edge';
 import Point from './Point';
 
@@ -75,17 +76,20 @@ export default function Sidebar() {
     const rightDx = width - (position.x + getSidebarWidth());
 
     // Set new position on closest edge
+    let pos: Point;
     const minY = SIDEBAR_MARGIN;
     const maxY = height - getSidebarHeight() - SIDEBAR_MARGIN;
     const newY = Math.min(Math.max(minY, position.y), maxY);
     if (leftDx < rightDx) {
-      setPosition(new Point(SIDEBAR_MARGIN, newY));
+      setPosition(pos = new Point(SIDEBAR_MARGIN, newY));
       setClosestEdge(Edge.Left);
     } else { 
       const newX = width - BUBBLE_HEIGHT - SIDEBAR_MARGIN;
-      setPosition(new Point(newX, newY));
+      setPosition(pos = new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
+
+    set({ sidebarPosition: pos });
   }, [position, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -116,7 +120,9 @@ export default function Sidebar() {
       setWasDragged(false);
     } else {
       // Normal click
-      setIsOpen(!isOpen);
+      const toggleIsOpen = !isOpen;
+      setIsOpen(toggleIsOpen);
+      set({ sidebarOpen: toggleIsOpen });
     }
 
     if (shouldExit) {
@@ -153,6 +159,7 @@ export default function Sidebar() {
     
     if (isDragging) {
       setIsOpen(false);
+      set({ sidebarOpen: false });
       setWasDragged(true);
 
       // Snap to exit bubble if applicable
@@ -169,6 +176,19 @@ export default function Sidebar() {
     // onClick isn't called after a drag if mouseup is beyond bounds of window 
     if (wasDragged) anchorSidebar();
   }, [offset, wasDragged, anchorSidebar]);
+
+  const onMessage = useCallback((
+    message: any, 
+    sender: chrome.runtime.MessageSender, 
+    sendResponse: (response: any) => void
+  ) => {
+    if (message.type === 'onActivated') {
+      get(['sidebarOpen', 'sidebarPosition']).then((items) => {
+        if (items.sidebarPosition !== undefined) setPosition(items.sidebarPosition);
+        if (items.sidebarOpen !== undefined) setIsOpen(items.sidebarOpen);
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (isDragging) {
@@ -192,12 +212,17 @@ export default function Sidebar() {
       document.removeEventListener('click', onClickPage);
     }
 
-    return () => { document.removeEventListener('click', onClickPage); }
+    return () => { document.removeEventListener('click', onClickPage); };
   }, [wasDragged, onClickPage]);
 
   useEffect(() => {
     anchorSidebar();
   }, [isOpen])
+
+  useEffect(() => {
+    chrome.runtime.onMessage.addListener(onMessage);
+    return () => { chrome.runtime.onMessage.removeListener(onMessage); };
+  }, [onMessage]);
 
   // Determine class denoting position of sidebar components
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
