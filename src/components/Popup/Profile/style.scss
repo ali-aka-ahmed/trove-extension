@@ -86,5 +86,5 @@
 
 .TbdProfile__Color:hover {
   transition: 150ms;
-  box-shadow: 0 0 3px 3px rgba(82, 178, 250, 0.2);
+  @include boxShadow(0 0 3px 3px rgba(82, 178, 250, 0.2));
 }
