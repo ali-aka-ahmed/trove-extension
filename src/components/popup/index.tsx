@@ -36,14 +36,6 @@ function Popup() {
   }, [])
 
   /**
-   * Turn extension on/off. Save to global state.
-   * @param checked New global on/off value.
-   */
-  const handleOnOff = async (checked: boolean) => {
-    await localSet({ extensionOn: checked })
-  }
-
-  /**
    * Establish socket to server to receive notifications.
    */
   useEffect(() => {
@@ -60,6 +52,14 @@ function Popup() {
     }
     getNotifications();
   }, [])
+
+  /**
+   * Turn extension on/off. Save to global state.
+   * @param checked New global on/off value.
+   */
+  const handleOnOff = async (checked: boolean) => {
+    await localSet({ extensionOn: checked })
+  }
 
   return (
     <div className="TbdPopupContainer">

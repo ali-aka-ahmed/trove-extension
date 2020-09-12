@@ -1,29 +1,29 @@
 @import '../../../styles/general.scss';
 
-.TbdNotificationContainer {
+.TbdNotificationWrapper {
   width: 100%;
   padding: 10px 20px;
   border-bottom: 1px solid #c4c4c4;
   cursor: pointer;
 }
 
-.TbdNotificationContainer:hover {
-  background-color: #c4c4c4
+.TbdNotificationWrapper:hover {
+  background-color: #c4c4c4;
 }
 
-.TbdNotificationContainer__HeaderWrapper {
+.TbdNotificationWrapper__HeaderWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.TbdNotificationContainer__HeaderContentWrapper {
+.TbdNotificationWrapper__HeaderContentWrapper {
   width: 100%;
   margin-left: 5px;
   padding-right: 3px;
 }
 
-.TbdNotificationContainer__Notification {
+.TbdNotificationWrapper__Notification {
   width: 100%;
   margin-left: 5px;
   line-height: 22px;
@@ -32,15 +32,13 @@
   word-break: break-word;
 }
 
-.TbdNotificationContainer__DisplayName {
+.TbdNotificationWrapper__DisplayName {
   width: fit-content;
-  @include TbdFont--medium
+  @include TbdFont--medium;
 }
 
-.TbdNotificationContainer__NotificationDetails {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
+.TbdNotificationWrapper__NotificationDetails {
+  @include numLines(1);
   width: 100%;
   word-break: break-all;
   overflow: hidden;
@@ -50,15 +48,14 @@
   color: grey;
 }
 
-.TbdNotificationContainer__Content {
+.TbdNotificationWrapper__Content {
   margin-top: 5px;
 }
 
-.TbdNotificationContent--Username {
-  @include TbdFont;
-  font-weight: 600;
+.TbdNotificationToken {
+ @include TbdFont;
 }
 
-.TbdNotificationContent--Normal {
-  @include TbdFont
-}
+.TbdNotificationToken--Username {
+  font-weight: 600;
+};
