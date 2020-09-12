@@ -24,67 +24,117 @@
   word-break: break-all;
 }
 
-.TbdProfile__DisplayName {
+@mixin TbdProfile__PropertyWrapper {
   display: flex;
+  align-items: center;
+  justify-content: center;
   width: fit-content;
   padding: 0 5px;
   border: 1px solid transparent;
   border-radius: 10px;
   cursor: pointer;
   transition: 150ms;
-  @include TbdFont--medium
 }
 
-.TbdProfile__DisplayName:hover {
+@mixin TbdProfile__PropertyWrapperHover {
   border: 1px solid #c4c4c4;
   background-color: #c4c4c4;
   transition: 150ms;
+}
+
+.TbdProfile__DisplayName {
+  @include TbdProfile__PropertyWrapper;
+  @include TbdFont--medium;
 }
 
 .TbdProfile__Username {
-  display: flex;
-  font-size: 14px;
-  font-weight: 400;
-  width: fit-content;
-  padding: 1px 5px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 150ms;
-  @include TbdFont
-}
-
-.TbdProfile__Username:hover {
-  border: 1px solid #c4c4c4;
-  background-color: #c4c4c4;
-  transition: 150ms;
-}
-
-.TbdProfile__EditIcon {
-  margin-left: 5px;
-  display: flex;
-  justify-items: center;
-  align-items: center;
-}
-
-.TbdProfile__AccentColorWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  margin-top: 15px;
+  @include TbdProfile__PropertyWrapper;
+  @include TbdFont;
 }
 
 .TbdProfile__Color {
+  @include TbdProfile__PropertyWrapper;
+  @include TbdFont;
+  margin-top: 10px;
+}
+
+.TbdProfile__DisplayName:hover {
+  @include TbdProfile__PropertyWrapperHover;
+}
+
+.TbdProfile__Username:hover {
+  @include TbdProfile__PropertyWrapperHover;
+}
+
+.TbdProfile__Color:hover {
+  @include TbdProfile__PropertyWrapperHover;
+}
+
+.TbdProfile__ColorText {
+  @include TbdFont;
+  width: fit-content;
+}
+
+.TbdProfile__ColorPreview {
   border-radius: 5px;
   height: 20px;
   width: 20px;
   margin-left: 6px;
   cursor: pointer;
+}
+
+.TbdProfile__InputWrapper {
+  display: flex;
+  width: fit-content;
+  padding: 0 5px;
+  border: 1px solid #c4c4c4;
+  background-color: #c4c4c4;
+  border-radius: 10px;
   transition: 150ms;
 }
 
-.TbdProfile__Color:hover {
-  transition: 150ms;
-  @include boxShadow(0 0 3px 3px rgba(82, 178, 250, 0.2));
+.TbdProfile__InputPrefix {
+  @include TbdFont;
+}
+
+.TbdProfile__Input {
+  background-color: #c4c4c4;
+  border: 0;
+  outline: 0;
+  padding: 0;
+}
+
+.TbdProfile__Input--display-name {
+  width: 150px;
+  @include TbdFont--medium;
+}
+
+.TbdProfile__Input--username {
+  width: 75px;
+  @include TbdFont;
+}
+
+@mixin TbdProfileIcon {
+  margin-left: 5px;
+  display: flex;
+  justify-items: center;
+  align-items: center;
+  color: black;
+}
+
+.TbdProfile__EditIcon {
+  @include TbdProfileIcon;
+}
+
+.TbdProfile__SaveIcon {
+  @include TbdProfileIcon;
+  cursor: pointer;
+}
+
+.TbdProfile__SaveIcon--display-name {
+  @include TbdFont--medium;
+}
+
+.TbdProfile__SaveIcon--username {
+  @include TbdFont;
 }
