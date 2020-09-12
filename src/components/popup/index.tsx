@@ -2,34 +2,61 @@ import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
 import { Notification as INotification, User as IUser } from '../../models';
-import { notifications as notificationData, users as userData } from '../../utils/data';
+import { localGet, localSet } from '../../utils/chromeStorage';
+import { notifications as notificationData } from '../../utils/data';
 import Notification from './Notification';
 import Profile from './Profile';
 import './style.scss';
 
 function Popup() {
-  const [user, setUser] = useState<IUser | null>(null)
-  const [notifications, setNotifications] = useState<INotification[]>([])
+  /**
+   * State for all components in Popup.
+   */
+  const [notifications, setNotifications] = useState<INotification[]>([]);
 
   /**
-   * Fetch current User.
+   * Global state.
    */
+  const [extensionOn, setExtensionOn] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [user, setUser] = useState<IUser | null>(null);
+
   useEffect(() => {
-    const getUser = async (): Promise<void> => {
-      // fetch from globalStore, which is chrome storage. re-render when that changes (in dependency list)
-      const user = userData.find(user => user.username === 'ali')!
-      setUser(user)
-    }
-    getUser();
+    localGet(null).then(items => {
+      if (items['extensionOn']) setExtensionOn(items['extensionOn'])
+      if (items['authenticated']) setAuthenticated(items['authenticated'])
+      if (items['user']) setUser(items['user'])
+    });
+    
+    chrome.storage.onChanged.addListener(changes => {
+      if (changes['extensionOn']) setExtensionOn(changes['extensionOn'].newValue)
+      if (changes['authenticated']) setAuthenticated(changes['authenticated'].newValue)
+      if (changes['user']) setUser(changes['user'].newValue)
+    });
   }, [])
 
   /**
-   * Establish socket to receive notifications.
+   * Turn extension on/off. Save to global state.
+   * @param checked New global on/off value.
+   */
+  const handleOnOff = async (checked: boolean) => {
+    await localSet({ extensionOn: checked })
+  }
+
+  /**
+   * Establish socket to server to receive notifications.
    */
   useEffect(() => {
     const getNotifications = async (): Promise<void> => {
       const n = notificationData[0]
-      setNotifications([n, n, n, n, n, n, n, n, n, n, n])
+      let notifs: INotification[] = []
+      for (let i=0; i<11; i++) {
+        let s: any = {}
+        s = Object.assign(s, n)
+        s.id = i.toString()
+        notifs.push(s)
+      }
+      setNotifications(notifs)
     }
     getNotifications();
   }, [])
@@ -43,27 +70,20 @@ function Popup() {
               <Notification key={n.id} notification={n} />
             ))}
           </div>
-          <div className="TbdPopupContainer__OnOffWrapper">
-            <div className="TbdPopupContainer__OnOffTextWrapper">
-              <div>Turn Accord</div>
-              <div className="TbdPopupContainer__OnOff">{true ? 'OFF' : 'ON'}</div>
-            </div>
-            <Switch defaultChecked />      
-          </div>
         </Tabs.TabPane>
         <Tabs.TabPane tab="profile" key="2">
           <div className="TbdPopupContainer__TabWrapper">
             {user && <Profile user={user} />}
           </div>
-          <div className="TbdPopupContainer__OnOffWrapper">
-            <div className="TbdPopupContainer__OnOffTextWrapper">
-              <div>Turn Accord</div>
-              <div className="TbdPopupContainer__OnOff">{true ? 'OFF' : 'ON'}</div>
-            </div>
-            <Switch defaultChecked />      
-          </div>
         </Tabs.TabPane>
       </Tabs>
+      <div className="TbdPopupContainer__OnOffWrapper">
+        <div className="TbdPopupContainer__OnOffTextWrapper">
+          <div>Turn Accord</div>
+          <div className="TbdPopupContainer__OnOff">{extensionOn ? 'OFF' : 'ON'}</div>
+        </div>
+        <Switch onClick={(checked) => { handleOnOff(checked) }} checked={extensionOn} />
+      </div>
     </div>
   );
 };
