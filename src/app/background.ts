@@ -1,4 +1,4 @@
-import { triggerSync } from "../components/content/sidebar/Syncer";
+import { triggerSync } from "../components/Content/Sidebar/Syncer";
 import { set } from '../utils/chrome/storage';
 import { getActiveTabs, Message } from "../utils/chrome/tabs";
 import { users } from '../utils/data';
