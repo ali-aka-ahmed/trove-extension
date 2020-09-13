@@ -1,0 +1,117 @@
+@import '../../../styles/general.scss';
+
+$bubble-width: 55px;
+$content-width: 250px;
+$sidebar-margin: 15px;
+$accent-color: #0d77e2;
+$background-color: #fafafa;
+
+$_triangle-height: 22px;
+$_triangle-base: 40px;
+
+$_exit-bubble-border-small: 5px;
+$_exit-bubble-border-big: 15px;
+
+.TbdSidebar {
+  height: auto;
+  width: $bubble-width;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+}
+
+.TbdSidebar:not(.react-draggable-dragging) {
+  -webkit-transition: -webkit-transform 0.5s ease-out; /* Safari */
+  transition: transform 0.12s ease-out;
+}
+
+.TbdSidebar__LogoBubble {
+  height: $bubble-width;
+  width: $bubble-width;
+   background-image: url('../../../../public/images/logo.png');
+  background-size: contain;
+  border-radius: $bubble-width/2;
+  cursor: pointer;
+  position: relative;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
+}
+
+.TbdSidebar__MainContent {
+  height: 350px;
+  width: $content-width;
+  background-color: $background-color;
+  border-radius: 5px;
+  position: relative;
+  z-index: -2;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
+}
+
+.TbdSidebar__MainContent:before {
+  position: absolute;
+  top: -2.5px;
+  content: '';
+  filter: drop-shadow(0px 0px 1.5px rgba(125,125,125,0.4));
+  border-top: $_triangle-height solid $background-color;
+  border-left: $_triangle-base/2 solid transparent;
+  border-right: $_triangle-base/2 solid transparent;
+  z-index: -1;
+}
+
+.TbdSidebar__MainContent--position-left:before {
+  left: 15px;
+  @include transform(rotate(270deg));
+}
+
+.TbdSidebar__MainContent--position-right:before {
+  left: 195px;
+  @include transform(rotate(90));
+}
+
+.TbdSidebar__MainContent:after {
+  position: absolute;
+  top: 0px;
+  content: '';
+  height: 30px;
+  width: 25px;
+  background-color: $background-color;
+  z-index: -1;
+}
+
+.TbdSidebar__MainContent--position-left:after {
+  left: 20px;
+}
+
+.TbdSidebar__MainContent--position-right:after {
+  left: 202.5px;
+}
+
+.TbdExitBubble {
+  height: $bubble-width;
+  width: $bubble-width;
+  border-radius: 50%;
+  background-color: rgba(0,0,0,0.8);
+  z-index: -1;
+  position: fixed;
+  border: $_exit-bubble-border-small solid rgba(0,0,0,0.8);
+  left: calc(50% - #{($bubble-width + $_exit-bubble-border-small*2)/2});
+  bottom: calc(10% - #{($bubble-width + $_exit-bubble-border-small*2)/2});
+  background-image: url('../../../../public/images/exit.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 30px 30px;
+  box-sizing: content-box;
+  -webkit-background-clip: padding-box; /* for Safari */
+  background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
+  transition: all 0.15s linear;
+  @include boxShadow(inset 0px 0px 0px 1.5px #fafafa);
+}
+
+.TbdExitBubble--hovered {
+  @include boxShadow(none);
+  border-width: $_exit-bubble-border-big;
+  left: calc(50% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
+  bottom: calc(10% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
+}
