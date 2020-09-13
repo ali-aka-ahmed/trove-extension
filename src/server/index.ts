@@ -30,6 +30,11 @@ export const updateUsername = async (username: string): Promise<{
   return { user };
 }
 
+// { 
+//   success: boolean, 
+//   error: Error
+// }
+
 export const updateColor = async (color: string): Promise<{ 
   error?: Error, 
   user: User | null,
@@ -44,8 +49,16 @@ export const updateColor = async (color: string): Promise<{
  */
 
 export const signup = async () => {};
+// displayName
+// phoneNumber
+
+// username set random
+// totp auth for phonenumber
 
 export const login = async () => {};
+// phone or email or username (ill do some research)
+// phone no could be username so have to do login request on both...
+// password
 
 export const logout = async () => {
   const responseData = await api_inst.get('/logout');
