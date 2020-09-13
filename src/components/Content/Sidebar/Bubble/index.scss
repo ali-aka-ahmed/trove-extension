@@ -1,0 +1,54 @@
+@import '../../../../styles/general.scss';
+
+.TbdSidebar__Bubble {
+  -webkit-transition: margin-top 0.5s ease-out; // Safari
+  transition: margin-top 0.5s ease-out;
+  border-radius: 50%;
+  height: 50px;
+  width: 50px;
+  cursor: pointer;
+  margin-top: 0px;
+  margin-bottom: 7px;
+  z-index: 1;
+  position: relative;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
+}
+
+.TbdSidebar__Bubble:not(.react-draggable-dragging) {
+  -webkit-transition: -webkit-transform 0.5s ease-out; // Safari
+  transition: transform 0.5s ease-out;
+}
+
+.TbdSidebar__Bubble:last-child {
+  margin-bottom: 0;
+}
+
+.hidden {
+  // animation: hide .1s 1 linear forwards;
+  @include boxShadow(none);
+  margin-top: -50px;
+  margin-bottom: 0px;
+}
+
+// @keyframes hide {
+//   0% {
+    
+//   }
+
+//   100% {
+    
+//   }
+// }
+
+.TbdSidebar__Bubble__DisplayChar {
+  text-transform: uppercase;
+  line-height: 48px;
+  text-align: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  margin: 0;
+}
