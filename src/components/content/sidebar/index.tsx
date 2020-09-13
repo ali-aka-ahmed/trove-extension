@@ -4,7 +4,7 @@ import { set } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
 import Edge from './Edge';
 import Point from './Point';
-import Syncer from './Syncer';
+import Syncer, { requestSync } from './Syncer';
 
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
@@ -92,6 +92,7 @@ export default function Sidebar() {
     }
 
     set({ position: pos });
+    requestSync(['isOpen', 'position']);
   }, [position, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -125,6 +126,7 @@ export default function Sidebar() {
       const toggleIsOpen = !isOpen;
       setIsOpen(toggleIsOpen);
       set({ isOpen: toggleIsOpen });
+      requestSync('isOpen');
     }
 
     if (shouldExit) {
