@@ -30,6 +30,10 @@ export default function Profile({ user }: ProfileProps) {
   }
 
   const saveDisplayName = async () => {
+    if (displayName === user.displayName) {
+      setEditable(null);
+      return;
+    }
     setLoading('displayName');
     const vRes = validateDisplayName(displayName)
     if (!vRes.success) {
@@ -50,6 +54,10 @@ export default function Profile({ user }: ProfileProps) {
   }
 
   const saveUsername = async () => {
+    if (username === user.username) {
+      setEditable(null);
+      return;
+    }
     setLoading('username');
     const vRes = validateUsername(username)
     if (!vRes.success) {
@@ -70,6 +78,10 @@ export default function Profile({ user }: ProfileProps) {
   }
 
   const saveColor = async (newColor: string) => {
+    if (newColor === user.color) {
+      setEditable(null);
+      return;
+    }
     setLoading('color');
     const res = await updateColor(newColor);
     if (!res.error && res.user) {
@@ -93,7 +105,7 @@ export default function Profile({ user }: ProfileProps) {
         </div>
         <div className="TbdProfile__HeaderContent">
           {editable === 'displayName' ? (
-            <div className="TbdProfile__InputWrapper">
+            <div className="TbdProfile__EditDisplayName">
               <input
                 autoFocus
                 className="TbdProfile__Input TbdProfile__Input--display-name"
@@ -124,7 +136,7 @@ export default function Profile({ user }: ProfileProps) {
             </div>
           )}
           {editable === 'username' ? (
-            <div className="TbdProfile__InputWrapper">
+            <div className="TbdProfile__EditUsername">
               <div className="TbdProfile__InputPrefix" style={{ color: user.color }}>@</div>
               <input
                 autoFocus
@@ -160,8 +172,11 @@ export default function Profile({ user }: ProfileProps) {
         </div>
       </div>
       {editable === 'color' ? (
-        <div className="TbdProfile__Color TbdProfile__InputWrapper">
-          <div className="TbdProfile__ColorText">Accent Color</div>
+        <div className="TbdProfile__Color TbdProfile__EditColor">
+          <div className="TbdProfile__ColorText">
+            Accent Color
+            {loading === 'color' && <LoadingOutlined />}
+          </div>
           <ColorPicker onSelect={saveColor} />
         </div>
       ) : (

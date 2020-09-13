@@ -19,12 +19,8 @@ const Notification = ({ notification }: NotificationProps) => {
     }
     return (
       <>
-        {tokenizedContent.map(subString => 
-          <span 
-            key={subString}
-            className={`TbdNotificationToken ${isUsername(subString) && 'TbdNotificationToken--Username'}`}
-            style={isUsername(subString) ? { color: getUserColor(subString) } : {}}
-          >
+        {tokenizedContent.map((subString, i) => 
+          <span key={i} style={isUsername(subString) ? { color: getUserColor(subString) } : {}}>
             {subString}
           </span>
         )}
@@ -35,10 +31,7 @@ const Notification = ({ notification }: NotificationProps) => {
 	return (
     <div className="TbdNotificationWrapper">
       <div className="TbdNotificationWrapper__HeaderWrapper">
-        <div 
-          className="TbdProfile__Img"
-          style={{ backgroundColor: notification.sender.color }}
-        >
+        <div className="TbdProfile__Img" style={{ backgroundColor: notification.sender.color }}>
           {notification.sender.displayName[0]}
         </div>
         <div className="TbdNotificationWrapper__HeaderContentWrapper">
@@ -46,7 +39,9 @@ const Notification = ({ notification }: NotificationProps) => {
             <span className="TbdNotificationWrapper__DisplayName">
               {`${notification.sender.displayName} `}
             </span>
-            {notification.action}
+            <span className="TbdNotificationWrapper__Action">
+              {notification.action}
+            </span>
           </div>
           <div className="TbdNotificationWrapper__NotificationDetails">
             {`${displayRelativeTime(notification.creationDatetime)} · ${notification.url}`}
