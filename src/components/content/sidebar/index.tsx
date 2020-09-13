@@ -1,10 +1,9 @@
 import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { set } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
 import Edge from './Edge';
 import Point from './Point';
-import Syncer, { requestSync } from './Syncer';
+import Syncer from './Syncer';
 
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
@@ -90,9 +89,6 @@ export default function Sidebar() {
       setPosition(pos = new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
-
-    set({ position: pos });
-    requestSync(['isOpen', 'position']);
   }, [position, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -123,10 +119,7 @@ export default function Sidebar() {
       setWasDragged(false);
     } else {
       // Normal click
-      const toggleIsOpen = !isOpen;
-      setIsOpen(toggleIsOpen);
-      set({ isOpen: toggleIsOpen });
-      requestSync('isOpen');
+      setIsOpen(!isOpen);
     }
 
     if (shouldExit) {
@@ -163,7 +156,6 @@ export default function Sidebar() {
     
     if (isDragging) {
       setIsOpen(false);
-      set({ isOpen: false });
       setWasDragged(true);
 
       // Snap to exit bubble if applicable
