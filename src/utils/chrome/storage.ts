@@ -1,4 +1,4 @@
-import Point from '../../components/content/sidebar/Point';
+import Point from '../../components/Content/Sidebar/Point';
 import { User } from '../../models';
 
 /**
@@ -28,6 +28,7 @@ type AreaName = 'local' | 'sync' | 'managed';
  * ```
  * 
  * @param key
+ * @param area
  */
 export function get<K extends keyof CS>(key: null): Promise<{[k in K]: CS[k]}>;
 export function get<K extends keyof CS>(key: K): Promise<{[key in K]: CS[key]}>;
