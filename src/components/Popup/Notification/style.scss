@@ -26,7 +26,7 @@
 .TbdNotificationWrapper__Notification {
   width: 100%;
   margin-left: 5px;
-  line-height: 22px;
+  line-height: $line-height;
   font-size: 16px;
   font-weight: 400;
   word-break: break-word;
@@ -37,8 +37,14 @@
   @include TbdFont--medium;
 }
 
+.TbdNotificationWrapper__Action {
+  width: fit-content;
+  @include TbdFont;
+}
+
 .TbdNotificationWrapper__NotificationDetails {
   @include numLines(1);
+  @include TbdFont--small;
   width: 100%;
   word-break: break-all;
   overflow: hidden;
@@ -50,12 +56,5 @@
 
 .TbdNotificationWrapper__Content {
   margin-top: 5px;
+  @include TbdFont;
 }
-
-.TbdNotificationToken {
- @include TbdFont;
-}
-
-.TbdNotificationToken--Username {
-  font-weight: 600;
-};
