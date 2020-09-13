@@ -108,6 +108,7 @@ export default function Profile({ user }: ProfileProps) {
             <div className="TbdProfile__EditDisplayName">
               <input
                 autoFocus
+                style={{width: `${(displayName.length+1)*8}px`}}
                 className="TbdProfile__Input TbdProfile__Input--display-name"
                 value={displayName} 
                 onChange={(e) => { setDisplayName(e.target.value) }}
@@ -128,8 +129,8 @@ export default function Profile({ user }: ProfileProps) {
             >
               {displayName}
               <div 
-                style={showEditIcon !== 'displayName' ? { opacity: 0 } : {}}
                 className="TbdProfile__EditIcon"
+                style={showEditIcon !== 'displayName' ? { opacity: 0 } : {}}
               >
                 <EditOutlined />
               </div>
@@ -140,9 +141,9 @@ export default function Profile({ user }: ProfileProps) {
               <div className="TbdProfile__InputPrefix" style={{ color: user.color }}>@</div>
               <input
                 autoFocus
-                style={{ color: user.color }}
+                style={{ width: `${(username.length+1)*8}px`, color: user.color }}
                 className="TbdProfile__Input TbdProfile__Input--username"
-                value={username} 
+                value={username}
                 onChange={(e) => { setUsername(e.target.value) }}
               />
               <div 
@@ -162,8 +163,8 @@ export default function Profile({ user }: ProfileProps) {
             >
               {`@${username}`}
               <div 
-                style={showEditIcon !== 'username' ? { opacity: 0 } : {}}
                 className="TbdProfile__EditIcon"
+                style={showEditIcon !== 'username' ? { opacity: 0 } : {}}
               >
                 <EditOutlined />
               </div>
@@ -189,8 +190,8 @@ export default function Profile({ user }: ProfileProps) {
           <div className="TbdProfile__ColorText">Accent Color</div>
           <div className="TbdProfile__ColorPreview" style={{ backgroundColor: user.color }} />
           <div 
-            style={showEditIcon !== 'color' ? { opacity: 0 } : {}} 
             className="TbdProfile__EditIcon"
+            style={showEditIcon !== 'color' ? { opacity: 0 } : {}} 
           >
             <EditOutlined />
           </div>
