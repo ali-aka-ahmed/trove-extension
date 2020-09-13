@@ -24,14 +24,15 @@ export const sendMessage = (
 
   const promises = tabIds.map((tabId) => new Promise((resolve, reject) => {
     chrome.tabs.sendMessage(tabId, message, (response: Response) => {
-      if (response.complete) {
-        console.log('sent message', message, tabId)
-        resolve();
-      } else {
-        const err = `Failed to send message ${message.type} to tab ${tabId}.`;
-        console.error(err);
-        reject(err);
-      }
+      resolve();
+      // if (response.complete) {
+      //   console.log('sent message', message, tabId)
+      //   resolve();
+      // } else {
+      //   const err = `Failed to send message ${message.type} to tab ${tabId}.`;
+      //   console.error(err);
+      //   reject(err);
+      // }
     });
   }));
   
@@ -41,6 +42,14 @@ export const sendMessage = (
 export const getActiveTabs = (): Promise<chrome.tabs.Tab[]> => {
   return new Promise((resolve, reject) => {
     chrome.tabs.query({ active: true }, (tabs: chrome.tabs.Tab[]) => {
+      resolve(tabs);
+    });
+  });
+}
+
+export const getAllTabs = (): Promise<chrome.tabs.Tab[]> => {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
       resolve(tabs);
     });
   });
