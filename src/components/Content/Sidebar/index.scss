@@ -1,3 +1,5 @@
+@import '../../../styles/general.scss';
+
 $bubble-width: 55px;
 $content-width: 250px;
 $sidebar-margin: 15px;
@@ -33,10 +35,8 @@ $_exit-bubble-border-big: 15px;
   background-size: contain;
   border-radius: $bubble-width/2;
   cursor: pointer;
-  -webkit-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
-  -moz-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
-  box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   position: relative;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
 }
 
 .TbdSidebar__MainContent {
@@ -44,11 +44,9 @@ $_exit-bubble-border-big: 15px;
   width: $content-width;
   background-color: $background-color;
   border-radius: 5px;
-  -webkit-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
-  -moz-box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
-  box-shadow: 0px 0px 7.5px -1.5px rgba(125,125,125,0.5);
   position: relative;
   z-index: -2;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
 }
 
 .TbdSidebar__MainContent:before {
@@ -64,20 +62,12 @@ $_exit-bubble-border-big: 15px;
 
 .TbdSidebar__MainContent--position-left:before {
   left: 15px;
-  -webkit-transform: rotate(270deg);
-  -moz-transform: rotate(270deg);
-  -o-transform: rotate(270deg);
-  -ms-transform: rotate(270deg);
-  transform: rotate(270deg);
+  @include transform(rotate(270deg));
 }
 
 .TbdSidebar__MainContent--position-right:before {
   left: 195px;
-  -webkit-transform: rotate(90deg);
-  -moz-transform: rotate(90deg);
-  -o-transform: rotate(90deg);
-  -ms-transform: rotate(90deg);
-  transform: rotate(90deg);
+  @include transform(rotate(90));
 }
 
 .TbdSidebar__MainContent:after {
@@ -112,15 +102,15 @@ $_exit-bubble-border-big: 15px;
   background-position: center;
   background-repeat: no-repeat;
   background-size: 30px 30px;
-  box-shadow: inset 0px 0px 0px 1.5px #fafafa;
   box-sizing: content-box;
   -webkit-background-clip: padding-box; /* for Safari */
   background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
   transition: all 0.15s linear;
+  @include boxShadow(inset 0px 0px 0px 1.5px #fafafa);
 }
 
 .TbdExitBubble--hovered {
-  box-shadow: none;
+  @include boxShadow(none);
   border-width: $_exit-bubble-border-big;
   left: calc(50% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
   bottom: calc(10% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
