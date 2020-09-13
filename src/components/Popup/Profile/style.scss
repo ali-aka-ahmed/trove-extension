@@ -1,0 +1,159 @@
+@import '../../../styles/general.scss';
+
+// Profile tab
+.TbdProfile__Wrapper {
+  width: 100%;
+  height: 100%;
+  padding: 20px 25px;
+  line-height: $line-height;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.TbdProfile__Header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.TbdProfile__HeaderContent {
+  display: flex;
+  flex-direction: column;
+  align-content: flex-start;
+  justify-content: center;
+  margin-left: 5px;
+  word-break: break-all;
+}
+
+@mixin TbdProfile__PropertyWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 0 5px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 150ms;
+}
+
+@mixin TbdProfile__PropertyWrapperHover {
+  border: 1px solid #c4c4c4;
+  background-color: #c4c4c4;
+  transition: 150ms;
+}
+
+.TbdProfile__DisplayName {
+  @include TbdProfile__PropertyWrapper;
+  @include TbdFont--medium;
+}
+
+.TbdProfile__Username {
+  @include TbdProfile__PropertyWrapper;
+  @include TbdFont;
+}
+
+.TbdProfile__Color {
+  @include TbdProfile__PropertyWrapper;
+  @include TbdFont;
+  margin-top: 15px;
+}
+
+.TbdProfile__DisplayName:hover {
+  @include TbdProfile__PropertyWrapperHover;
+}
+
+.TbdProfile__Username:hover {
+  @include TbdProfile__PropertyWrapperHover;
+}
+
+.TbdProfile__Color:hover {
+  @include TbdProfile__PropertyWrapperHover;
+}
+
+.TbdProfile__ColorText {
+  @include TbdFont--small;
+  width: fit-content;
+}
+
+.TbdProfile__ColorPreview {
+  border-radius: 5px;
+  height: 20px;
+  width: 20px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.TbdProfile__InputPrefix {
+  @include TbdFont;
+}
+
+.TbdProfile__Input {
+  background-color: #c4c4c4;
+  border: 0;
+  outline: 0;
+  padding: 0;
+}
+
+.TbdProfile__Input--display-name {
+  width: 150px;
+  @include TbdFont--medium;
+}
+
+.TbdProfile__Input--username {
+  width: 75px;
+  @include TbdFont;
+}
+
+@mixin TbdProfileIcon {
+  margin-left: 5px;
+  display: flex;
+  justify-items: center;
+  align-items: center;
+  color: black;
+}
+
+.TbdProfile__EditIcon {
+  @include TbdProfileIcon;
+}
+
+.TbdProfile__SaveIcon {
+  @include TbdProfileIcon;
+  cursor: pointer;
+}
+
+.TbdProfile__SaveIcon--display-name {
+  @include TbdFont--medium;
+}
+
+.TbdProfile__SaveIcon--username {
+  @include TbdFont;
+}
+
+@mixin TbdProfile__EditWrapper {
+  display: flex;
+  width: fit-content;
+  border: 1px solid #c4c4c4;
+  background-color: #c4c4c4;
+  border-radius: 10px;
+  transition: 150ms;
+}
+
+.TbdProfile__EditDisplayName {
+  @include TbdProfile__EditWrapper;
+  padding: 0 5px;
+}
+
+.TbdProfile__EditUsername {
+  @include TbdProfile__EditWrapper;
+  padding: 0 5px;
+}
+
+.TbdProfile__EditColor {
+  @include TbdProfile__EditWrapper;
+  flex-direction: column;
+  padding-bottom: 5px;
+}
