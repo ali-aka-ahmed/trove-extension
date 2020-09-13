@@ -13,7 +13,6 @@ chrome.runtime.onMessage.addListener(async (message: Message, sender, sendRespon
 // Listen on when a tab becomes active
 chrome.tabs.onActivated.addListener((activeInfo) => {
   console.log(`Tab ${activeInfo.tabId} active.`);
-  triggerSync(activeInfo.tabId, ['isOpen', 'position']);
 });
 
 chrome.runtime.onStartup.addListener(async () => {

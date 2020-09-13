@@ -20,7 +20,7 @@ export default function Sidebar() {
   const [wasDragged, setWasDragged] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [shouldExit, setShouldExit] = useState(false);
-  const [isExited, setIsExited] = useState(false);
+  const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
   const bubbleRef = useRef(null);
   
@@ -112,7 +112,7 @@ export default function Sidebar() {
   const onClickBubble = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('clickbubble')
+    console.info('clickbubble');
 
     if (wasDragged) {
       // Click event firing after drag
@@ -124,14 +124,14 @@ export default function Sidebar() {
 
     if (shouldExit) {
       setShouldExit(false);
-      setIsExited(true);
+      setIsExtensionOn(false);
     }
   }, [isOpen, shouldExit, wasDragged, anchorSidebar]);
 
   const onClickPage = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('clickpage')
+    console.info('clickpage');
 
     const event = new MouseEvent('click', {
       bubbles: true,
@@ -143,7 +143,7 @@ export default function Sidebar() {
   const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondragstart')
+    console.info('ondragstart');
 
     setOffset(Point.fromEvent(e).getOffset(position));
     setIsDragging(true);
@@ -152,7 +152,7 @@ export default function Sidebar() {
   const onDrag = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondrag')
+    console.info('ondrag');
     
     if (isDragging) {
       setIsOpen(false);
@@ -166,7 +166,7 @@ export default function Sidebar() {
   const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondragend')
+    console.info('ondragend');
     setIsDragging(false);
 
     // onClick isn't called after a drag if mouseup is beyond bounds of window 
@@ -246,7 +246,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {!isExited && (
+      {isExtensionOn && (
         <div className="TbdSidebar" style={sidebarStyles}>
           <div
             className="TbdSidebar__LogoBubble"
