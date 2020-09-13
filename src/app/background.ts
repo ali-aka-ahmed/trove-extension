@@ -25,7 +25,7 @@ chrome.runtime.onStartup.addListener(async () => {
   await set({ user: userDetails, isAuthenticated: true });
 
   // If not, then show signup page (auth = false)
-})
+});
 
 // Extension installed or updated
 chrome.runtime.onInstalled.addListener(async () => {
@@ -38,4 +38,4 @@ chrome.runtime.onInstalled.addListener(async () => {
   await set({ user: userDetails, isAuthenticated: true });
 
   // If not, then show signup page (auth = false)
-})
+});

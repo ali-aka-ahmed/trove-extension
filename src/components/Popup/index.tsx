@@ -3,7 +3,9 @@ import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
 import { Notification as INotification, User as IUser } from '../../models';
 import { get, set } from '../../utils/chrome/storage';
+import { getAllTabs } from '../../utils/chrome/tabs';
 import { notifications as notificationData } from '../../utils/data';
+import { triggerSync } from '../Content/Sidebar/Syncer';
 import Notification from './Notification';
 import Profile from './Profile';
 import './style.scss';
@@ -17,7 +19,7 @@ function Popup() {
   /**
    * Global state.
    */
-  const [isExtensionOn, setIsExtensionOn] = useState(false);
+  const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<IUser | null>(null);
 
@@ -61,6 +63,7 @@ function Popup() {
    */
   const handleOnOff = async (checked: boolean) => {
     await set({ isExtensionOn: checked })
+      .then(async () => { triggerSync(await getAllTabs(), 'isExtensionOn'); });
   }
 
   return (
@@ -84,7 +87,7 @@ function Popup() {
           <div>Turn Accord</div>
           <div className="TbdPopupContainer__OnOff">{isExtensionOn ? 'OFF' : 'ON'}</div>
         </div>
-        <Switch onClick={(checked) => { handleOnOff(checked) }} checked={isExtensionOn} />
+        <Switch onClick={(checked) => { handleOnOff(checked); }} checked={isExtensionOn} />
       </div>
     </div>
   );
