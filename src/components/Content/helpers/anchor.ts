@@ -1,10 +1,10 @@
-import Point from "./Point";
+import Point, { IPoint } from "./Point";
 
 export type AnchorType = 'point' | 'div' | 'text';
 export type Anchor = {
   type: 'point'
-  location: Point,
-  bounds: Point
+  location: IPoint,
+  bounds: IPoint
 };
 
 export const getAnchor = (e: React.MouseEvent | MouseEvent): Anchor => {
@@ -49,4 +49,8 @@ export const getScrollWidth = (): number => {
 
 export const getAbsolutePosition = (relativePos: Point) => {
   return new Point(relativePos.x += getScrollLeft(), relativePos.y += getScrollTop());
+}
+
+export const getRelativePosition = (absolutePos: Point) => {
+  return new Point(absolutePos.x -= getScrollLeft(), absolutePos.y -= getScrollTop());
 }
