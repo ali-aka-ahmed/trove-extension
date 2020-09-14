@@ -2,7 +2,7 @@
 @import '../../styles/general.scss';
 
 $popup-width: 350px;
-$popup-height: 100px;
+$popup-height: 350px;
 
 $footer-height: 40px;
 
@@ -14,17 +14,24 @@ body {
   'Noto Color Emoji';
 }
 
+body, html {
+  width: $popup-width;
+  height: fit-content;
+}
+
 // Popup
 .TbdPopupContainer {
   border: none;
   color: black;
   width: $popup-width;
-  max-height: $popup-height;
 }
 
 .TbdPopupContainer__TabWrapper {
   margin-top: 45px;
   margin-bottom: $footer-height;
+  max-height: $popup-height;
+  height: fit-content;
+  overflow-y: auto;
 }
 
 .TbdPopupContainer__OnOffWrapper {
@@ -58,5 +65,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #ffffff;
   @include TbdFont--large; 
 }
