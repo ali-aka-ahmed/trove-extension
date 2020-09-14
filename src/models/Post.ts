@@ -11,7 +11,7 @@ export default interface Post {
   id: string;
   content: string;
   creationDatetime: number;
-  creator: User; // // id, displayName, username, color (no normalizedUsername, creationDatetime)
+  creator: User; // id, displayName, username, color (no normalizedUsername, creationDatetime)
   creatorUserId: string;
   url: string;
   parentId?: string;
