@@ -8,6 +8,8 @@ chrome.runtime.onMessage.addListener(async (message: Message, sender, sendRespon
   if (message.type.slice(0, 5) === 'sync.') {
     triggerSync(await getActiveTabs(), message);
   }
+
+  return true;
 });
 
 // Listen on when a tab becomes active
