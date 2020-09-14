@@ -9,6 +9,7 @@ export interface TaggedUser {
 
 export default interface Post {
   id: string;
+  anchor: Anchor;
   content: string;
   creationDatetime: number;
   creator: User; // id, displayName, username, color (no normalizedUsername, creationDatetime)
@@ -19,3 +20,14 @@ export default interface Post {
   taggedUserIds?: string[]; // includes parent user ids (for replies)
   taggedUsers?: TaggedUser[];
 };
+
+type Anchor = {
+  type: 'point'
+  location: Point,
+  scrollMax: Point
+};
+
+interface Point {
+  x: number;
+  y: number;
+}
