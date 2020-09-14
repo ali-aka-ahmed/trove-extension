@@ -5,6 +5,7 @@ import { Message } from '../../../utils/chrome/tabs';
 import Edge from '../helpers/Edge';
 import Point from '../helpers/Point';
 import Syncer from '../helpers/Syncer';
+import NewPost from './NewPost';
 
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
@@ -238,11 +239,17 @@ export default function Sidebar() {
     });
   }, []);
 
-  // Determine class denoting position of sidebar components
+  // Post list
+  const posts = () => {
+    
+  }
+
+  // Classes
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
   const contentPositionClass = `TbdSidebar__MainContent--position-${positionText}`;
   const exitBubbleHoveredClass = shouldExit ? 'TbdExitBubble--hovered' : '';
 
+  // Styles
   const sidebarStyles = useMemo(() => ({
     transform: `translate(${position.x}px, ${position.y}px)`,
     transition: isDragging ? 'none' : 'transform 150ms'
@@ -279,7 +286,7 @@ export default function Sidebar() {
             >
               <Tabs defaultActiveKey="1">
                 <Tabs.TabPane tab="comments" key="1">
-                  
+                  {[NewPost()]}
                 </Tabs.TabPane>
               </Tabs>
             </div>
