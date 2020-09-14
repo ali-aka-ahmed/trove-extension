@@ -24,18 +24,18 @@ function Popup() {
   const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
-    get(null).then(items => {
+    get(null).then((items) => {
       if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
       if (items.isAuthenticated) setIsAuthenticated(items.isAuthenticated);
       if (items.user) setUser(items.user);
     });
     
-    chrome.storage.onChanged.addListener(changes => {
+    chrome.storage.onChanged.addListener((changes) => {
       if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
       if (changes.isAuthenticated) setIsAuthenticated(changes.isAuthenticated.newValue);
       if (changes.user) setUser(changes.user.newValue);
     });
-  }, [])
+  }, []);
 
   /**
    * Establish socket to server to receive notifications.
@@ -55,7 +55,7 @@ function Popup() {
     }
 
     getNotifications();
-  }, [])
+  }, []);
 
   /**
    * Turn extension on/off. Save to global state.

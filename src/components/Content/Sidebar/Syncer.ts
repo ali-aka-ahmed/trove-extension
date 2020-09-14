@@ -49,6 +49,6 @@ export const triggerSync = <K extends keyof CS>(
     const type = `sync.${(message as string[]).join('.')}`;
     message = { type };
   }
-  
+
   sendMessage(tabs, message as Message);
 }
