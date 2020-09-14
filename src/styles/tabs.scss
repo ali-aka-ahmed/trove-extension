@@ -15,6 +15,7 @@
   position: fixed !important;
   width: 100%;
   background-color: #fafafa;
+  height: 46px;
 }
 
 // Tab text
@@ -46,4 +47,9 @@
 // Divider below tabs
 .ant-tabs-top > .ant-tabs-nav:before {
   border-bottom: 1px solid #e0e0e0 !important;
+}
+
+// Content wrapper 
+.ant-tabs-content-holder {
+  margin-top: 46px;
 }
