@@ -5,7 +5,7 @@ import { Notification as INotification, User as IUser } from '../../models';
 import { get, set } from '../../utils/chrome/storage';
 import { getAllTabs } from '../../utils/chrome/tabs';
 import { notifications as notificationData } from '../../utils/data';
-import { triggerSync } from '../Content/Sidebar/Syncer';
+import { triggerSync } from '../Content/helpers/Syncer';
 import Notification from './Notification';
 import Profile from './Profile';
 import './style.scss';
