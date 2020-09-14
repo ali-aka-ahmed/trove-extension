@@ -1,4 +1,5 @@
 import { User } from '.';
+import Point from '../components/Content/helpers/Point';
 
 export interface TaggedUser {
   id: string;
@@ -26,8 +27,3 @@ type Anchor = {
   location: Point,
   scrollMax: Point
 };
-
-interface Point {
-  x: number;
-  y: number;
-}
