@@ -1,5 +1,6 @@
 import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
 import Edge from './Edge';
 import Point from './Point';
@@ -204,7 +205,8 @@ export default function Sidebar() {
 
   const syncer = new Syncer({
     isOpen: setIsOpen,
-    position: setPosition
+    position: setPosition,
+    isExtensionOn: setIsExtensionOn
   });
 
   const onMessage = useCallback((
@@ -212,15 +214,29 @@ export default function Sidebar() {
     sender: chrome.runtime.MessageSender, 
     sendResponse: (response: any) => void
   ) => {
+    console.log('Received message')
     if (message.type.slice(0, 5) === 'sync.') {
       syncer.sync(message);
     }
+
+    return true;
   }, []);
 
   useEffect(() => {
     chrome.runtime.onMessage.addListener(onMessage);
     return () => { chrome.runtime.onMessage.removeListener(onMessage); };
   }, [onMessage]);
+
+  useEffect(() => {
+    get('isExtensionOn').then((items) => {
+      if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
+    });
+    
+    chrome.storage.onChanged.addListener((changes) => {
+      console.log('changed')
+      if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
+    });
+  }, []);
 
   // Determine class denoting position of sidebar components
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
