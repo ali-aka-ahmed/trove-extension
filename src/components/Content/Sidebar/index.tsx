@@ -2,8 +2,8 @@ import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
+import Point from '../helpers/Point';
 import Edge from './Edge';
-import Point from './Point';
 import Syncer from './Syncer';
 
 export const SIDEBAR_MARGIN = 15;

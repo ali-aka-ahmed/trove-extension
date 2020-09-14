@@ -1,4 +1,4 @@
-import Point from '../../components/Content/Sidebar/Point';
+import Point from '../../components/Content/helpers/Point';
 import { User } from '../../models';
 
 /**
