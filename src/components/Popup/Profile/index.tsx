@@ -30,6 +30,10 @@ export default function Profile({ user }: ProfileProps) {
   }
 
   const saveDisplayName = async () => {
+    if (displayName === user.displayName) {
+      setEditable(null);
+      return;
+    }
     setLoading('displayName');
     const vRes = validateDisplayName(displayName)
     if (!vRes.success) {
@@ -50,6 +54,10 @@ export default function Profile({ user }: ProfileProps) {
   }
 
   const saveUsername = async () => {
+    if (username === user.username) {
+      setEditable(null);
+      return;
+    }
     setLoading('username');
     const vRes = validateUsername(username)
     if (!vRes.success) {
@@ -70,6 +78,10 @@ export default function Profile({ user }: ProfileProps) {
   }
 
   const saveColor = async (newColor: string) => {
+    if (newColor === user.color) {
+      setEditable(null);
+      return;
+    }
     setLoading('color');
     const res = await updateColor(newColor);
     if (!res.error && res.user) {
@@ -93,9 +105,10 @@ export default function Profile({ user }: ProfileProps) {
         </div>
         <div className="TbdProfile__HeaderContent">
           {editable === 'displayName' ? (
-            <div className="TbdProfile__InputWrapper">
+            <div className="TbdProfile__EditDisplayName">
               <input
                 autoFocus
+                style={{width: `${(displayName.length+1)*8}px`}}
                 className="TbdProfile__Input TbdProfile__Input--display-name"
                 value={displayName} 
                 onChange={(e) => { setDisplayName(e.target.value) }}
@@ -116,21 +129,21 @@ export default function Profile({ user }: ProfileProps) {
             >
               {displayName}
               <div 
-                style={showEditIcon !== 'displayName' ? { opacity: 0 } : {}}
                 className="TbdProfile__EditIcon"
+                style={showEditIcon !== 'displayName' ? { opacity: 0 } : {}}
               >
                 <EditOutlined />
               </div>
             </div>
           )}
           {editable === 'username' ? (
-            <div className="TbdProfile__InputWrapper">
+            <div className="TbdProfile__EditUsername">
               <div className="TbdProfile__InputPrefix" style={{ color: user.color }}>@</div>
               <input
                 autoFocus
-                style={{ color: user.color }}
+                style={{ width: `${(username.length+1)*8}px`, color: user.color }}
                 className="TbdProfile__Input TbdProfile__Input--username"
-                value={username} 
+                value={username}
                 onChange={(e) => { setUsername(e.target.value) }}
               />
               <div 
@@ -150,8 +163,8 @@ export default function Profile({ user }: ProfileProps) {
             >
               {`@${username}`}
               <div 
-                style={showEditIcon !== 'username' ? { opacity: 0 } : {}}
                 className="TbdProfile__EditIcon"
+                style={showEditIcon !== 'username' ? { opacity: 0 } : {}}
               >
                 <EditOutlined />
               </div>
@@ -160,8 +173,11 @@ export default function Profile({ user }: ProfileProps) {
         </div>
       </div>
       {editable === 'color' ? (
-        <div className="TbdProfile__Color TbdProfile__InputWrapper">
-          <div className="TbdProfile__ColorText">Accent Color</div>
+        <div className="TbdProfile__Color TbdProfile__EditColor">
+          <div className="TbdProfile__ColorText">
+            Accent Color
+            {loading === 'color' && <LoadingOutlined />}
+          </div>
           <ColorPicker onSelect={saveColor} />
         </div>
       ) : (
@@ -174,8 +190,8 @@ export default function Profile({ user }: ProfileProps) {
           <div className="TbdProfile__ColorText">Accent Color</div>
           <div className="TbdProfile__ColorPreview" style={{ backgroundColor: user.color }} />
           <div 
-            style={showEditIcon !== 'color' ? { opacity: 0 } : {}} 
             className="TbdProfile__EditIcon"
+            style={showEditIcon !== 'color' ? { opacity: 0 } : {}} 
           >
             <EditOutlined />
           </div>
