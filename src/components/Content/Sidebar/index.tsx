@@ -1,8 +1,10 @@
 import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { get, set } from '../../../utils/chromeStorage';
+import { get } from '../../../utils/chrome/storage';
+import { Message } from '../../../utils/chrome/tabs';
 import Edge from './Edge';
 import Point from './Point';
+import Syncer from './Syncer';
 
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
@@ -19,7 +21,7 @@ export default function Sidebar() {
   const [wasDragged, setWasDragged] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [shouldExit, setShouldExit] = useState(false);
-  const [isExited, setIsExited] = useState(false);
+  const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
   const bubbleRef = useRef(null);
   
@@ -88,8 +90,6 @@ export default function Sidebar() {
       setPosition(pos = new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
-
-    set({ sidebarPosition: pos });
   }, [position, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -113,28 +113,26 @@ export default function Sidebar() {
   const onClickBubble = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('clickbubble')
+    console.info('clickbubble');
 
     if (wasDragged) {
       // Click event firing after drag
       setWasDragged(false);
     } else {
       // Normal click
-      const toggleIsOpen = !isOpen;
-      setIsOpen(toggleIsOpen);
-      set({ sidebarOpen: toggleIsOpen });
+      setIsOpen(!isOpen);
     }
 
     if (shouldExit) {
       setShouldExit(false);
-      setIsExited(true);
+      setIsExtensionOn(false);
     }
   }, [isOpen, shouldExit, wasDragged, anchorSidebar]);
 
   const onClickPage = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('clickpage')
+    console.info('clickpage');
 
     const event = new MouseEvent('click', {
       bubbles: true,
@@ -146,7 +144,7 @@ export default function Sidebar() {
   const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondragstart')
+    console.info('ondragstart');
 
     setOffset(Point.fromEvent(e).getOffset(position));
     setIsDragging(true);
@@ -155,11 +153,10 @@ export default function Sidebar() {
   const onDrag = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondrag')
+    console.info('ondrag');
     
     if (isDragging) {
       setIsOpen(false);
-      set({ sidebarOpen: false });
       setWasDragged(true);
 
       // Snap to exit bubble if applicable
@@ -170,25 +167,12 @@ export default function Sidebar() {
   const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondragend')
+    console.info('ondragend');
     setIsDragging(false);
 
     // onClick isn't called after a drag if mouseup is beyond bounds of window 
     if (wasDragged) anchorSidebar();
   }, [offset, wasDragged, anchorSidebar]);
-
-  const onMessage = useCallback((
-    message: any, 
-    sender: chrome.runtime.MessageSender, 
-    sendResponse: (response: any) => void
-  ) => {
-    if (message.type === 'onActivated') {
-      get(['sidebarOpen', 'sidebarPosition']).then((items) => {
-        if (items.sidebarPosition !== undefined) setPosition(items.sidebarPosition);
-        if (items.sidebarOpen !== undefined) setIsOpen(items.sidebarOpen);
-      });
-    }
-  }, []);
 
   useEffect(() => {
     if (isDragging) {
@@ -217,12 +201,42 @@ export default function Sidebar() {
 
   useEffect(() => {
     anchorSidebar();
-  }, [isOpen])
+  }, [isOpen]);
+
+  const syncer = new Syncer({
+    isOpen: setIsOpen,
+    position: setPosition,
+    isExtensionOn: setIsExtensionOn
+  });
+
+  const onMessage = useCallback((
+    message: Message, 
+    sender: chrome.runtime.MessageSender, 
+    sendResponse: (response: any) => void
+  ) => {
+    console.log('Received message')
+    if (message.type.slice(0, 5) === 'sync.') {
+      syncer.sync(message);
+    }
+
+    return true;
+  }, []);
 
   useEffect(() => {
     chrome.runtime.onMessage.addListener(onMessage);
     return () => { chrome.runtime.onMessage.removeListener(onMessage); };
   }, [onMessage]);
+
+  useEffect(() => {
+    get('isExtensionOn').then((items) => {
+      if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
+    });
+    
+    chrome.storage.onChanged.addListener((changes) => {
+      console.log('changed')
+      if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
+    });
+  }, []);
 
   // Determine class denoting position of sidebar components
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
@@ -248,7 +262,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {!isExited && (
+      {isExtensionOn && (
         <div className="TbdSidebar" style={sidebarStyles}>
           <div
             className="TbdSidebar__LogoBubble"

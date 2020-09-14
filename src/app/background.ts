@@ -1,12 +1,20 @@
-import { set } from '../utils/chromeStorage';
+import { triggerSync } from "../components/Content/Sidebar/Syncer";
+import { set } from '../utils/chrome/storage';
+import { getActiveTabs, Message } from "../utils/chrome/tabs";
 import { users } from '../utils/data';
 
-// Listen to messages sent from other parts of the extension.
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  // onMessage must return 'true' if response is async.
-  let isResponseAsync = false;
-  if (request.popupMounted) console.log('eventPage notified that Popup.tsx has mounted.');
-  return isResponseAsync;
+// Listen to messages sent from other parts of the extension
+chrome.runtime.onMessage.addListener(async (message: Message, sender, sendResponse) => {
+  if (message.type.slice(0, 5) === 'sync.') {
+    triggerSync(await getActiveTabs(), message);
+  }
+
+  return true;
+});
+
+// Listen on when a tab becomes active
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  console.log(`Tab ${activeInfo.tabId} active.`);
 });
 
 chrome.runtime.onStartup.addListener(async () => {
@@ -16,10 +24,10 @@ chrome.runtime.onStartup.addListener(async () => {
 
   // If it does, then log the user in and fetch their details (auth = true)
   const userDetails = users.find(user => user.id === 'fce65bd0-8af5-4504-a19d-8cbc767693f7')!;
-  await set({ user: userDetails, authenticated: true });
+  await set({ user: userDetails, isAuthenticated: true });
 
   // If not, then show signup page (auth = false)
-})
+});
 
 // Extension installed or updated
 chrome.runtime.onInstalled.addListener(async () => {
@@ -29,12 +37,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 
   // If it does, then log the user in and fetch their details (auth = true)
   const userDetails = users.find(user => user.id === 'fce65bd0-8af5-4504-a19d-8cbc767693f7')!;
-  await set({ user: userDetails, authenticated: true });
+  await set({ user: userDetails, isAuthenticated: true });
 
   // If not, then show signup page (auth = false)
-})
-
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  console.log(`Tab ${activeInfo.tabId} active.`);
-  chrome.tabs.sendMessage(activeInfo.tabId, { type: 'onActivated' });
 });
