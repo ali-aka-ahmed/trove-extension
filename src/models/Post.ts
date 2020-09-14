@@ -1,5 +1,5 @@
 import { User } from '.';
-import Point from '../components/Content/helpers/Point';
+import { Anchor } from '../components/Content/helpers/anchor';
 
 export interface TaggedUser {
   id: string;
@@ -20,10 +20,4 @@ export default interface Post {
   replies?: Post[];
   taggedUserIds?: string[]; // includes parent user ids (for replies)
   taggedUsers?: TaggedUser[];
-};
-
-type Anchor = {
-  type: 'point'
-  location: Point,
-  scrollMax: Point
 };
