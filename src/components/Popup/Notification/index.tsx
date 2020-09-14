@@ -17,6 +17,7 @@ const Notification = ({ notification }: NotificationProps) => {
     const getUserColor = (tag: string): string | undefined => { 
       return notification.taggedUsers?.find(user => user.username === tag.slice(1))?.color; 
     }
+    
     return (
       <>
         {tokenizedContent.map((subString, i) => 
