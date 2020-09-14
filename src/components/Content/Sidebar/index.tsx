@@ -286,7 +286,7 @@ export default function Sidebar() {
             >
               <Tabs defaultActiveKey="1">
                 <Tabs.TabPane tab="comments" key="1">
-                  {[NewPost()]}
+                  {<NewPost />}
                 </Tabs.TabPane>
               </Tabs>
             </div>
