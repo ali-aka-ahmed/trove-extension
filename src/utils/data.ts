@@ -38,6 +38,11 @@ export const users: IUser[] = [
 export const posts: IPost[] = [
   {
     id: '4ff4be94-b0ac-4da5-9224-652993095c25',
+    anchor: {
+      type: 'point',
+      location: {x: 0, y: 0},
+      bounds: {x: 0, y: 0}
+    },
     content: '@aki yo check this out',
     creationDatetime: 1599521212817,
     creator: {
