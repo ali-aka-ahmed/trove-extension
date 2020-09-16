@@ -1,14 +1,16 @@
-import { Button } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Input } from 'antd';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { Post } from '../../../../models';
 import { get } from '../../../../utils/chrome/storage';
 import { getAnchor } from '../../helpers/anchor';
 
 const MAX_POST_LENGTH = 280;
+const { TextArea } = Input;
 
 export default function NewPost() {
   const [isAnchoring, setIsAnchoring] = useState(false);
+  const [isAnchored, setIsAnchored] = useState(false);
   const [post, setPost] = useState({} as Partial<Post>);
 
   const canSubmit = useCallback(() => {
@@ -20,7 +22,7 @@ export default function NewPost() {
   }, [post]);
 
   const submit = useCallback(() => {
-    // TODO: compute tagged users
+    // TODO: compute tagged users (this should prob happen in an onChange fn)
     // TODO: make sure anchor was done on this url
     setPost({
       ...post,
@@ -31,6 +33,7 @@ export default function NewPost() {
   
   const clickAnchorButton = (e) => {
     console.log("HELP")
+    setIsAnchored(false);
     setIsAnchoring(true);
   }
 
@@ -49,6 +52,7 @@ export default function NewPost() {
       anchor: getAnchor(e)
     });
     setIsAnchoring(false);
+    setIsAnchored(true);
   }, [post]);
 
   useEffect(() => {
@@ -73,17 +77,27 @@ export default function NewPost() {
     });
   }, []);
 
+  // Styles
+  const anchorStyles = useMemo(() => ({
+    backgroundColor: post.creator?.color,
+    transform: post.anchor ? `translate(${post.anchor.location.x}, ${post.anchor.location.y})` : 'none'
+  }), [post.creator?.color, post.anchor?.location]);
+
   return (
-    <div className="TbdNewComment">
-      <p className="TbdNewComment__Text">fake text</p>
+    <div className="TbdNewPost">
+      <TextArea 
+        placeholder="The pen is mightier than the sword."
+        autoSize={{ minRows: 4 }} 
+      />
       <Button 
         type="primary" 
         shape="circle" 
         onClick={clickAnchorButton}
       >
-        A
+        B
       </Button>
       <Button type="primary" onClick={clickSubmitButton}>POST</Button>
+      {isAnchored && <div className="TbdNewPost__Anchor" style={anchorStyles}></div>}
     </div>
   );
 }
