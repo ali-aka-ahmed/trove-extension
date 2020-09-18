@@ -1,4 +1,3 @@
-import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
@@ -20,8 +19,10 @@ export default function Sidebar() {
   const [offset, setOffset] = useState(new Point(0, 0));
   const [isDragging, setIsDragging] = useState(false);
   const [wasDragged, setWasDragged] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [shouldExit, setShouldExit] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const [shouldHide, setShouldHide] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const [isComposing, setIsComposing] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
   const bubbleRef = useRef(null);
@@ -103,11 +104,11 @@ export default function Sidebar() {
 
     // Snap to center of exit bubble if cursor is dragging logo bubble w/in a 40px radius
     if (point.getDistance(exitCenter) < 40) {
-      setShouldExit(true);
+      setShouldHide(true);
       return exitCenter.getOffset(new Point(BUBBLE_HEIGHT/2, BUBBLE_HEIGHT/2));
     }
 
-    setShouldExit(false);
+    setShouldHide(false);
     return null;
   }
 
@@ -124,11 +125,11 @@ export default function Sidebar() {
       setIsOpen(!isOpen);
     }
 
-    if (shouldExit) {
-      setShouldExit(false);
+    if (shouldHide) {
+      setShouldHide(false);
       setIsExtensionOn(false);
     }
-  }, [isOpen, shouldExit, wasDragged, anchorSidebar]);
+  }, [isOpen, shouldHide, wasDragged, anchorSidebar]);
 
   const onClickPage = useCallback((e: MouseEvent) => {
     e.preventDefault();
@@ -247,7 +248,7 @@ export default function Sidebar() {
   // Classes
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
   const contentPositionClass = `TbdSidebar__MainContent--position-${positionText}`;
-  const exitBubbleHoveredClass = shouldExit ? 'TbdExitBubble--hovered' : '';
+  const exitBubbleHoveredClass = shouldHide ? 'TbdExitBubble--hovered' : '';
 
   // Styles
   const sidebarStyles = useMemo(() => ({
@@ -284,11 +285,13 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              <Tabs defaultActiveKey="1">
+              {/* <Tabs defaultActiveKey="1">
                 <Tabs.TabPane tab="comments" key="1">
-                  {<NewPost />}
+                  
                 </Tabs.TabPane>
-              </Tabs>
+              </Tabs> */}
+              {isComposing && <NewPost />}
+              <div className="TbdSidebar__MainContent__NewPostButton"></div>
             </div>
           )}
         </div>
