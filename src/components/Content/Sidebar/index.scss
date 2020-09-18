@@ -65,7 +65,7 @@ $_exit-bubble-border-big: 15px;
 
 .TbdSidebar__MainContent--position-right:before {
   left: 195px;
-  @include transform(rotate(90));
+  @include transform(rotate(90deg));
 }
 
 .TbdSidebar__MainContent:after {
@@ -84,6 +84,20 @@ $_exit-bubble-border-big: 15px;
 
 .TbdSidebar__MainContent--position-right:after {
   left: 202.5px;
+}
+
+.TbdSidebar__MainContent__NewPostButton {
+  height: 45px;
+  width: 45px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-image: url('../../../../public/images/exit.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 30px 30px;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
 }
 
 .TbdExitBubble {
@@ -108,8 +122,8 @@ $_exit-bubble-border-big: 15px;
 }
 
 .TbdExitBubble--hovered {
-  @include boxShadow(none);
   border-width: $_exit-bubble-border-big;
   left: calc(50% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
   bottom: calc(10% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
+  @include boxShadow(none);
 }
