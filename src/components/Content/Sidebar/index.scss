@@ -93,11 +93,19 @@ $_exit-bubble-border-big: 15px;
   position: absolute;
   bottom: 20px;
   right: 20px;
-  background-image: url('../../../../public/images/exit.svg');
+  background-color: #0d77e2;
+  background-image: url('../../../../public/images/new-post-icon.svg');
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 30px 30px;
+  background-size: 20px 20px;
+  cursor: pointer;
+  transition: all 0.1s linear;
   @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
+  @include transform(rotate(45deg));
+}
+
+.TbdSidebar__MainContent__NewPostButton--composing {
+  @include transform(rotate(90deg));
 }
 
 .TbdExitBubble {
