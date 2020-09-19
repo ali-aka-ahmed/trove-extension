@@ -80,16 +80,15 @@ export default function Sidebar() {
     const rightDx = width - (position.x + getSidebarWidth());
 
     // Set new position on closest edge
-    let pos: Point;
     const minY = SIDEBAR_MARGIN;
     const maxY = height - getSidebarHeight() - SIDEBAR_MARGIN;
     const newY = Math.min(Math.max(minY, position.y), maxY);
     if (leftDx < rightDx) {
-      setPosition(pos = new Point(SIDEBAR_MARGIN, newY));
+      setPosition(new Point(SIDEBAR_MARGIN, newY));
       setClosestEdge(Edge.Left);
     } else { 
       const newX = width - BUBBLE_HEIGHT - SIDEBAR_MARGIN;
-      setPosition(pos = new Point(newX, newY));
+      setPosition(new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
   }, [position, getSidebarWidth, getSidebarHeight]);
@@ -142,6 +141,10 @@ export default function Sidebar() {
     });
     (bubbleRef.current! as HTMLElement).dispatchEvent(event);
   }, [bubbleRef]);
+
+  const onClickNewPostButton = useCallback((e: React.MouseEvent) => {
+    setIsComposing(!isComposing);
+  }, [isComposing]);
 
   const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
@@ -248,6 +251,7 @@ export default function Sidebar() {
   // Classes
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
   const contentPositionClass = `TbdSidebar__MainContent--position-${positionText}`;
+  const newPostButtonClass = isComposing ? 'TbdSidebar__MainContent__NewPostButton--composing' : '';
   const exitBubbleHoveredClass = shouldHide ? 'TbdExitBubble--hovered' : '';
 
   // Styles
@@ -291,7 +295,10 @@ export default function Sidebar() {
                 </Tabs.TabPane>
               </Tabs> */}
               {isComposing && <NewPost />}
-              <div className="TbdSidebar__MainContent__NewPostButton"></div>
+              <div 
+                className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
+                onClick={onClickNewPostButton}
+              ></div>
             </div>
           )}
         </div>
