@@ -15,16 +15,16 @@ export const CONTENT_WIDTH = 250;
 export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
-  const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
-  const [offset, setOffset] = useState(new Point(0, 0));
-  const [isDragging, setIsDragging] = useState(false);
-  const [wasDragged, setWasDragged] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [shouldHide, setShouldHide] = useState(false);
-  const [isHidden, setIsHidden] = useState(false);
-  const [isComposing, setIsComposing] = useState(false);
-  const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
+  const [isComposing, setIsComposing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isExtensionOn, setIsExtensionOn] = useState(true);
+  const [isHidden, setIsHidden] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [offset, setOffset] = useState(new Point(0, 0));
+  const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
+  const [shouldHide, setShouldHide] = useState(false);
+  const [wasDragged, setWasDragged] = useState(false);
   const bubbleRef = useRef(null);
   
   const getSidebarHeight = useCallback(() => {
