@@ -1,5 +1,5 @@
 /**
- * Convert Range to XRange.
+ * Convert Range to XRange. Useful for serialization.
  * @param range 
  */
 export const getXRangeFromRange = (range: Range): XRange => ({
@@ -27,7 +27,7 @@ export const getRangeFromXRange = (xRange: XRange): Range | null => {
   return range;
 }
 
-interface XRange {
+export interface XRange {
   startContainerPath: string;
   endContainerPath: string;
   startOffset: number;

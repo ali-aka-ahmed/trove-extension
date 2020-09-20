@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { Post } from '../../../../models';
 import { get } from '../../../../utils/chrome/storage';
-import { getAnchor } from '../../helpers/anchor';
+import { Anchor, AnchorType } from '../../helpers/anchor/anchor';
 
 const MAX_POST_LENGTH = 280;
 const { TextArea } = Input;
@@ -47,12 +47,13 @@ export default function NewPost() {
     console.info('comment: clickpage');
     // TODO: anchor point cannot be on tbd elements
     
-    setPost({
-      ...post,
-      anchor: getAnchor(e)
-    });
-    setIsAnchoring(false);
-    setIsAnchored(true);
+    // TODO: anchoring via point
+    // setPost({
+    //   ...post,
+    //   anchor: getAnchor(e)
+    // });
+    // setIsAnchoring(false);
+    // setIsAnchored(true);
   }, [post]);
 
   useEffect(() => {
@@ -67,21 +68,33 @@ export default function NewPost() {
 
   useEffect(() => {
     get('user').then((items) => {
+      // Attach anchor if text is already selected when new post button is clicked
+      let anchor: Anchor | undefined = undefined;
+      const selection = document.getSelection();
+      if (selection?.toString()) {
+        anchor = {
+          type: AnchorType.Text,
+          range: selection.getRangeAt(0)
+        };
+      }
+
       setPost({ 
         ...post,
+        anchor,
         id: uuid(),
         content: '',
         creator: items.user,
         creatorUserId: items.user.id
       });
     });
+
+    
   }, []);
 
   // Styles
   const anchorStyles = useMemo(() => ({
-    backgroundColor: post.creator?.color,
-    transform: post.anchor ? `translate(${post.anchor.location.x}, ${post.anchor.location.y})` : 'none'
-  }), [post.creator?.color, post.anchor?.location]);
+    backgroundColor: post.creator?.color
+  }), [post.creator?.color]);
 
   return (
     <div className="TbdNewPost">
