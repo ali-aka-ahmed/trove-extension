@@ -1,5 +1,5 @@
 import { User } from '.';
-import { Anchor } from '../components/Content/helpers/anchor';
+import { Anchor } from '../components/Content/helpers/anchor/anchor';
 
 export interface TaggedUser {
   id: string;
