@@ -19,7 +19,7 @@ export default function Sidebar() {
   const [offset, setOffset] = useState(new Point(0, 0));
   const [isDragging, setIsDragging] = useState(false);
   const [wasDragged, setWasDragged] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [shouldHide, setShouldHide] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [isComposing, setIsComposing] = useState(false);
