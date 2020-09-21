@@ -89,7 +89,7 @@ export default function NewPost() {
     });
 
     
-  }, []);
+  }, [document.getSelection()]);
 
   // Styles
   const anchorStyles = useMemo(() => ({
@@ -107,10 +107,9 @@ export default function NewPost() {
         shape="circle" 
         onClick={clickAnchorButton}
       >
-        B
+        A
       </Button>
       <Button type="primary" onClick={clickSubmitButton}>POST</Button>
-      {isAnchored && <div className="TbdNewPost__Anchor" style={anchorStyles}></div>}
     </div>
   );
 }

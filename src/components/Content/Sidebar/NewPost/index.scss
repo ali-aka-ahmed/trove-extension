@@ -1,9 +1,11 @@
 $anchor-diameter: 20px;
 
-.TbdNewPost__Anchor {
-  position: absolute;
-  width: $anchor-diameter;
-  height: $anchor-diameter;
-  border-radius: $anchor-diameter/2;
-  border: 2px solid #fafafa;
+.TbdNewPost > .ant-input {
+  border: none;
+  background-color: #fafafa;
+  resize: none;
+}
+
+.TbdNewPost > .ant-input::-webkit-resizer {
+  display: none;
 }

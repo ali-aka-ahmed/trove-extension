@@ -100,7 +100,7 @@ $_exit-bubble-border-big: 15px;
   background-size: 20px 20px;
   cursor: pointer;
   transition: all 0.1s linear;
-  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.7));
   @include transform(rotate(45deg));
 }
 
