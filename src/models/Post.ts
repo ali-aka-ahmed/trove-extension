@@ -10,12 +10,12 @@ export interface TaggedUser {
 
 export default interface Post {
   id: string;
-  anchor: Anchor;
   content: string;
   creationDatetime: number;
   creator: User; // id, displayName, username, color (no normalizedUsername, creationDatetime)
   creatorUserId: string;
   url: string;
+  anchor?: Anchor;
   parentId?: string;
   replies?: Post[];
   taggedUserIds?: string[]; // includes parent user ids (for replies)
