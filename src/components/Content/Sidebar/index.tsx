@@ -295,10 +295,10 @@ export default function Sidebar() {
                 </Tabs.TabPane>
               </Tabs> */}
               {isComposing && <NewPost />}
-              <div 
+              <button 
                 className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
                 onClick={onClickNewPostButton}
-              ></div>
+              ></button>
             </div>
           )}
         </div>
