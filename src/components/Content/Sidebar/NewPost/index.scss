@@ -1,11 +1,28 @@
-$anchor-diameter: 20px;
+$background-color: #fff;
 
 .TbdNewPost > .ant-input {
+  border-radius: 5px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
   border: none;
-  background-color: #fafafa;
+  border-bottom: 2px solid rgba(225, 225, 225, 0.3);
+  margin: 3px 0px 10px 0px;
+  background-color: $background-color;
   resize: none;
+}
+
+.TbdNewPost > .ant-input:focus {
+  box-shadow: none;
 }
 
 .TbdNewPost > .ant-input::-webkit-resizer {
   display: none;
+}
+
+.TbdNewPost > .ant-input::-webkit-input-placeholder,
+.TbdNewPost > .ant-input:-moz-placeholder, /* Firefox 18- */
+.TbdNewPost > .ant-input::-moz-placeholder,  /* Firefox 19+ */
+.TbdNewPost > .ant-input:-ms-input-placeholder,
+.TbdNewPost > .ant-input::placeholder {
+  color: rgba(225, 225, 225, 0.25);
 }
