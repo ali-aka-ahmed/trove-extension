@@ -4,7 +4,7 @@ $bubble-width: 55px;
 $content-width: 250px;
 $sidebar-margin: 15px;
 $accent-color: #0d77e2;
-$background-color: #fafafa;
+$background-color: #fff;
 
 $_triangle-height: 22px;
 $_triangle-base: 40px;
@@ -89,6 +89,8 @@ $_exit-bubble-border-big: 15px;
 .TbdSidebar__MainContent__NewPostButton {
   height: 45px;
   width: 45px;
+  border: none;
+  outline: none;
   border-radius: 50%;
   position: absolute;
   bottom: 20px;
