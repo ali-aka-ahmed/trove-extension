@@ -5,7 +5,7 @@ import { Post } from '../../../../models';
 import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
 import { Anchor, AnchorType } from '../../helpers/anchor/anchor';
-import { mark } from '../../helpers/anchor/mark';
+import { mark, MarkId } from '../../helpers/anchor/mark';
 
 const MAX_POST_LENGTH = 280;
 const { TextArea } = Input;
@@ -80,7 +80,9 @@ export default function NewPost() {
           range: selection.getRangeAt(0)
         };
 
-        mark(selection);
+        // Mark and clear selection
+        mark(selection.getRangeAt(0), MarkId.NewPost);
+        selection.removeAllRanges();
       }
 
       setPost({ 
