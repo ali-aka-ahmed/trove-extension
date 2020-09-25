@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Anchor, AnchorType } from '../../../common';
 import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
-import { Anchor, AnchorType } from '../helpers/anchor/anchor';
 import { addMarks, MarkId, removeMarks } from '../helpers/anchor/mark';
 import Edge from '../helpers/Edge';
 import Point from '../helpers/Point';

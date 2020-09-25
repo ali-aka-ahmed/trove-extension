@@ -3,7 +3,7 @@ import { User } from './User';
 /**
  * @enum {number} AnchorType
  */
-enum AnchorType {
+export enum AnchorType {
   Div,
   Point,
   Text,
@@ -12,7 +12,7 @@ enum AnchorType {
 /**
  * @interface Point
  */
-interface Point {
+export interface Point {
   x: number;
   y: number;
 }

@@ -1,19 +1,5 @@
-import Point, { IPoint } from "../Point";
-
-export enum AnchorType {
-  Div, 
-  Point,
-  Text,
-};
-
-export type Anchor = {
-  type: AnchorType.Point;
-  location: IPoint;
-  bounds: IPoint;
-} | {
-  type: AnchorType.Text;
-  range: Range;
-};
+import { Anchor, AnchorType } from '../../../../common';
+import Point from "../Point";
 
 export const parseAnchor = (anchor: Anchor) => {
   switch (anchor.type) {
@@ -25,7 +11,6 @@ export const parseAnchor = (anchor: Anchor) => {
 }
 
 const parseAnchorText = (anchor: Anchor & { type: AnchorType.Text }) => {
-
 }
 
 const parseAnchorPoint = (anchor: Anchor & { type: AnchorType.Point }) => {
