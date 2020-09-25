@@ -15,7 +15,7 @@ export enum MarkDataKey {
   NextMarkId  = 'tbdSuccessorId'
 };
 
-export const mark = (range: Range, id: MarkId, color?: string) => {
+export const addMarks = (range: Range, id: MarkId, color?: string) => {
   let start = range.startContainer;
   let end = range.endContainer;
   let hasContent = true;
@@ -102,6 +102,48 @@ export const mark = (range: Range, id: MarkId, color?: string) => {
   }
 }
 
+export const removeMarks = (id: string) => {
+  const marks = getMarks(id);
+  for (const mark of marks) {
+    // Move each child of mark and merge if appropriate
+    while (mark.hasChildNodes()) {
+      const origNode = mark.parentNode?.insertBefore(mark.firstChild!, mark);
+      if (origNode?.nodeType === Node.TEXT_NODE) {
+        mergeTextNodes(origNode);
+      }
+    }
+
+    // Clean up mark and merge text nodes around mark if possible
+    const prevSibling = mark.previousSibling;
+    mark.parentNode?.removeChild(mark);
+    if (prevSibling && prevSibling.nodeType === Node.TEXT_NODE) {
+      mergeTextNodes(prevSibling)
+    }
+  }
+
+  return marks;
+}
+
+const getMarks = (id: string) => {
+  const mark = document.getElementById(id);
+  if (!mark) return [];
+
+  // Get root from data attribute or treat this mark as root otherwise
+  const root = !!mark 
+    && !!mark.dataset[MarkDataKey.FirstMarkId] 
+    && document.getElementById(mark.dataset[MarkDataKey.FirstMarkId]!);
+  const marks: HTMLElement[] = [root || mark];
+
+  // Follow mark chain and add each mark to list
+  let nextMarkId: string | undefined;
+  while (nextMarkId = marks[marks.length-1].dataset[MarkDataKey.NextMarkId]) {
+    const nextMark = document.querySelector(`[${attr(MarkDataKey.ThisMarkId)}="${nextMarkId}"]`);
+    if (nextMark) marks.push(nextMark as HTMLElement);
+  }
+
+  return marks;
+}
+
 const isTable = (node: Node) => {
   const types = [
     HTMLTableElement, 
@@ -119,6 +161,24 @@ const isTerminal = (node: Node) => {
     HTMLSelectElement
   ];
   return types.some(type => node.parentNode instanceof type);
+}
+
+const mergeTextNodes = (node: Node) => {
+  if (node.nodeType !== Node.TEXT_NODE) return;
+
+  // Check if we can merge node with next sibling and remove sibling
+  const nextNode = node.nextSibling;
+  if (nextNode && nextNode.nodeType === Node.TEXT_NODE) {
+    node.textContent = (node.textContent || '') + (nextNode.textContent || '');
+    nextNode.parentNode?.removeChild(nextNode);
+  }
+
+  // Check if we can merge node with prev sibling and remove node
+  const prevNode = node.previousSibling;
+  if (prevNode && prevNode.nodeType === Node.TEXT_NODE) {
+    prevNode.textContent = (prevNode.textContent || '') + (node.textContent || '');
+    node.parentNode?.removeChild(node);
+  }
 }
 
 type valueof<T> = T[keyof T];
