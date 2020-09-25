@@ -1,8 +1,12 @@
-import { Tabs } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { get, set } from '../../../utils/chromeStorage';
-import Edge from './Edge';
-import Point from './Point';
+import { get } from '../../../utils/chrome/storage';
+import { Message } from '../../../utils/chrome/tabs';
+import { Anchor, AnchorType } from '../helpers/anchor/anchor';
+import { addMarks, MarkId, removeMarks } from '../helpers/anchor/mark';
+import Edge from '../helpers/Edge';
+import Point from '../helpers/Point';
+import Syncer from '../helpers/Syncer';
+import NewPost from './NewPost';
 
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
@@ -13,14 +17,17 @@ export const CONTENT_WIDTH = 250;
 export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
-  const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
-  const [offset, setOffset] = useState(new Point(0, 0));
-  const [isDragging, setIsDragging] = useState(false);
-  const [wasDragged, setWasDragged] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [shouldExit, setShouldExit] = useState(false);
-  const [isExited, setIsExited] = useState(false);
+  const [anchor, setAnchor] = useState<Anchor | undefined>(undefined);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
+  const [isComposing, setIsComposing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isExtensionOn, setIsExtensionOn] = useState(true);
+  const [isHidden, setIsHidden] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [offset, setOffset] = useState(new Point(0, 0));
+  const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
+  const [shouldHide, setShouldHide] = useState(false);
+  const [wasDragged, setWasDragged] = useState(false);
   const bubbleRef = useRef(null);
   
   const getSidebarHeight = useCallback(() => {
@@ -76,20 +83,17 @@ export default function Sidebar() {
     const rightDx = width - (position.x + getSidebarWidth());
 
     // Set new position on closest edge
-    let pos: Point;
     const minY = SIDEBAR_MARGIN;
     const maxY = height - getSidebarHeight() - SIDEBAR_MARGIN;
     const newY = Math.min(Math.max(minY, position.y), maxY);
     if (leftDx < rightDx) {
-      setPosition(pos = new Point(SIDEBAR_MARGIN, newY));
+      setPosition(new Point(SIDEBAR_MARGIN, newY));
       setClosestEdge(Edge.Left);
     } else { 
       const newX = width - BUBBLE_HEIGHT - SIDEBAR_MARGIN;
-      setPosition(pos = new Point(newX, newY));
+      setPosition(new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
-
-    set({ sidebarPosition: pos });
   }, [position, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -102,39 +106,37 @@ export default function Sidebar() {
 
     // Snap to center of exit bubble if cursor is dragging logo bubble w/in a 40px radius
     if (point.getDistance(exitCenter) < 40) {
-      setShouldExit(true);
+      setShouldHide(true);
       return exitCenter.getOffset(new Point(BUBBLE_HEIGHT/2, BUBBLE_HEIGHT/2));
     }
 
-    setShouldExit(false);
+    setShouldHide(false);
     return null;
   }
 
   const onClickBubble = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('clickbubble')
+    console.info('clickbubble');
 
     if (wasDragged) {
       // Click event firing after drag
       setWasDragged(false);
     } else {
       // Normal click
-      const toggleIsOpen = !isOpen;
-      setIsOpen(toggleIsOpen);
-      set({ sidebarOpen: toggleIsOpen });
+      setIsOpen(!isOpen);
     }
 
-    if (shouldExit) {
-      setShouldExit(false);
-      setIsExited(true);
+    if (shouldHide) {
+      setShouldHide(false);
+      setIsExtensionOn(false);
     }
-  }, [isOpen, shouldExit, wasDragged, anchorSidebar]);
+  }, [isOpen, shouldHide, wasDragged, anchorSidebar]);
 
   const onClickPage = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('clickpage')
+    console.info('clickpage');
 
     const event = new MouseEvent('click', {
       bubbles: true,
@@ -143,10 +145,32 @@ export default function Sidebar() {
     (bubbleRef.current! as HTMLElement).dispatchEvent(event);
   }, [bubbleRef]);
 
+  const onClickNewPostButton = useCallback((e: React.MouseEvent) => {
+    if (isComposing) {
+      removeMarks(MarkId.NewPost);
+    } else {
+      // Attach anchor if text is already selected when new post button is clicked
+      const selection = document.getSelection();
+      if (selection?.toString()) {
+        const range = selection.getRangeAt(0);
+        setAnchor({
+          range,
+          type: AnchorType.Text
+        });
+
+        // Mark and clear selection
+        addMarks(range, MarkId.NewPost);
+        selection.removeAllRanges();
+      }
+    }
+
+    setIsComposing(!isComposing);
+  }, [isComposing]);
+
   const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondragstart')
+    console.info('ondragstart');
 
     setOffset(Point.fromEvent(e).getOffset(position));
     setIsDragging(true);
@@ -155,11 +179,10 @@ export default function Sidebar() {
   const onDrag = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondrag')
+    console.info('ondrag');
     
     if (isDragging) {
       setIsOpen(false);
-      set({ sidebarOpen: false });
       setWasDragged(true);
 
       // Snap to exit bubble if applicable
@@ -170,25 +193,12 @@ export default function Sidebar() {
   const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondragend')
+    console.info('ondragend');
     setIsDragging(false);
 
     // onClick isn't called after a drag if mouseup is beyond bounds of window 
     if (wasDragged) anchorSidebar();
   }, [offset, wasDragged, anchorSidebar]);
-
-  const onMessage = useCallback((
-    message: any, 
-    sender: chrome.runtime.MessageSender, 
-    sendResponse: (response: any) => void
-  ) => {
-    if (message.type === 'onActivated') {
-      get(['sidebarOpen', 'sidebarPosition']).then((items) => {
-        if (items.sidebarPosition !== undefined) setPosition(items.sidebarPosition);
-        if (items.sidebarOpen !== undefined) setIsOpen(items.sidebarOpen);
-      });
-    }
-  }, []);
 
   useEffect(() => {
     if (isDragging) {
@@ -217,18 +227,55 @@ export default function Sidebar() {
 
   useEffect(() => {
     anchorSidebar();
-  }, [isOpen])
+  }, [isOpen]);
+
+  const syncer = new Syncer({
+    isOpen: setIsOpen,
+    position: setPosition,
+    isExtensionOn: setIsExtensionOn
+  });
+
+  const onMessage = useCallback((
+    message: Message, 
+    sender: chrome.runtime.MessageSender, 
+    sendResponse: (response: any) => void
+  ) => {
+    console.log('Received message')
+    if (message.type.slice(0, 5) === 'sync.') {
+      syncer.sync(message);
+    }
+
+    return true;
+  }, []);
 
   useEffect(() => {
     chrome.runtime.onMessage.addListener(onMessage);
     return () => { chrome.runtime.onMessage.removeListener(onMessage); };
   }, [onMessage]);
 
-  // Determine class denoting position of sidebar components
+  useEffect(() => {
+    get('isExtensionOn').then((items) => {
+      if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
+    });
+    
+    chrome.storage.onChanged.addListener((changes) => {
+      console.log('changed')
+      if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
+    });
+  }, []);
+
+  // Post list
+  const posts = () => {
+    
+  }
+
+  // Classes
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
   const contentPositionClass = `TbdSidebar__MainContent--position-${positionText}`;
-  const exitBubbleHoveredClass = shouldExit ? 'TbdExitBubble--hovered' : '';
+  const newPostButtonClass = isComposing ? 'TbdSidebar__MainContent__NewPostButton--composing' : '';
+  const exitBubbleHoveredClass = shouldHide ? 'TbdExitBubble--hovered' : '';
 
+  // Styles
   const sidebarStyles = useMemo(() => ({
     transform: `translate(${position.x}px, ${position.y}px)`,
     transition: isDragging ? 'none' : 'transform 150ms'
@@ -248,7 +295,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {!isExited && (
+      {isExtensionOn && (
         <div className="TbdSidebar" style={sidebarStyles}>
           <div
             className="TbdSidebar__LogoBubble"
@@ -263,11 +310,11 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              <Tabs defaultActiveKey="1">
-                <Tabs.TabPane tab="comments" key="1">
-                  
-                </Tabs.TabPane>
-              </Tabs>
+              {isComposing && <NewPost anchor={anchor} />}
+              <button 
+                className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
+                onClick={onClickNewPostButton}
+              ></button>
             </div>
           )}
         </div>

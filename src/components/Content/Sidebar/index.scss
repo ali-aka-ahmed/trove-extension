@@ -4,7 +4,7 @@ $bubble-width: 55px;
 $content-width: 250px;
 $sidebar-margin: 15px;
 $accent-color: #0d77e2;
-$background-color: #fafafa;
+$background-color: #fff;
 
 $_triangle-height: 22px;
 $_triangle-base: 40px;
@@ -14,9 +14,7 @@ $_exit-bubble-border-big: 15px;
 
 .TbdSidebar {
   height: auto;
-  width: $bubble-width;
   touch-action: none;
-  user-select: none;
   pointer-events: auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
@@ -67,7 +65,7 @@ $_exit-bubble-border-big: 15px;
 
 .TbdSidebar__MainContent--position-right:before {
   left: 195px;
-  @include transform(rotate(90));
+  @include transform(rotate(90deg));
 }
 
 .TbdSidebar__MainContent:after {
@@ -86,6 +84,30 @@ $_exit-bubble-border-big: 15px;
 
 .TbdSidebar__MainContent--position-right:after {
   left: 202.5px;
+}
+
+.TbdSidebar__MainContent__NewPostButton {
+  height: 45px;
+  width: 45px;
+  border: none;
+  outline: none;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-color: #0d77e2;
+  background-image: url('../../../../public/images/new-post-icon.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  cursor: pointer;
+  transition: all 0.1s linear;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.7));
+  @include transform(rotate(45deg));
+}
+
+.TbdSidebar__MainContent__NewPostButton--composing {
+  @include transform(rotate(90deg));
 }
 
 .TbdExitBubble {
@@ -110,8 +132,8 @@ $_exit-bubble-border-big: 15px;
 }
 
 .TbdExitBubble--hovered {
-  @include boxShadow(none);
   border-width: $_exit-bubble-border-big;
   left: calc(50% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
   bottom: calc(10% - #{($bubble-width + $_exit-bubble-border-big*2)/2});
+  @include boxShadow(none);
 }

@@ -7,6 +7,7 @@ module.exports = merge(common, {
   devtool: 'inline-source-map',
   plugins: [
     new ExtensionReloader({
+      reloadPage: true,
       entries: {
         background: 'background',
         contentScript: 'content',

@@ -1,3 +1,4 @@
+import { AnchorType } from '../components/Content/helpers/anchor/anchor';
 import { Notification as INotification, Post as IPost, User as IUser } from '../models';
 
 export const users: IUser[] = [
@@ -38,6 +39,11 @@ export const users: IUser[] = [
 export const posts: IPost[] = [
   {
     id: '4ff4be94-b0ac-4da5-9224-652993095c25',
+    anchor: {
+      type: AnchorType.Point,
+      location: {x: 0, y: 0},
+      bounds: {x: 0, y: 0}
+    },
     content: '@aki yo check this out',
     creationDatetime: 1599521212817,
     creator: {
