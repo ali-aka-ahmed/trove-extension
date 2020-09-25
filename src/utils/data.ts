@@ -1,5 +1,5 @@
+import { Notification as INotification, Post as IPost, User as IUser } from '../common';
 import { AnchorType } from '../components/Content/helpers/anchor/anchor';
-import { Notification as INotification, Post as IPost, User as IUser } from '../models';
 
 export const users: IUser[] = [
   {

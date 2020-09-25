@@ -1,7 +1,7 @@
 import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
-import { Notification as INotification, User as IUser } from '../../models';
+import { Notification as INotification, User as IUser } from '../../common';
 import { get, set } from '../../utils/chrome/storage';
 import { getAllTabs } from '../../utils/chrome/tabs';
 import { notifications as notificationData } from '../../utils/data';
