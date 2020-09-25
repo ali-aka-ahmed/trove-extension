@@ -1,6 +1,6 @@
 import seedrandom from 'alea';
 import React from 'react';
-import { User } from '../../../../models';
+import { User } from '../../../../common';
 
 export default function Bubble(props: BubbleProps) {
   const bgColor = getPastelColor(props.user.displayName);

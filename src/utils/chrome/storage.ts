@@ -1,5 +1,5 @@
+import { User } from '../../common';
 import Point from '../../components/Content/helpers/Point';
-import { User } from '../../models';
 
 /**
  * Key to type mapping.
