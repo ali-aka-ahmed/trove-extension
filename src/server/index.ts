@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { User } from '../models';
-import { get } from '../utils/chromeStorage';
+import { get } from '../utils/chrome/storage';
 
 const api_inst = axios.create({
     baseURL: process.env.REACT_APP_BACKEND_URL,
