@@ -4,13 +4,16 @@ import { v4 as uuid } from 'uuid';
 import { Post } from '../../../../models';
 import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
-import { Anchor, AnchorType } from '../../helpers/anchor/anchor';
-import { addMarks, MarkId } from '../../helpers/anchor/mark';
+import { Anchor } from '../../helpers/anchor/anchor';
 
 const MAX_POST_LENGTH = 280;
 const { TextArea } = Input;
 
-export default function NewPost() {
+interface NewPostProps {
+  anchor?: Anchor;
+}
+
+export default function NewPost(props: NewPostProps) {
   const [isAnchoring, setIsAnchoring] = useState(false);
   const [isAnchored, setIsAnchored] = useState(false);
   const [post, setPost] = useState({} as Partial<Post>);
@@ -71,29 +74,15 @@ export default function NewPost() {
 
   useEffect(() => {
     get('user').then((items) => {
-      // Attach anchor if text is already selected when new post button is clicked
-      let anchor: Anchor | undefined = undefined;
-      const selection = document.getSelection();
-      if (selection?.toString()) {
-        const range = selection.getRangeAt(0);
-        anchor = {
-          range,
-          type: AnchorType.Text
-        };
-
-        // Mark and clear selection
-        addMarks(range, MarkId.NewPost);
-        selection.removeAllRanges();
-      }
-
-      setPost({ 
+      const newPost = { 
         ...post,
-        anchor,
         id: uuid(),
         content: '',
         creator: items.user,
         creatorUserId: items.user.id
-      });
+      };
+      if (props.anchor) newPost.anchor = props.anchor;
+      setPost(newPost);
     });
   }, []);
 

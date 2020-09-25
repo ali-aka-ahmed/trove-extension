@@ -16,6 +16,10 @@ export enum MarkDataKey {
 };
 
 export const addMarks = (range: Range, id: MarkId, color?: string) => {
+  // We can only have one of each type of mark visible at a time. We can lift this constraint in
+  // the future if we need addition functionality. For now, this allows us to use static root ids.
+  removeMarks(id);
+
   let start = range.startContainer;
   let end = range.endContainer;
   let hasContent = true;
