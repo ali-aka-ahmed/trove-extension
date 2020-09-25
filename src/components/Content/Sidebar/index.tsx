@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
-import { MarkId, removeMarks } from '../helpers/anchor/mark';
+import { Anchor, AnchorType } from '../helpers/anchor/anchor';
+import { addMarks, MarkId, removeMarks } from '../helpers/anchor/mark';
 import Edge from '../helpers/Edge';
 import Point from '../helpers/Point';
 import Syncer from '../helpers/Syncer';
@@ -16,6 +17,7 @@ export const CONTENT_WIDTH = 250;
 export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
+  const [anchor, setAnchor] = useState<Anchor | undefined>(undefined);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
   const [isComposing, setIsComposing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -146,6 +148,20 @@ export default function Sidebar() {
   const onClickNewPostButton = useCallback((e: React.MouseEvent) => {
     if (isComposing) {
       removeMarks(MarkId.NewPost);
+    } else {
+      // Attach anchor if text is already selected when new post button is clicked
+      const selection = document.getSelection();
+      if (selection?.toString()) {
+        const range = selection.getRangeAt(0);
+        setAnchor({
+          range,
+          type: AnchorType.Text
+        });
+
+        // Mark and clear selection
+        addMarks(range, MarkId.NewPost);
+        selection.removeAllRanges();
+      }
     }
 
     setIsComposing(!isComposing);
@@ -294,12 +310,7 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              {/* <Tabs defaultActiveKey="1">
-                <Tabs.TabPane tab="comments" key="1">
-                  
-                </Tabs.TabPane>
-              </Tabs> */}
-              {isComposing && <NewPost />}
+              {isComposing && <NewPost anchor={anchor} />}
               <button 
                 className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
                 onClick={onClickNewPostButton}
