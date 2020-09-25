@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
+import { MarkId, removeMarks } from '../helpers/anchor/mark';
 import Edge from '../helpers/Edge';
 import Point from '../helpers/Point';
 import Syncer from '../helpers/Syncer';
@@ -143,6 +144,10 @@ export default function Sidebar() {
   }, [bubbleRef]);
 
   const onClickNewPostButton = useCallback((e: React.MouseEvent) => {
+    if (isComposing) {
+      removeMarks(MarkId.NewPost);
+    }
+
     setIsComposing(!isComposing);
   }, [isComposing]);
 

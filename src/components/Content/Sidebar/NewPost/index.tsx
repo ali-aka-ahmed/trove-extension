@@ -5,7 +5,7 @@ import { Post } from '../../../../models';
 import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
 import { Anchor, AnchorType } from '../../helpers/anchor/anchor';
-import { mark, MarkId } from '../../helpers/anchor/mark';
+import { addMarks, MarkId } from '../../helpers/anchor/mark';
 
 const MAX_POST_LENGTH = 280;
 const { TextArea } = Input;
@@ -26,12 +26,13 @@ export default function NewPost() {
   const submit = useCallback(() => {
     // TODO: compute tagged users (this should prob happen in an onChange fn)
     // TODO: make sure anchor was done on this url
+    if (!canSubmit()) return;
     setPost({
       ...post,
       url: '',
       creationDatetime: Date.now()
     });
-  }, [post]);
+  }, [canSubmit, post]);
   
   const clickAnchorButton = (e) => {
     console.log("HELP")
@@ -73,15 +74,15 @@ export default function NewPost() {
       // Attach anchor if text is already selected when new post button is clicked
       let anchor: Anchor | undefined = undefined;
       const selection = document.getSelection();
-      console.log(selection?.toString())
       if (selection?.toString()) {
+        const range = selection.getRangeAt(0);
         anchor = {
-          type: AnchorType.Text,
-          range: selection.getRangeAt(0)
+          range,
+          type: AnchorType.Text
         };
 
         // Mark and clear selection
-        mark(selection.getRangeAt(0), MarkId.NewPost);
+        addMarks(range, MarkId.NewPost);
         selection.removeAllRanges();
       }
 
@@ -94,8 +95,6 @@ export default function NewPost() {
         creatorUserId: items.user.id
       });
     });
-
-    
   }, []);
 
   // Styles
