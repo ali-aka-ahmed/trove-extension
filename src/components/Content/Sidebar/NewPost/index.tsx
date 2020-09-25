@@ -1,7 +1,7 @@
 import { Button, Input } from 'antd';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { Post } from '../../../../models';
+import { Post } from '../../../../common';
 import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
 import { Anchor } from '../../helpers/anchor/anchor';
