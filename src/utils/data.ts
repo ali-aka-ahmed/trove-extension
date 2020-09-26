@@ -1,4 +1,4 @@
-import { AnchorType } from '../components/Content/helpers/anchor/anchor';
+import { AnchorType } from "../components/Content/helpers/Anchor";
 import { Notification as INotification, Post as IPost, User as IUser } from '../models';
 
 export const users: IUser[] = [
