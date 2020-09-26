@@ -15,6 +15,8 @@ export enum MarkDataKey {
   NextMarkId  = 'tbdSuccessorId'
 };
 
+const MARK_CLASS_NAME = 'TbdMark';
+
 export const addMarks = (range: Range, id: MarkId, color?: string) => {
   // We can only have one of each type of mark visible at a time. We can lift this constraint in
   // the future if we need addition functionality. For now, this allows us to use static root ids.
@@ -64,6 +66,7 @@ export const addMarks = (range: Range, id: MarkId, color?: string) => {
       if (!wrapper || marks.length === 0 || wrapper !== marks[marks.length - 1]) {
         // Create next mark in chain
         const mark = document.createElement('mark'); 
+        mark.className = MARK_CLASS_NAME;
         mark.dataset[MarkDataKey.ThisMarkId] = uuid();
         if (marks.length === 0) {
           mark.id = id;
@@ -128,7 +131,7 @@ export const removeMarks = (id: string) => {
   return marks;
 }
 
-const getMarks = (id: string) => {
+const getMarks = (id: string) => { 
   const mark = document.getElementById(id);
   if (!mark) return [];
 
