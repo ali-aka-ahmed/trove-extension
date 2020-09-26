@@ -1,3 +1,4 @@
+import { RangyRangeEx } from "@rangy/core";
 import Point, { IPoint } from "../Point";
 
 export enum AnchorType {
@@ -12,7 +13,7 @@ export type Anchor = {
   bounds: IPoint;
 } | {
   type: AnchorType.Text;
-  range: Range;
+  range: RangyRangeEx;
 };
 
 export const parseAnchor = (anchor: Anchor) => {
