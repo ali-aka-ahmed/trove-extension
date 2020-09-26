@@ -33,7 +33,6 @@
     "@rangy/core": "^2.1.0",
     "@rangy/highlighter": "^2.1.0",
     "@rangy/serializer": "^2.1.0",
-    "alea": "^1.0.0",
     "antd": "^4.6.2",
     "axios": "^0.20.0",
     "react": "^16.13.1",
