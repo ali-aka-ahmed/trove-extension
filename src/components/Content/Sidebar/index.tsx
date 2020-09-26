@@ -2,7 +2,7 @@ import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
-import { Anchor, AnchorType } from '../helpers/anchor/anchor';
+import Anchor, { AnchorType } from "../helpers/Anchor";
 import Edge from '../helpers/Edge';
 import Highlighter, { HighlightClass } from '../helpers/Highlighter';
 import Point from '../helpers/Point';
