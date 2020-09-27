@@ -1,20 +1,24 @@
 import { getSelection } from '@rangy/core';
+import { serializeRange } from '@rangy/serializer';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Post from '../../../models/Post';
 import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
+import { posts as mockPosts } from '../../../utils/data';
 import Anchor, { AnchorType } from "../helpers/Anchor";
 import Edge from '../helpers/Edge';
 import Highlighter, { HighlightClass } from '../helpers/Highlighter';
 import Point from '../helpers/Point';
 import Syncer from '../helpers/Syncer';
 import NewPost from './NewPost';
+import PostComponent from './Post';
 
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
 export const BUBBLE_HEIGHT = 55;
 export const BUBBLE_MARGIN = 20;
-export const CONTENT_HEIGHT = 350;
-export const CONTENT_WIDTH = 250;
+export const CONTENT_HEIGHT = 400;
+export const CONTENT_WIDTH = 300;
 export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
@@ -25,9 +29,10 @@ export default function Sidebar() {
   const [isDragging, setIsDragging] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isHidden, setIsHidden] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [offset, setOffset] = useState(new Point(0, 0));
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
+  const [posts, setPosts] = useState([] as Post[]);
   const [shouldHide, setShouldHide] = useState(false);
   const [wasDragged, setWasDragged] = useState(false);
   const bubbleRef = useRef(null);
@@ -156,9 +161,9 @@ export default function Sidebar() {
       if (selection.toString()) {
         const range = selection.getRangeAt(0);
         setAnchor({
-          range: range,
+          range: serializeRange(range),
           type: AnchorType.Text
-        }); console.log(range)
+        });
         highlighter.addHighlight(range, HighlightClass.NewPost);
         selection.removeAllRanges();
       }
@@ -262,12 +267,19 @@ export default function Sidebar() {
       console.log('changed')
       if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
     });
+
+    // TODO: Get list of posts for current URL
+    // const url = window.location.href;
+    // setPosts(await server.getPosts(url));
+    setPosts(mockPosts);
   }, []);
 
-  // Post list
-  const posts = () => {
-    
-  }
+  /**
+   * Render list of posts.
+   */
+  const renderPosts = useCallback(() => {
+    return posts.map(post => <PostComponent post={post} key={post.id} />);
+  }, [posts]);
 
   // Classes
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
@@ -311,6 +323,7 @@ export default function Sidebar() {
               style={contentStyles}
             >
               {isComposing && <NewPost anchor={anchor} />}
+              {renderPosts()}
               <button 
                 className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
                 onClick={onClickNewPostButton}
