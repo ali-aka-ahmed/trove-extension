@@ -40,8 +40,8 @@ export default class Highlighter {
 }
 
 /**
- * Ids of different types of marks. Making the assumption we can only have one instance of each
- * type visiable at once.
+ * Ids of different types of highlights. Making the assumption we can only have one instance of 
+ * each type visible simultaneously.
  */
 export enum HighlightClass {
   HoverPost = 'TbdHighlight--Hover',

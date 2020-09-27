@@ -44,8 +44,8 @@ export const posts: IPost[] = [
       location: {x: 0, y: 0},
       bounds: {x: 0, y: 0}
     },
-    content: '@aki yo check this out',
-    creationDatetime: 1599521212817,
+    content: '@aki yo check this out lalalalala this is a big test hello world',
+    creationDatetime: 1601178998080,
     creator: {
       id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
       displayName: 'Ali Ahmed',
