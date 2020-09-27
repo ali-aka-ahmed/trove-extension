@@ -1,7 +1,8 @@
 @import '../../../styles/general.scss';
 
 $bubble-width: 55px;
-$content-width: 250px;
+$content-width: 300px;
+$content-height: 400px;
 $sidebar-margin: 15px;
 $accent-color: #0d77e2;
 $background-color: #fff;
@@ -19,6 +20,7 @@ $_exit-bubble-border-big: 15px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
+  font-size: 14px;
 }
 
 .TbdSidebar:not(.react-draggable-dragging) {
@@ -38,7 +40,7 @@ $_exit-bubble-border-big: 15px;
 }
 
 .TbdSidebar__MainContent {
-  height: 350px;
+  height: $content-height;
   width: $content-width;
   background-color: $background-color;
   border-radius: 5px;

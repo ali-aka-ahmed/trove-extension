@@ -74,7 +74,7 @@ export default function NewPost(props: NewPostProps) {
 
   useEffect(() => {
     get('user').then((items) => {
-      const newPost = { 
+      const newPost: Partial<Post> = { 
         ...post,
         id: uuid(),
         content: '',
