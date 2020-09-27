@@ -1,9 +1,10 @@
+import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Anchor, AnchorType } from '../../../common';
 import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
-import { addMarks, MarkId, removeMarks } from '../helpers/anchor/mark';
 import Edge from '../helpers/Edge';
+import Highlighter, { HighlightClass } from '../helpers/Highlighter';
 import Point from '../helpers/Point';
 import Syncer from '../helpers/Syncer';
 import NewPost from './NewPost';
@@ -19,6 +20,7 @@ export const EXIT_BUBBLE_WIDTH = 55;
 export default function Sidebar() {
   const [anchor, setAnchor] = useState<Anchor | undefined>(undefined);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
+  const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isComposing, setIsComposing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(true);
@@ -147,19 +149,17 @@ export default function Sidebar() {
 
   const onClickNewPostButton = useCallback((e: React.MouseEvent) => {
     if (isComposing) {
-      removeMarks(MarkId.NewPost);
+      highlighter.removeHighlight(HighlightClass.NewPost);
     } else {
       // Attach anchor if text is already selected when new post button is clicked
-      const selection = document.getSelection();
-      if (selection?.toString()) {
+      const selection = getSelection();
+      if (selection.toString()) {
         const range = selection.getRangeAt(0);
         setAnchor({
-          range,
+          range: range,
           type: AnchorType.Text
-        });
-
-        // Mark and clear selection
-        addMarks(range, MarkId.NewPost);
+        }); console.log(range)
+        highlighter.addHighlight(range, HighlightClass.NewPost);
         selection.removeAllRanges();
       }
     }
