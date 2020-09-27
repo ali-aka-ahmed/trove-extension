@@ -269,16 +269,18 @@ export default function Sidebar() {
     });
 
     // TODO: Get list of posts for current URL
-    // const url = window.location.href;
+    const url = window.location.href;
     // setPosts(await server.getPosts(url));
-    setPosts(mockPosts);
+    if (mockPosts.some(post => post.url === url)) {
+      setPosts(mockPosts);
+    }
   }, []);
 
   /**
    * Render list of posts.
    */
   const renderPosts = useCallback(() => {
-    return posts.map(post => <PostComponent post={post} key={post.id} />);
+    return posts.map(post => <PostComponent key={post.id} highlighter={highlighter} post={post} />);
   }, [posts]);
 
   // Classes

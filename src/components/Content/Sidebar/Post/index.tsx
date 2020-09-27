@@ -1,13 +1,38 @@
+import { deserializeRange } from '@rangy/serializer';
+import hexToRgba from 'hex-to-rgba';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import React from 'react';
 import { Post } from '../../../../models';
+import Highlighter, { HighlightClass } from '../../helpers/Highlighter';
 
 interface PostProps {
+  highlighter: Highlighter;
   post: Post;
 }
 
 export default function Post(props: PostProps) {
+  const onMouseEnterPost = (e: React.MouseEvent) => {
+    console.log('mouseenterpost')
+    if (props.post.anchor?.range) {
+      const range = deserializeRange(props.post.anchor.range);
+      const color = hexToRgba(props.post.creator.color, 0.1);
+      props.highlighter.addHighlight(range, HighlightClass.HoverPost, color);
+    }
+  }
+
+  const onMouseLeavePost = (e: React.MouseEvent) => {
+    props.highlighter.removeHighlight(HighlightClass.HoverPost);
+  }
+
+  const onClickPost = (e: React.MouseEvent) => {
+    if (props.post.anchor?.range) {
+      const range = deserializeRange(props.post.anchor.range);
+      const color = hexToRgba(props.post.creator.color, 0.25);
+      props.highlighter.addHighlight(range, HighlightClass.Post, color);
+    }
+  }
+
   const getContent = () => {
     // TODO: color tagged handles appropriately
     return (
@@ -18,14 +43,18 @@ export default function Post(props: PostProps) {
   }
 
   const getTimeAgo = () => {
-    console.log(Date.now())
     TimeAgo.addLocale(en);
     const timeAgo = new TimeAgo('en-US');
     return timeAgo.format(props.post.creationDatetime, 'twitter');
   }
 
   return (
-    <div className="TbdPost">
+    <div 
+      className="TbdPost" 
+      onClick={onClickPost}
+      onMouseEnter={onMouseEnterPost}
+      onMouseLeave={onMouseLeavePost}
+    >
       <div className="TbdPost__Left">
         <div 
           className="TbdPost__UserBubble" 

@@ -1,14 +1,20 @@
 .TbdPost {
   display: flex;
   flex-direction: row;
+  padding: 15px;
+  cursor: pointer;
+}
+
+.TbdPost:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .TbdPost__Left {
-  margin: 15px 7.5px 0px 15px;
+  margin-right: 7.5px;
 }
 
 .TbdPost__Right {
-  margin: 12.5px 15px 0px 7.5px;
+  margin-left: 7.5px;
 }
 
 .TbdPost__UserBubble {
@@ -41,8 +47,4 @@
 .TbdPost__Header__Datetime {
   margin: 0px;
   color: #aaa;
-}
-
-.TbdPost__Content {
-
 }
