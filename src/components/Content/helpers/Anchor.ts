@@ -1,4 +1,3 @@
-import { IPoint } from "./Point";
 
 export enum AnchorType {
   Div,
@@ -7,10 +6,6 @@ export enum AnchorType {
 }
 
 type Anchor = {
-  type: AnchorType.Point;
-  location: IPoint;
-  bounds: IPoint;
-} | {
   type: AnchorType.Text;
   range: string;
 };

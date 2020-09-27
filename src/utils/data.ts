@@ -40,9 +40,8 @@ export const posts: IPost[] = [
   {
     id: '4ff4be94-b0ac-4da5-9224-652993095c25',
     anchor: {
-      type: AnchorType.Point,
-      location: {x: 0, y: 0},
-      bounds: {x: 0, y: 0}
+      type: AnchorType.Text,
+      range: '0/1/3/1/2:9,0/1/3/1/2:38'
     },
     content: '@aki yo check this out lalalalala this is a big test hello world',
     creationDatetime: 1601178998080,
@@ -65,7 +64,7 @@ export const posts: IPost[] = [
         color: '#9900EF'
       }
     ],
-    url: 'https://github.com/airbnb/css#comments'
+    url: 'https://akshath.me/'
   }
 ];
 
