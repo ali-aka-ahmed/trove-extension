@@ -1,3 +1,4 @@
+import { RangyRangeEx } from '@rangy/core';
 import { User } from './User';
 
 /**
@@ -26,7 +27,7 @@ export type Anchor = {
   bounds: Point;
 } | {
   type: AnchorType.Text;
-  range: Range;
+  range: RangyRangeEx;
 };
 
 /**
