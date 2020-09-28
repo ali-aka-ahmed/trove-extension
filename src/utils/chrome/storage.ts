@@ -5,6 +5,7 @@ import { User } from '../../models';
  * Key to type mapping.
  */
 export interface CS {
+  token: string;
   isAuthenticated: boolean;
   isExtensionOn: boolean;
   isOpen: boolean;
