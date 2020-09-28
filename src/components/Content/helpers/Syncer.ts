@@ -58,7 +58,10 @@ export default class Syncer {
 
   private update = <J extends string, K extends keyof CS | keyof TabSettings[J]>(items: {[k in K]: k extends keyof CS ? CS[k] : TabSettings[k]}) => {
     Object.keys(items).forEach((key) => {
-      if (this.setterMap[key] !== undefined) this.setterMap[key]!(items[key]);
+      if (this.setterMap[key] !== undefined) {
+        console.log(this.setterMap, key, items[key])
+        this.setterMap[key]!(items[key]);
+      }
     });
   }
 }
