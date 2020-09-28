@@ -31,21 +31,34 @@ api.interceptors.response.use((response) => {
 });
 
 /**
+ * What we append onto the response object.
+ */
+type AxiosRes = {
+  success: true,
+} | {
+  success: false,
+  message: string; 
+}
+
+/**
  * /auth
  */
-export const signup = async (args: SignupReqBody): Promise<AuthRes> => {
+type IAuthRes = AuthRes & AxiosRes;
+type IUsernameRes = UsernameRes & AxiosRes;
+
+export const signup = async (args: SignupReqBody): Promise<IAuthRes> => {
   return await api.post(`/auth/signup`, args);
 };
 
-export const login = async (args: LoginReqBody): Promise<AuthRes> => {
+export const login = async (args: LoginReqBody): Promise<IAuthRes> => {
   return await api.post(`/auth/login`, args);
 }
 
-export const forgotPassword = async (args: ForgotReqBody): Promise<AuthRes> => {
+export const forgotPassword = async (args: ForgotReqBody): Promise<IAuthRes> => {
   return await api.post(`/auth/forgot`, args)
 }
 
-export const checkValidUsername = async (username: string): Promise<UsernameRes> => {
+export const checkValidUsername = async (username: string): Promise<IUsernameRes> => {
   const args: UsernameReqBody = { username }
   return await api.post(`/auth/username`, args);
 }
@@ -53,7 +66,10 @@ export const checkValidUsername = async (username: string): Promise<UsernameRes>
 /**
  * /users
  */
-export const handleUsernameSearch = async (searchText: string): Promise<UsersRes> => {
+type IUsersRes = UsersRes & AxiosRes;
+type IUserRes = UserRes & AxiosRes;
+
+export const handleUsernameSearch = async (searchText: string): Promise<IUsersRes> => {
   const args: GetUsersReqBody = { username: searchText }
   return await api.post(`/users`, args);
 }
@@ -63,31 +79,31 @@ export const getUser = async (id: string): Promise<UserRes> => {
   return await api.get(`/users/${params.id}`);
 }
 
-export const updateDisplayName = async (displayName: string): Promise<UserRes> => {
+export const updateDisplayName = async (displayName: string): Promise<IUserRes> => {
   const params: UpdateUserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { displayName }
   return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updateUsername = async (username: string): Promise<UserRes> => {
+export const updateUsername = async (username: string): Promise<IUserRes> => {
   const params: UpdateUserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { username }
   return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updateColor = async (color: string): Promise<UserRes> => {
+export const updateColor = async (color: string): Promise<IUserRes> => {
   const params: UpdateUserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { color }
   return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updateEmail = async (email: string): Promise<UserRes> => {
+export const updateEmail = async (email: string): Promise<IUserRes> => {
   const params: UpdateUserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { email }
   return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updatePhoneNumber = async (phoneNumber: number): Promise<UserRes> => {
+export const updatePhoneNumber = async (phoneNumber: number): Promise<IUserRes> => {
   const params: UpdateUserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { phoneNumber }
   return await api.post(`/users/${params.id}/update`, args);

@@ -52,14 +52,14 @@ export interface UpdateUserReqParams extends BaseParams {
 /**
  * POST /
  */
-export interface UsersRes extends BaseRes {
+export type UsersRes = {
   users?: User[];
-}
+} &  BaseRes;
 
 /**
  * GET /:id
  * POST /:id/update
  */
-export interface UserRes extends BaseRes {
+export type UserRes = {
   user?: User;
-}
+} &  BaseRes;
