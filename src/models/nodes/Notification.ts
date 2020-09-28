@@ -1,6 +1,7 @@
-import { TaggedUser, User } from '.';
+import { TaggedUser } from './Post';
+import { User } from './User';
 
-export default interface Notification {
+export interface Notification {
   id: string;
   action: string;
   creationDatetime: number;
@@ -10,4 +11,4 @@ export default interface Notification {
   url: string;
   content?: string;
   taggedUsers?: TaggedUser[];
-};
+}
