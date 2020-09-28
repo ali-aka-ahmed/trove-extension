@@ -9,5 +9,5 @@ export {
   AuthRes, ForgotReqBody, LoginReqBody, ResetReqBody, ResetReqParams, SignupReqBody,
   UsernameReqBody, UsernameRes
 } from './routes/auth';
-export { GetUserReqParams, UpdateUserReqBody, UpdateUserReqParams, UserRes } from './routes/user';
+export { GetUserReqParams, UpdateUserReqBody, UpdateUserReqParams, UserRes } from './routes/users';
 

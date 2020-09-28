@@ -18,9 +18,6 @@ export interface Point {
   y: number;
 }
 
-/**
- * @typedef {object} Anchor
- */
 export type Anchor = {
   type: AnchorType.Point;
   location: Point;
@@ -30,9 +27,6 @@ export type Anchor = {
   range: RangyRangeEx;
 };
 
-/**
- * @interface TaggedUser
- */
 export interface TaggedUser {
   id: string;
   isTaggedInReply: boolean;
@@ -40,9 +34,6 @@ export interface TaggedUser {
   color: string;
 }
 
-/**
- * @interface Post
- */
 export interface Post {
   id: string;
   content: string;

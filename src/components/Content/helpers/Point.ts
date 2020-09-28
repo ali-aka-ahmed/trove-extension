@@ -1,4 +1,4 @@
-import { Point as IPoint } from '../../../common';
+import { Point as IPoint } from '../../../models';
 
 export default class Point implements IPoint {
   public x: number;
