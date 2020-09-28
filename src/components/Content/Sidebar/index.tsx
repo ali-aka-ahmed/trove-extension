@@ -2,8 +2,7 @@ import { getSelection } from '@rangy/core';
 import { serializeRange } from '@rangy/serializer';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Post from '../../../models/Post';
-import { get } from '../../../utils/chrome/storage';
-import { Message } from '../../../utils/chrome/tabs';
+import { getTabId, Message } from '../../../utils/chrome/tabs';
 import { posts as mockPosts } from '../../../utils/data';
 import Anchor, { AnchorType } from "../helpers/Anchor";
 import Edge from '../helpers/Edge';
@@ -29,7 +28,7 @@ export default function Sidebar() {
   const [isDragging, setIsDragging] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isHidden, setIsHidden] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [offset, setOffset] = useState(new Point(0, 0));
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
   const [posts, setPosts] = useState([] as Post[]);
@@ -235,9 +234,9 @@ export default function Sidebar() {
   }, [isOpen]);
 
   const syncer = new Syncer({
+    isExtensionOn: setIsExtensionOn,
     isOpen: setIsOpen,
     position: setPosition,
-    isExtensionOn: setIsExtensionOn
   });
 
   const onMessage = useCallback((
@@ -259,9 +258,7 @@ export default function Sidebar() {
   }, [onMessage]);
 
   useEffect(() => {
-    get('isExtensionOn').then((items) => {
-      if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
-    });
+    getTabId().then((tabId) => syncer.load({ isExtensionOn: true }, tabId));
     
     chrome.storage.onChanged.addListener((changes) => {
       console.log('changed')
