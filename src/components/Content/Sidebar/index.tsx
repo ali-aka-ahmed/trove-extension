@@ -158,7 +158,7 @@ export default function Sidebar() {
         setAnchor({
           range: range,
           type: AnchorType.Text
-        }); console.log(range)
+        });
         highlighter.addHighlight(range, HighlightClass.NewPost);
         selection.removeAllRanges();
       }
