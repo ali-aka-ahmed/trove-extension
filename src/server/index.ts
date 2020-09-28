@@ -2,7 +2,9 @@ import axios from 'axios';
 import { AuthRes, ForgotReqBody, GetUserReqParams, GetUsersReqBody, LoginReqBody, SignupReqBody, UpdateUserReqBody, UpdateUserReqParams, UsernameReqBody, UsernameRes, UserRes, UsersRes } from '../models';
 import { get } from '../utils/chrome/storage';
 
-// "http://localhost:5000/*" -> add to manifest.json for testing locally
+// FOR DEV
+// 1. "http://localhost:5000/*" -> add to manifest.json for testing locally
+// 2. Replace the token in the request interceptor with a token retrieved from Postman
 
 const api = axios.create({
     baseURL: process.env.REACT_APP_BACKEND_URL,
