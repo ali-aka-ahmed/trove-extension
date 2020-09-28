@@ -1,5 +1,5 @@
 import React from 'react';
-import { Notification as INotification } from '../../../common';
+import { Notification as INotification } from '../../../models';
 import { displayRelativeTime } from '../../../utils';
 import '../style.scss';
 import './style.scss';

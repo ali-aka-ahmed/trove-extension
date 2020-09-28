@@ -1,6 +1,3 @@
-/**
- * @interface User
- */
 export interface User {
   id: string; // needs to be unique
   displayName: string;
