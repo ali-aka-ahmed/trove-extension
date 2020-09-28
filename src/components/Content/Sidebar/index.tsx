@@ -1,6 +1,6 @@
 import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Anchor, AnchorType } from '../../../common';
+import { Anchor, AnchorType } from '../../../models';
 import { get } from '../../../utils/chrome/storage';
 import { Message } from '../../../utils/chrome/tabs';
 import Edge from '../helpers/Edge';

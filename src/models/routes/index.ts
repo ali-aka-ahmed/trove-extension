@@ -1,7 +1,6 @@
 /**
  * Base response object.
- * If status is NOT successful (200 - 299), then errorMessage appears.
- * @interface BaseRes
+ * If status is NOT successful (200 - 299), then message appears.
  */
 export interface BaseRes {
   message?: string;
@@ -9,7 +8,6 @@ export interface BaseRes {
 
 /**
  * Base response object. Copy of core.ParamsDictionary in express.
- * @interface BaseParams
  */
 export interface BaseParams {
   [key: string]: string;
