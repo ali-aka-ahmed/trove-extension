@@ -4,7 +4,7 @@
  * @interface BaseRes
  */
 export interface BaseRes {
-  errorMessage?: string;
+  message?: string;
 }
 
 /**
