@@ -2,7 +2,7 @@
  * Base response object.
  * If status is NOT successful (200 - 299), then message appears.
  */
-export interface BaseRes {
+export type BaseRes = {
   message?: string;
 }
 

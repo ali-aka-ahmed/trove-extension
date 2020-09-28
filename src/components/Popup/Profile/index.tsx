@@ -43,12 +43,12 @@ export default function Profile({ user }: ProfileProps) {
       return;
     }
     const res = await updateDisplayName(displayName);
-    if (!res.error && res.user) {
+    if (res.success) {
       await set({ user: res.user });
       setEditable(null);
-    } else if (res.error) {
+    } else {
       setShowError('displayName');
-      setErrorMessage(res.error.message);
+      setErrorMessage(res.message);
     }
     setLoading(null);
   }
@@ -67,12 +67,12 @@ export default function Profile({ user }: ProfileProps) {
       return;
     }
     const res = await updateUsername(username);
-    if (!res.error && res.user) {
+    if (res.success) {
       await set({ user: res.user });
       setEditable(null);
-    } else if (res.error) {
+    } else {
       setShowError('username');
-      setErrorMessage(res.error.message);
+      setErrorMessage(res.message);
     }
     setLoading(null);
   }
@@ -84,12 +84,12 @@ export default function Profile({ user }: ProfileProps) {
     }
     setLoading('color');
     const res = await updateColor(newColor);
-    if (!res.error && res.user) {
+    if (res.success) {
       await set({ user: res.user });
       setEditable(null);
-    } else if (res.error) {
+    } else {
       setShowError('color');
-      setErrorMessage(res.error.message);
+      setErrorMessage(res.message);
     }
     setLoading(null);
   }
