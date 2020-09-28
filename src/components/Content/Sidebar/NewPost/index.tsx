@@ -1,7 +1,7 @@
-import { Button, Input } from 'antd';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Input } from 'antd';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { Post } from '../../../../models';
+import { Post, User } from '../../../../models';
 import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
 import Anchor from "../../helpers/Anchor";
@@ -11,12 +11,14 @@ const { TextArea } = Input;
 
 interface NewPostProps {
   anchor?: Anchor;
+  user: User;
 }
 
 export default function NewPost(props: NewPostProps) {
   const [isAnchoring, setIsAnchoring] = useState(false);
   const [isAnchored, setIsAnchored] = useState(false);
   const [post, setPost] = useState({} as Partial<Post>);
+  const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
     const cantSubmit = !post.anchor 
@@ -73,6 +75,10 @@ export default function NewPost(props: NewPostProps) {
   // }, [isAnchoring, onClickPage]);
 
   useEffect(() => {
+    if (contentRef.current) contentRef.current.focus();
+
+    // Get user to populate Post props
+    // TODO: Get User in Sidebar and pass it in as a prop
     get('user').then((items) => {
       const newPost: Partial<Post> = { 
         ...post,
@@ -97,7 +103,35 @@ export default function NewPost(props: NewPostProps) {
 
   return (
     <div className="TbdNewPost">
-      <TextArea 
+      <div className="TbdPost__Left">
+        <div 
+          className="TbdPost__UserBubble" 
+          style={{ backgroundColor: props.user.color }}
+        >
+          {props.user.username[0]}
+        </div>
+      </div>
+      <div className="TbdPost__Right">
+        <div className="TbdPost__Header">
+          <p className="TbdPost__Header__DisplayName">
+            {props.user.displayName}
+          </p>
+          <p 
+            className="TbdPost__Header__Username"
+            style={{ color: props.user.color }}
+          >
+            {`@${props.user.username}`}
+          </p>
+          {/* <p className="TbdPost__Header__Datetime">{getTimeAgo()}</p> */}
+        </div>
+        <TextArea 
+          className="TbdNewPost__Content"
+          placeholder="The pen is mightier than the sword."
+          autoSize={{ minRows: 2 }}
+          ref={contentRef}
+        />
+      </div>
+      {/* <TextArea 
         placeholder="The pen is mightier than the sword."
         autoSize={{ minRows: 4 }}
       />
@@ -115,7 +149,7 @@ export default function NewPost(props: NewPostProps) {
         onClick={clickSubmitButton}
       >
         POST
-      </Button>
+      </Button> */}
     </div>
   );
 }

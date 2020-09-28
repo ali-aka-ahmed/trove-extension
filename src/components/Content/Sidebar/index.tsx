@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Post from '../../../models/Post';
 import { set } from '../../../utils/chrome/storage';
 import { getTabId, Message } from '../../../utils/chrome/tabs';
-import { posts as mockPosts } from '../../../utils/data';
+import { posts as mockPosts, users } from '../../../utils/data';
 import Anchor, { AnchorType } from "../helpers/Anchor";
 import Edge from '../helpers/Edge';
 import Highlighter, { HighlightClass } from '../helpers/Highlighter';
@@ -283,6 +283,11 @@ export default function Sidebar() {
     }
   }, []);
 
+  const getCurrentUser = () => {
+    // TODO: figure out how to do this later
+    return users.filter((user) => user.username === 'aki')[0];
+  }
+
   /**
    * Render list of posts.
    */
@@ -331,7 +336,7 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              {isComposing && <NewPost anchor={anchor} />}
+              {isComposing && <NewPost anchor={anchor} user={getCurrentUser()} />}
               {renderPosts()}
               <button 
                 className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
