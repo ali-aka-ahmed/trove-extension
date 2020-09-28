@@ -2,6 +2,7 @@ import { getSelection } from '@rangy/core';
 import { serializeRange } from '@rangy/serializer';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Post from '../../../models/Post';
+import { set } from '../../../utils/chrome/storage';
 import { getTabId, Message } from '../../../utils/chrome/tabs';
 import { posts as mockPosts } from '../../../utils/data';
 import Anchor, { AnchorType } from "../helpers/Anchor";
@@ -33,6 +34,7 @@ export default function Sidebar() {
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
   const [posts, setPosts] = useState([] as Post[]);
   const [shouldHide, setShouldHide] = useState(false);
+  const [tabId, setTabId] = useState('');
   const [wasDragged, setWasDragged] = useState(false);
   const bubbleRef = useRef(null);
   
@@ -100,7 +102,9 @@ export default function Sidebar() {
       setPosition(new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
-  }, [position, getSidebarWidth, getSidebarHeight]);
+
+    set({ [tabId]: { position } });
+  }, [position, tabId, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
     const point = Point.fromEvent(e)
@@ -131,13 +135,14 @@ export default function Sidebar() {
     } else {
       // Normal click
       setIsOpen(!isOpen);
+      set({ [tabId]: { isOpen } });
     }
 
     if (shouldHide) {
       setShouldHide(false);
       setIsExtensionOn(false);
     }
-  }, [isOpen, shouldHide, wasDragged, anchorSidebar]);
+  }, [isOpen, shouldHide, tabId, wasDragged, anchorSidebar]);
 
   const onClickPage = useCallback((e: MouseEvent) => {
     e.preventDefault();
@@ -188,11 +193,12 @@ export default function Sidebar() {
     if (isDragging) {
       setIsOpen(false);
       setWasDragged(true);
+      set({ [tabId]: { isOpen } });
 
       // Snap to exit bubble if applicable
       setPosition(snapToExitBubble(e) || Point.fromEvent(e).getOffset(offset));
     }
-  }, [isDragging, offset]);
+  }, [isDragging, isOpen, offset]);
 
   const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
@@ -258,7 +264,11 @@ export default function Sidebar() {
   }, [onMessage]);
 
   useEffect(() => {
-    getTabId().then((tabId) => syncer.load({ isExtensionOn: true }, tabId));
+    getTabId().then((tabId) => {
+      setTabId(tabId);
+      syncer.load({ isExtensionOn: true }, tabId);
+      anchorSidebar();
+    });
     
     chrome.storage.onChanged.addListener((changes) => {
       console.log('changed')
