@@ -1,4 +1,4 @@
-import { AnchorType, Notification as INotification, Post as IPost, User as IUser } from '../common';
+import { AnchorType, Notification as INotification, Post as IPost, User as IUser } from '../models';
 
 export const users: IUser[] = [
   {

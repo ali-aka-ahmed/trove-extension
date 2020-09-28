@@ -17,7 +17,6 @@ import { User } from '../nodes/User';
 
 /**
  * POST /signup
- * @interface SignupReqBody
  */
 export interface SignupReqBody {
   acceptorId: string;
@@ -32,7 +31,6 @@ export interface SignupReqBody {
 
 /**
  * POST /login
- * @interface LoginReqBody
  */
 export interface LoginReqBody {
   email?: string; // either email, phoneNumber or username
@@ -43,7 +41,6 @@ export interface LoginReqBody {
 
 /**
  * POST /forgot
- * @interface ForgotReqBody
  */
 export interface ForgotReqBody {
   email?: string; // email or phoneNumber
@@ -52,7 +49,6 @@ export interface ForgotReqBody {
 
 /**
  * POST /reset/:token
- * @interface ResetReqBody
  */
 export interface ResetReqBody {
   password: string;
@@ -60,7 +56,6 @@ export interface ResetReqBody {
 
 /**
  * POST /reset/:token
- * @interface ResetReqParams
  */
 export interface ResetReqParams extends BaseParams {
   token: string;
@@ -68,7 +63,6 @@ export interface ResetReqParams extends BaseParams {
 
 /**
  * POST /username
- * @interface UsernameReqBody
  */
 export interface UsernameReqBody {
   username: string;
@@ -92,7 +86,6 @@ export interface AuthRes extends BaseRes {
 
 /**
  * POST /username
- * @interface UsernameRes
  */
 export interface UsernameRes extends BaseRes {
   exists?: boolean;

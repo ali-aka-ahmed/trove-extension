@@ -14,7 +14,6 @@ import { User } from '../nodes/User';
 
 /**
  * GET /:id
- * @interface GetUserReqParams
  */
 export interface GetUserReqParams extends BaseParams {
   id: string;
@@ -22,7 +21,6 @@ export interface GetUserReqParams extends BaseParams {
 
 /**
  * POST /:id/update
- * @interface UpdateUserReqBody
  */
 export interface UpdateUserReqBody {
   color?: string; // Hex code
@@ -34,7 +32,6 @@ export interface UpdateUserReqBody {
 
 /**
  * POST /:id/update
- * @interface UpdateUserReqParams
  */
 export interface UpdateUserReqParams extends BaseParams {
   id: string;
@@ -47,7 +44,6 @@ export interface UpdateUserReqParams extends BaseParams {
 /**
  * GET /:id
  * POST /:id/update
- * @interface UserRes
  */
 export interface UserRes extends BaseRes {
   user?: User;
