@@ -1,81 +1,83 @@
 import axios from 'axios';
-import { User } from '../models';
 import { get } from '../utils/chrome/storage';
 
-const api_inst = axios.create({
+// "http://localhost:5000/*" -> add to manifest.json for testing locally
+
+const api = axios.create({
     baseURL: process.env.REACT_APP_BACKEND_URL,
     timeout: 2000,
-    headers: {'Content-Type': 'application/json'}
+    headers: { 'Content-Type': 'application/json' },
+});
+
+api.interceptors.request.use(async (config) => {
+  const token = (await get('token')).token;
+  token ? config.headers.Authorization = `bearer ${token}` : null;
+  return config;
+});
+
+api.interceptors.response.use((response) => {
+  // (200-299)
+  response.data.success = true;
+  return response.data;
+}, (error) => {
+  // outside of (200-299)
+  error.response.data.success = false;
+  const errorMessage = error.response.data.message
+  if (!errorMessage) error.response.data.message = error.message;
+  return error.response.data;
 });
 
 /**
- * PROFILE
+ * /auth
  */
+export const signup = async (args: any): Promise<any> => {
+  return await api.post(`/auth/signup`, args);
+};
 
-export const updateDisplayName = async (displayName: string): Promise<{ 
-  error?: Error, 
-  user: User | null,
-}> => {
-  let user = (await get('user')).user;
-  user.displayName = displayName;
-  return { user };
+export const login = async (args: any): Promise<any> => {
+  return await api.post(`/auth/login`, args);
 }
 
-export const updateUsername = async (username: string): Promise<{ 
-  error?: Error, 
-  user: User | null,
-}> => {
-  let user = (await get('user')).user;
-  user.username = username;
-  return { user };
+export const forgotPassword = async (args: any): Promise<any> => {
+  return await api.post(`/auth/forgot`, args)
 }
 
-// { 
-//   success: boolean, 
-//   error: Error
-// }
-
-export const updateColor = async (color: string): Promise<{ 
-  error?: Error, 
-  user: User | null,
-}> => {
-  let user = (await get('user')).user;
-  user.color = color;
-  return { user };
+export const checkValidUsername = async (username: any): Promise<any> => {
+  return await api.post(`/auth/username`, { username });
 }
 
 /**
- * AUTHENTICATION
+ * /users
  */
-
-export const signup = async () => {};
-// displayName
-// phoneNumber
-
-// username set random
-// totp auth for phonenumber
-
-export const login = async () => {};
-// phone or email or username (ill do some research)
-// phone no could be username so have to do login request on both...
-// password
-
-export const logout = async () => {
-  const responseData = await api_inst.get('/logout');
-  return responseData.data;
+export const handleUsernameSearch = async (searchText: string) => {
+  return await api.post(`/users`, { searchText });
 }
 
-export const checkValidUsername = async (username: string) => {
-  const responseData = await api_inst.post('/check-valid-username', {username});
-  return responseData.data;
+export const getUser = async (id: string): Promise<any> => {
+  return await api.get(`/users/${id}`);
 }
 
-export const forgotPassword = async (email: string) => {
-  const responseData = await api_inst.post('/forgot-password', {email});
-  return responseData.data;
+export const updateDisplayName = async (displayName: string): Promise<any> => {
+  const id = (await get('user')).user.id;
+  return await api.post(`/users/${id}/update`, { displayName });
 }
 
-export const resetPassword = async (password: string, token: string) => {
-  const responseData = await api_inst.post(`/reset/${token}`, {password});
-  return responseData.data;
+export const updateUsername = async (username: string): Promise<any> => {
+  const id = (await get('user')).user.id;
+  return await api.post(`/users/${id}/update`, { username });
+}
+
+export const updateColor = async (color: string): Promise<any> => {
+  const id = (await get('user')).user.id;
+  return await api.post(`/users/${id}/update`, { color });
+}
+
+export const updateEmail = async (email: string): Promise<any> => {
+  const id = (await get('user')).user.id;
+  return await api.post(`/users/${id}/update`, { email });
+}
+
+export const updatePhoneNumber = async (phoneNumber: number): Promise<any> => {
+  const id = (await get('user')).user.id;
+  return await api.post(`/users/${id}/update`, { phoneNumber });
 }
