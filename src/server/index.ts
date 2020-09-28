@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { AuthRes, ForgotReqBody, GetUserReqParams, GetUsersReqBody, LoginReqBody, SignupReqBody, UpdateUserReqBody, UpdateUserReqParams, UsernameReqBody, UsernameRes, UserRes, UsersRes } from '../models';
 import { get } from '../utils/chrome/storage';
 
 // "http://localhost:5000/*" -> add to manifest.json for testing locally
@@ -30,54 +31,62 @@ api.interceptors.response.use((response) => {
 /**
  * /auth
  */
-export const signup = async (args: any): Promise<any> => {
+export const signup = async (args: SignupReqBody): Promise<AuthRes> => {
   return await api.post(`/auth/signup`, args);
 };
 
-export const login = async (args: any): Promise<any> => {
+export const login = async (args: LoginReqBody): Promise<AuthRes> => {
   return await api.post(`/auth/login`, args);
 }
 
-export const forgotPassword = async (args: any): Promise<any> => {
+export const forgotPassword = async (args: ForgotReqBody): Promise<AuthRes> => {
   return await api.post(`/auth/forgot`, args)
 }
 
-export const checkValidUsername = async (username: any): Promise<any> => {
-  return await api.post(`/auth/username`, { username });
+export const checkValidUsername = async (username: string): Promise<UsernameRes> => {
+  const args: UsernameReqBody = { username }
+  return await api.post(`/auth/username`, args);
 }
 
 /**
  * /users
  */
-export const handleUsernameSearch = async (searchText: string) => {
-  return await api.post(`/users`, { searchText });
+export const handleUsernameSearch = async (searchText: string): Promise<UsersRes> => {
+  const args: GetUsersReqBody = { username: searchText }
+  return await api.post(`/users`, args);
 }
 
-export const getUser = async (id: string): Promise<any> => {
-  return await api.get(`/users/${id}`);
+export const getUser = async (id: string): Promise<UserRes> => {
+  const params: GetUserReqParams = { id }
+  return await api.get(`/users/${params.id}`);
 }
 
-export const updateDisplayName = async (displayName: string): Promise<any> => {
-  const id = (await get('user')).user.id;
-  return await api.post(`/users/${id}/update`, { displayName });
+export const updateDisplayName = async (displayName: string): Promise<UserRes> => {
+  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const args: UpdateUserReqBody = { displayName }
+  return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updateUsername = async (username: string): Promise<any> => {
-  const id = (await get('user')).user.id;
-  return await api.post(`/users/${id}/update`, { username });
+export const updateUsername = async (username: string): Promise<UserRes> => {
+  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const args: UpdateUserReqBody = { username }
+  return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updateColor = async (color: string): Promise<any> => {
-  const id = (await get('user')).user.id;
-  return await api.post(`/users/${id}/update`, { color });
+export const updateColor = async (color: string): Promise<UserRes> => {
+  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const args: UpdateUserReqBody = { color }
+  return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updateEmail = async (email: string): Promise<any> => {
-  const id = (await get('user')).user.id;
-  return await api.post(`/users/${id}/update`, { email });
+export const updateEmail = async (email: string): Promise<UserRes> => {
+  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const args: UpdateUserReqBody = { email }
+  return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updatePhoneNumber = async (phoneNumber: number): Promise<any> => {
-  const id = (await get('user')).user.id;
-  return await api.post(`/users/${id}/update`, { phoneNumber });
+export const updatePhoneNumber = async (phoneNumber: number): Promise<UserRes> => {
+  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const args: UpdateUserReqBody = { phoneNumber }
+  return await api.post(`/users/${params.id}/update`, args);
 }

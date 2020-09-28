@@ -19,7 +19,6 @@ import { User } from '../nodes/User';
  * POST /signup
  */
 export interface SignupReqBody {
-  acceptorId: string;
   color: string;
   displayName: string;
   nominatorId: string;
