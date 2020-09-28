@@ -31,7 +31,8 @@ $_exit-bubble-border-big: 15px;
 .TbdSidebar__LogoBubble {
   height: $bubble-width;
   width: $bubble-width;
-   background-image: url('../../../../public/images/logo.png');
+  background-color: $accent-color;
+  background-image: url('../../../../public/images/logo.png');
   background-size: contain;
   border-radius: $bubble-width/2;
   cursor: pointer;

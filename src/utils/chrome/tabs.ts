@@ -8,7 +8,7 @@ export interface Response {
   complete: boolean;
 }
 
-export const sendMessage = (
+export const sendMessageToTab = (
   tab: number | number[] | chrome.tabs.Tab | chrome.tabs.Tab[],
   message: Message
 ) => {
@@ -39,6 +39,20 @@ export const sendMessage = (
   return Promise.all(promises);
 }
 
+export const sendMessageToExtension = (message: Message) => {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, (response: any) => {
+      const err = chrome.runtime.lastError;
+      if (err) {
+        console.error(err);
+        reject(err);
+      } else {
+        resolve(response);
+      }
+    });
+  });
+}
+
 export const getActiveTabs = (): Promise<chrome.tabs.Tab[]> => {
   return new Promise((resolve, reject) => {
     chrome.tabs.query({ active: true }, (tabs: chrome.tabs.Tab[]) => {
@@ -53,4 +67,9 @@ export const getAllTabs = (): Promise<chrome.tabs.Tab[]> => {
       resolve(tabs);
     });
   });
+}
+
+export const getTabId = (): Promise<string> => {
+  return sendMessageToExtension({ type: 'getTabId' })
+    .then((id) => id as string);
 }
