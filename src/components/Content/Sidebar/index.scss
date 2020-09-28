@@ -67,7 +67,7 @@ $_exit-bubble-border-big: 15px;
 }
 
 .TbdSidebar__MainContent--position-right:before {
-  left: 195px;
+  left: 245px;
   @include transform(rotate(90deg));
 }
 
@@ -86,7 +86,7 @@ $_exit-bubble-border-big: 15px;
 }
 
 .TbdSidebar__MainContent--position-right:after {
-  left: 202.5px;
+  left: 252.5px;
 }
 
 .TbdSidebar__MainContent__NewPostButton {
