@@ -1,7 +1,8 @@
 import { Input } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { Anchor, Post, User } from '../../../../models';
+import Post from '../../../../models/nodes/Post';
+import { User } from '../../../../models/nodes/User';
 import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
 
@@ -9,7 +10,6 @@ const MAX_POST_LENGTH = 280;
 const { TextArea } = Input;
 
 interface NewPostProps {
-  anchor?: Anchor;
   user: User;
 }
 
@@ -20,7 +20,7 @@ export default function NewPost(props: NewPostProps) {
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
-    const cantSubmit = !post.anchor 
+    const cantSubmit = !post.mainReference 
       || !post.content 
       || post.content.length === 0
       || post.content.length > MAX_POST_LENGTH;
@@ -87,10 +87,11 @@ export default function NewPost(props: NewPostProps) {
         creator: items.user,
         creatorUserId: items.user.id
       };
-      if (props.anchor) newPost.anchor = props.anchor;
       setPost(newPost);
     });
   }, []);
+
+  const mainReference = post.mainReference ? `Referencing ""` : 'Click to add reference';
 
   // Styles
   const anchorButtonStyles = useMemo(() => ({
@@ -123,6 +124,9 @@ export default function NewPost(props: NewPostProps) {
             {`@${props.user.username}`}
           </p>
           {/* <p className="TbdPost__Header__Datetime">{getTimeAgo()}</p> */}
+        </div>
+        <div className="TbdNewPost__MainReference">
+          {}
         </div>
         <TextArea 
           className="TbdNewPost__Content"

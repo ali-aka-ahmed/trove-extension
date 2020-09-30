@@ -1,4 +1,7 @@
-import { Point as IPoint } from '../../../models';
+interface IPoint {
+  x: number;
+  y: number;
+}
 
 export default class Point implements IPoint {
   public x: number;
