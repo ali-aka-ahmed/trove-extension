@@ -1,3 +1,5 @@
+import { Point as IPoint } from '../../../models';
+
 export default class Point implements IPoint {
   public x: number;
   public y: number;
@@ -22,9 +24,4 @@ export default class Point implements IPoint {
     const e2 = e as TouchEvent | React.TouchEvent;
     return new Point(e2.touches[0].clientX, e2.touches[0].clientY);
   }
-}
-
-export interface IPoint {
-  x: number;
-  y: number;
 }
