@@ -1,14 +1,14 @@
 import React from 'react';
-import { Notification as INotification } from '../../../models';
-import { displayRelativeTime } from '../../../utils';
+import CNotification from '../../helpers/Notification';
+import '../../style.scss';
 import '../style.scss';
 import './style.scss';
 
 interface NotificationProps {
-  notification: INotification;
+  notification: CNotification;
 }
 
-const Notification = ({ notification }: NotificationProps) => {
+export default function Notification({ notification }: NotificationProps) {
   
   const renderContent = (content: string) => {
     const regex = new RegExp(`(${notification.taggedUsers?.map(user => `@${user.username}`).join('|')})`);
@@ -17,7 +17,6 @@ const Notification = ({ notification }: NotificationProps) => {
     const getUserColor = (tag: string): string | undefined => { 
       return notification.taggedUsers?.find(user => user.username === tag.slice(1))?.color; 
     }
-    
     return (
       <>
         {tokenizedContent.map((subString, i) => 
@@ -41,11 +40,11 @@ const Notification = ({ notification }: NotificationProps) => {
               {`${notification.sender.displayName} `}
             </span>
             <span className="TbdNotificationWrapper__Action">
-              {notification.action}
+              tagged you
             </span>
           </div>
           <div className="TbdNotificationWrapper__NotificationDetails">
-            {`${displayRelativeTime(notification.creationDatetime)} · ${notification.url}`}
+            {`${notification.time} · ${notification.url}`}
           </div>
         </div>
       </div>
@@ -55,5 +54,3 @@ const Notification = ({ notification }: NotificationProps) => {
     </div>
 	)
 };
-
-export default Notification;

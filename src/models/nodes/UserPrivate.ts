@@ -1,4 +1,4 @@
-export interface UserPrivate {
+export default interface UserPrivate {
   id: string;
   userId: string;
   creationDatetime: number;
