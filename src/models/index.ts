@@ -9,5 +9,7 @@ export {
   AuthRes, ForgotReqBody, LoginReqBody, ResetReqBody, ResetReqParams, SignupReqBody,
   UsernameReqBody, UsernameRes
 } from './routes/auth';
-export { GetUserReqParams, UpdateUserReqBody, UpdateUserReqParams, UserRes } from './routes/users';
+export { GetNotificationReqParams, GetNotificationsReqBody, NotificationRes, NotificationsRes } from './routes/notifications';
+export { CreatePostReqBody, GetPostReqParams, GetPostsReqBody, PostRes, PostsRes } from './routes/posts';
+export { GetUserReqParams, GetUsersReqBody, UpdateUserReqBody, UpdateUserReqParams, UserRes, UsersRes } from './routes/users';
 
