@@ -1,10 +1,9 @@
 import { Input } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { Post, User } from '../../../../models';
+import { Anchor, Post, User } from '../../../../models';
 import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
-import Anchor from "../../helpers/Anchor";
 
 const MAX_POST_LENGTH = 280;
 const { TextArea } = Input;
