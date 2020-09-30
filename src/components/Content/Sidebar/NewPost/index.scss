@@ -19,6 +19,7 @@ $accent-color: #0d77e2;
   border: none;
   background-color: $background-color;
   resize: none;
+  overflow: hidden;
 }
 
 .TbdNewPost__Content:focus {

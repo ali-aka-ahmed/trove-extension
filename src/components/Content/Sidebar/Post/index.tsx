@@ -3,19 +3,20 @@ import hexToRgba from 'hex-to-rgba';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import React from 'react';
-import { Post } from '../../../../models';
+import Post, { Highlight } from '../../../../models/nodes/Post';
 import Highlighter, { HighlightClass } from '../../helpers/Highlighter';
 
 interface PostProps {
   highlighter: Highlighter;
   post: Post;
+  highlight?: Highlight;
 }
 
 export default function Post(props: PostProps) {
   const onMouseEnterPost = (e: React.MouseEvent) => {
     console.log('mouseenterpost')
-    if (props.post.anchor?.range) {
-      const range = deserializeRange(props.post.anchor.range);
+    if (props.highlight?.range) {
+      const range = deserializeRange(props.highlight.range);
       const color = hexToRgba(props.post.creator.color, 0.1);
       props.highlighter.addHighlight(range, HighlightClass.HoverPost, color);
     }
@@ -26,8 +27,8 @@ export default function Post(props: PostProps) {
   }
 
   const onClickPost = (e: React.MouseEvent) => {
-    if (props.post.anchor?.range) {
-      const range = deserializeRange(props.post.anchor.range);
+    if (props.highlight?.range) {
+      const range = deserializeRange(props.highlight.range);
       const color = hexToRgba(props.post.creator.color, 0.25);
       props.highlighter.addHighlight(range, HighlightClass.Post, color);
     }
