@@ -1,11 +1,10 @@
 import { getSelection } from '@rangy/core';
 import { serializeRange } from '@rangy/serializer';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Post from '../../../models/Post';
+import { Anchor, AnchorType, Post } from '../../../models/nodes/Post';
 import { set } from '../../../utils/chrome/storage';
 import { getTabId, Message } from '../../../utils/chrome/tabs';
 import { posts as mockPosts, users } from '../../../utils/data';
-import Anchor, { AnchorType } from "../helpers/Anchor";
 import Edge from '../helpers/Edge';
 import Highlighter, { HighlightClass } from '../helpers/Highlighter';
 import Point from '../helpers/Point';
