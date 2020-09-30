@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { User } from '../models';
+import { User } from '../models/nodes/User';
 import { get } from '../utils/chrome/storage';
 
 const api_inst = axios.create({

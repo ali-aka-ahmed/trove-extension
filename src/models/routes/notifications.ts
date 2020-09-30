@@ -1,5 +1,5 @@
 import { BaseParams, BaseRes } from '.';
-import { Notification } from '../nodes/Notification';
+import { Notification } from '../../components/Popup/helpers/Notification';
 
 /**
  * ROUTES
