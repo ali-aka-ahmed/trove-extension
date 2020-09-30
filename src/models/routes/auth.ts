@@ -19,7 +19,6 @@ import { User } from '../nodes/User';
  * POST /signup
  */
 export interface SignupReqBody {
-  acceptorId: string;
   color: string;
   displayName: string;
   nominatorId: string;
@@ -79,14 +78,14 @@ export interface UsernameReqBody {
  * POST /reset/:token
  * @interface AuthRes
  */
-export interface AuthRes extends BaseRes {
+export type AuthRes = {
   user?: User;
   token?: string;
-}
+} & BaseRes;
 
 /**
  * POST /username
  */
-export interface UsernameRes extends BaseRes {
+export type UsernameRes = {
   exists?: boolean;
-}
+} & BaseRes;

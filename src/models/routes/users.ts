@@ -4,6 +4,7 @@ import { User } from '../nodes/User';
 /**
  * ROUTES
  *
+ * POST /
  * GET /:id
  * POST /:id/update
  */
@@ -11,6 +12,13 @@ import { User } from '../nodes/User';
 /** ************************* */
 /** ********** REQ ********** */
 /** ************************* */
+
+/**
+ * POST /
+ */
+export interface GetUsersReqBody extends BaseParams {
+  username: string;
+}
 
 /**
  * GET /:id
@@ -42,9 +50,16 @@ export interface UpdateUserReqParams extends BaseParams {
 /** ************************* */
 
 /**
+ * POST /
+ */
+export type UsersRes = {
+  users?: User[];
+} & BaseRes;
+
+/**
  * GET /:id
  * POST /:id/update
  */
-export interface UserRes extends BaseRes {
+export type UserRes = {
   user?: User;
-}
+} & BaseRes;
