@@ -1,14 +1,35 @@
-import { User } from '.';
-import Anchor from "../components/Content/helpers/Anchor";
+import { User } from './User';
+
+/**
+ * @enum {number} AnchorType
+ */
+export enum AnchorType {
+  Div,
+  Point,
+  Text,
+}
+
+/**
+ * @interface Point
+ */
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export type Anchor = {
+  type: AnchorType.Text;
+  range: string;
+};
 
 export interface TaggedUser {
   id: string;
   isTaggedInReply: boolean;
   username: string;
   color: string;
-};
+}
 
-export default interface Post {
+export interface Post {
   id: string;
   content: string;
   creationDatetime: number;
@@ -20,4 +41,4 @@ export default interface Post {
   replies?: Post[];
   taggedUserIds?: string[]; // includes parent user ids (for replies)
   taggedUsers?: TaggedUser[];
-};
+}
