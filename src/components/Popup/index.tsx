@@ -1,7 +1,8 @@
 import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
-import { Notification as INotification, User as IUser } from '../../models';
+import { Notification as INotification } from '../../models/nodes/Notification';
+import { User } from '../../models/nodes/User';
 import { get, set } from '../../utils/chrome/storage';
 import { getAllTabs } from '../../utils/chrome/tabs';
 import { notifications as notificationData } from '../../utils/data';
@@ -21,7 +22,7 @@ function Popup() {
    */
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<IUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     get(null).then((items) => {

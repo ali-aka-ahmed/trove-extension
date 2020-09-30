@@ -1,5 +1,6 @@
 import Point from '../../components/Content/helpers/Point';
-import { User } from '../../models';
+import { User } from '../../models/nodes/User';
+
 
 /**
  * Key to type mapping. For the love of god can Typescript implement negated types? Merge CS and

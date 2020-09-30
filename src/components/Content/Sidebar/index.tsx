@@ -1,7 +1,6 @@
 import { getSelection } from '@rangy/core';
-import { serializeRange } from '@rangy/serializer';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Anchor, AnchorType, Post } from '../../../models/nodes/Post';
+import Post from '../../../models/nodes/Post';
 import { set } from '../../../utils/chrome/storage';
 import { getTabId, Message } from '../../../utils/chrome/tabs';
 import { posts as mockPosts, users } from '../../../utils/data';
@@ -21,7 +20,6 @@ export const CONTENT_WIDTH = 300;
 export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
-  const [anchor, setAnchor] = useState<Anchor | undefined>(undefined);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isComposing, setIsComposing] = useState(true);
@@ -163,10 +161,6 @@ export default function Sidebar() {
       const selection = getSelection();
       if (selection.toString()) {
         const range = selection.getRangeAt(0);
-        setAnchor({
-          range: serializeRange(range),
-          type: AnchorType.Text
-        });
         highlighter.addHighlight(range, HighlightClass.NewPost);
         selection.removeAllRanges();
       }
@@ -335,7 +329,7 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              {isComposing && <NewPost anchor={anchor} user={getCurrentUser()} />}
+              {isComposing && <NewPost user={getCurrentUser()} />}
               {renderPosts()}
               <button 
                 className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
