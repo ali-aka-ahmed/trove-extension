@@ -25,11 +25,11 @@ export default function Sidebar() {
   const [anchor, setAnchor] = useState<Anchor | undefined>(undefined);
   const [closestEdge, setClosestEdge] = useState(Edge.Left);
   const [highlighter, setHighlighter] = useState(new Highlighter());
-  const [isComposing, setIsComposing] = useState(false);
+  const [isComposing, setIsComposing] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isHidden, setIsHidden] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [offset, setOffset] = useState(new Point(0, 0));
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
   const [posts, setPosts] = useState([] as Post[]);
@@ -266,8 +266,8 @@ export default function Sidebar() {
   useEffect(() => {
     getTabId().then((tabId) => {
       setTabId(tabId);
-      syncer.load({ isExtensionOn: true }, tabId);
-      anchorSidebar();
+      // syncer.load({ isExtensionOn: true }, tabId);
+      // anchorSidebar();
     });
     
     chrome.storage.onChanged.addListener((changes) => {
