@@ -1,15 +1,22 @@
 import Point from '../../components/Content/helpers/Point';
-import { User } from '../../models';
+import { User } from '../../models/nodes/User';
+
 
 /**
- * Key to type mapping.
+ * Key to type mapping. For the love of god can Typescript implement negated types? Merge CS and
+ * TabSettings when they do.
  */
 export interface CS {
   isAuthenticated: boolean;
   isExtensionOn: boolean;
-  isOpen: boolean;
-  position: Point;
   user: User;
+}
+
+export interface TabSettings {
+  [tabId: string]: {
+    isOpen?: boolean;
+    position?: Point;
+  };
 }
 
 type AreaName = 'local' | 'sync' | 'managed';
@@ -31,10 +38,10 @@ type AreaName = 'local' | 'sync' | 'managed';
  * @param area
  */
 export function get<K extends keyof CS>(key: null, area?: AreaName): Promise<{[k in K]: CS[k]}>;
-export function get<K extends keyof CS>(key: K, area?: AreaName): Promise<{[key in K]: CS[key]}>;
-export function get<K extends keyof CS>(key: K[], area?: AreaName): Promise<{[key in K]: CS[key]}>;
-export function get<J extends K, K extends keyof CS>(key: Partial<{[k in K]: CS[k]}>, area?: AreaName): Promise<{[j in J]: CS[j]}>;
-export function get<K extends keyof CS>(key: K | K[] | Partial<{[k in K]: CS[k]}>, area: AreaName='local') {
+export function get<K extends string>(key: K, area?: AreaName): Promise<{[k in K]: k extends keyof CS ? CS[k] : TabSettings[k]}>;
+export function get<K extends string>(key: K[], area?: AreaName): Promise<{[k in K]: k extends keyof CS ? CS[k] : TabSettings[k]}>;
+export function get<J extends K, K extends string>(key: Partial<{[k in K]: k extends keyof CS ? CS[k] : TabSettings[k]}>, area?: AreaName): Promise<{[j in J]: j extends keyof CS ? CS[j] : TabSettings[j]}>;
+export function get<K extends string>(key: K | K[] | Partial<{[k in K]: k extends keyof CS ? CS[k] : TabSettings[k]}>, area: AreaName='local') {
   return new Promise((resolve, reject) => {
     chrome.storage[area].get(key, (items) => {
       const err = chrome.runtime.lastError;
@@ -53,16 +60,17 @@ export function get<K extends keyof CS>(key: K | K[] | Partial<{[k in K]: CS[k]}
  * @param key 
  * @param area 
  */
-export function get1<K extends keyof CS>(key: K, area: AreaName='local'): Promise<CS[K]> {
+export function get1<K extends string>(key: K, area?: AreaName) {
   return get(key, area).then((items) => items[key]);
 }
 
 /**
  * Set given key-value pairs in chrome storage.
+ * TODO: typing isn't perfect, can pair keyof CS with value of TabSetting
  * @param items
  * @param area 
  */
-export function set<K extends keyof CS>(items: Partial<{[k in K]: CS[k]}>, area: AreaName='local'): Promise<void> {
+export function set<K extends keyof CS, J extends string>(items: Partial<{[k in K]: CS[k]}> | {[key: string]: Partial<TabSettings[J]>}, area: AreaName='local'): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.storage[area].set(items, () => {
       const err = chrome.runtime.lastError;
@@ -78,6 +86,7 @@ export function set<K extends keyof CS>(items: Partial<{[k in K]: CS[k]}>, area:
 
 /**
  * Remove given key or list of keys from chrome storage.
+ * TODO: remove string from key type when we can combine CS and TabSettings
  * @param keys
  * @param area 
  */
@@ -93,6 +102,16 @@ export function remove<K extends keyof CS>(keys: K | K[], area: AreaName='local'
       }
     });
   });
+}
+
+/**
+ * Remove data associated with given tab id from chrome storage. 
+ * 
+ * This is separate from `remove` to keep strong typing provied by `CS`.
+ * @param tabId 
+ */
+export const removeTabInfo = (tabId: string, area: AreaName='local') => {
+  remove(tabId as keyof CS, area);
 }
 
 /**

@@ -1,5 +1,5 @@
 import { BaseParams, BaseRes } from '.';
-import { Anchor, Post, TaggedUser } from '../nodes/Post';
+import { default as Post, TaggedUser } from '../nodes/Post';
 import { User } from '../nodes/User';
 
 /**
@@ -29,7 +29,6 @@ export interface CreatePostReqBody extends BaseParams {
   content: string;
   creator: User;
   url: string;
-  anchor: Anchor;
   taggedUsers: TaggedUser[];
 }
 
