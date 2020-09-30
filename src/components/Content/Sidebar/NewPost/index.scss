@@ -1,12 +1,14 @@
 @import '../../../../styles/general.scss';
 
 $background-color: #fff;
+$accent-color: #0d77e2;
 
 .TbdNewPost {
   display: flex;
   flex-direction: row;
   padding: 15px;
   padding-right: 20px;
+  border-bottom: 1px solid #ebebeb;
 }
 
 .TbdNewPost__Content {
@@ -25,4 +27,25 @@ $background-color: #fff;
 
 .TbdNewPost__Content::-webkit-resizer {
   display: none;
+}
+
+.TbdNewPost__Buttons__Submit {
+  margin-top: 5px;
+  // text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  background-color: #eee;
+  color: #545454;
+  letter-spacing: 0.5px;
+  padding: 5px 12.5px;
+  border-radius: 25px;
+  // font-weight: bold;
+}
+
+.TbdNewPost__Buttons__Submit:hover {
+  background-color: #e3e3e3;
+}
+
+.TbdNewPost__Buttons__Submit:focus {
+  outline: none;
 }
