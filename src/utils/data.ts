@@ -1,6 +1,8 @@
-import { AnchorType, Notification as INotification, Post as IPost, User as IUser } from '../models';
+import { Notification } from "../models/nodes/Notification";
+import Post from "../models/nodes/Post";
+import { User } from "../models/nodes/User";
 
-export const users: IUser[] = [
+export const users: User[] = [
   {
     id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7', // needs to be unique
     displayName: 'Ali Ahmed',
@@ -35,13 +37,9 @@ export const users: IUser[] = [
   }
 ];
 
-export const posts: IPost[] = [
+export const posts: Post[] = [
   {
     id: '4ff4be94-b0ac-4da5-9224-652993095c25',
-    anchor: {
-      type: AnchorType.Text,
-      range: '0/1/3/1/2:9,0/1/3/1/2:38'
-    },
     content: '@aki yo check this out lalalalala this is a big test hello world',
     creationDatetime: 1601178998080,
     creator: {
@@ -53,21 +51,21 @@ export const posts: IPost[] = [
       color: '#52B2FA'
     },
     creatorUserId: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
-    replies: [],
+    domain: 'akshath.me',
     taggedUserIds: ['30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93'],
     taggedUsers: [
       {
         id: '30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93',
         username: 'aki',
-        isTaggedInReply: false,
         color: '#9900EF'
       }
     ],
+    type: 'post',
     url: 'https://akshath.me/'
   }
 ];
 
-export const notifications: INotification[] = [
+export const notifications: Notification[] = [
   {
     id: '1fe4be94-b0ac-4da5-8224-652993095c25',
     postId: '4ff4be94-b0ac-4da5-9224-652993095c25',
@@ -88,7 +86,6 @@ export const notifications: INotification[] = [
       {
         id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
         username: 'ali',
-        isTaggedInReply: false,
         color: '#52B2FA'
       }
     ]
