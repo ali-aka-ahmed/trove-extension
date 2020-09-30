@@ -37,15 +37,16 @@ export default function NewPost(props: NewPostProps) {
       url: '',
       creationDatetime: Date.now()
     });
+    
   }, [canSubmit, post]);
   
-  const clickAnchorButton = (e) => {
+  const onClickAnchorButton = (e) => {
     console.log("HELP")
     setIsAnchored(false);
     setIsAnchoring(true);
   }
 
-  const clickSubmitButton = useCallback((e) => {
+  const onClickSubmitButton = useCallback((e) => {
     submit();
   }, [submit]);
 
@@ -130,6 +131,9 @@ export default function NewPost(props: NewPostProps) {
           autoSize={{ minRows: 2 }}
           ref={contentRef}
         />
+        <div className="TbdNewPost__Buttons">
+          <button className="TbdNewPost__Buttons__Submit" onClick={onClickSubmitButton}>Post</button>
+        </div>
       </div>
       {/* <TextArea 
         placeholder="The pen is mightier than the sword."
