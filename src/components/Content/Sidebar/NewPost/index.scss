@@ -4,11 +4,45 @@ $background-color: #fff;
 $accent-color: #0d77e2;
 
 .TbdNewPost {
+  padding: 15px;
+  // padding-right: 20px;
+  border-bottom: 1px solid #ebebeb;
+}
+
+.TbdNewPost__MainReference {
+  // overflow: hidden;
+  // max-width: 100px;
+  // white-space: nowrap;
+  // text-overflow: ellipsis;
+  
+  // background-color: #eee;
+  // border-radius: 5px;
+  // padding: 5px 10px;
+  // color: #545454;
+  // cursor: pointer;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: row;
-  padding: 15px;
-  padding-right: 20px;
-  border-bottom: 1px solid #ebebeb;
+  align-items: center; 
+}
+
+.TbdNewPost__MainReference__Add {
+  background-color: #eee;
+  height: 25px;
+  width: 25px;
+  border-radius: 50%;
+  background-image: url('../../../../../public/images/new-reference-icon.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+  cursor: pointer;
+  @include transform(rotate(45deg));
+}
+
+.TbdNewPost__MainReference__AddText {
+  margin-left: 8.5px;
+  margin-bottom: 2.5px;
+  cursor: pointer;
 }
 
 .TbdNewPost__Content {
@@ -31,8 +65,7 @@ $accent-color: #0d77e2;
 }
 
 .TbdNewPost__Buttons__Submit {
-  margin-top: 5px;
-  // text-transform: uppercase;
+  margin-top: 10px;
   cursor: pointer;
   border: none;
   background-color: #eee;
@@ -40,7 +73,6 @@ $accent-color: #0d77e2;
   letter-spacing: 0.5px;
   padding: 5px 12.5px;
   border-radius: 25px;
-  // font-weight: bold;
 }
 
 .TbdNewPost__Buttons__Submit:hover {

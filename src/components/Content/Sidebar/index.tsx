@@ -20,7 +20,7 @@ export const CONTENT_WIDTH = 300;
 export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
-  const [closestEdge, setClosestEdge] = useState(Edge.Left);
+  const [closestEdge, setClosestEdge] = useState(Edge.Right);
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isComposing, setIsComposing] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
@@ -28,7 +28,7 @@ export default function Sidebar() {
   const [isHidden, setIsHidden] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [offset, setOffset] = useState(new Point(0, 0));
-  const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
+  const [position, setPosition] = useState(new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y));
   const [posts, setPosts] = useState([] as Post[]);
   const [shouldHide, setShouldHide] = useState(false);
   const [tabId, setTabId] = useState('');
