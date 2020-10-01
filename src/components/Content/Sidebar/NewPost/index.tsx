@@ -91,7 +91,7 @@ export default function NewPost(props: NewPostProps) {
     });
   }, []);
 
-  const mainReference = post.mainReference ? `Referencing ""` : 'Click to add reference';
+  const mainReferenceText = post.mainReference ? `Referencing "${'hi'}"` : 'Click to add reference';
 
   // Styles
   const anchorButtonStyles = useMemo(() => ({
@@ -104,41 +104,44 @@ export default function NewPost(props: NewPostProps) {
 
   return (
     <div className="TbdNewPost">
-      <div className="TbdPost__Left">
-        <div 
-          className="TbdPost__UserBubble" 
-          style={{ backgroundColor: props.user.color }}
-        >
-          {props.user.username[0]}
-        </div>
+      <div className="TbdNewPost__MainReference">
+        <div className="TbdNewPost__MainReference__Add"></div>
+        <p className="TbdNewPost__MainReference__AddText">Add reference</p>
       </div>
-      <div className="TbdPost__Right">
-        <div className="TbdPost__Header">
-          <p className="TbdPost__Header__DisplayName">
-            {props.user.displayName}
-          </p>
-          <p 
-            className="TbdPost__Header__Username"
-            style={{ color: props.user.color }}
+      <div className="TbdPost__Wrapper">
+        <div className="TbdPost__Left">
+          <div 
+            className="TbdPost__UserBubble" 
+            style={{ backgroundColor: props.user.color }}
           >
-            {`@${props.user.username}`}
-          </p>
-          {/* <p className="TbdPost__Header__Datetime">{getTimeAgo()}</p> */}
+            {props.user.username[0]}
+          </div>
         </div>
-        <div className="TbdNewPost__MainReference">
-          {}
-        </div>
-        <TextArea 
-          className="TbdNewPost__Content"
-          placeholder="The pen is mightier than the sword."
-          autoSize={{ minRows: 2 }}
-          ref={contentRef}
-        />
-        <div className="TbdNewPost__Buttons">
-          <button className="TbdNewPost__Buttons__Submit" onClick={onClickSubmitButton}>Post</button>
+        <div className="TbdPost__Right">
+          <div className="TbdPost__Header">
+            <p className="TbdPost__Header__DisplayName">
+              {props.user.displayName}
+            </p>
+            <p 
+              className="TbdPost__Header__Username"
+              style={{ color: props.user.color }}
+            >
+              {`@${props.user.username}`}
+            </p>
+            {/* <p className="TbdPost__Header__Datetime">{getTimeAgo()}</p> */}
+          </div>
+          <TextArea 
+            className="TbdNewPost__Content"
+            placeholder="The pen is mightier than the sword."
+            autoSize={{ minRows: 2 }}
+            ref={contentRef}
+          />
+          <div className="TbdNewPost__Buttons">
+            <button className="TbdNewPost__Buttons__Submit" onClick={onClickSubmitButton}>Post</button>
+          </div>
         </div>
       </div>
-      {/* <TextArea 
+           {/* <TextArea 
         placeholder="The pen is mightier than the sword."
         autoSize={{ minRows: 4 }}
       />
