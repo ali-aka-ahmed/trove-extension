@@ -105,8 +105,7 @@ export default function NewPost(props: NewPostProps) {
   return (
     <div className="TbdNewPost">
       <div className="TbdNewPost__MainReference">
-        <div className="TbdNewPost__MainReference__Add"></div>
-        <p className="TbdNewPost__MainReference__AddText">Add reference</p>
+        {/* <p className="TbdNewPost__MainReference__AddText">Add reference</p> */}
       </div>
       <div className="TbdPost__Wrapper">
         <div className="TbdPost__Left">
@@ -137,7 +136,12 @@ export default function NewPost(props: NewPostProps) {
             ref={contentRef}
           />
           <div className="TbdNewPost__Buttons">
-            <button className="TbdNewPost__Buttons__Submit" onClick={onClickSubmitButton}>Post</button>
+            <div className="TbdNewPost__Buttons__Left">
+              <button className="TbdNewPost__Button TbdNewPost__Button--AddHighlight"></button>
+            </div>
+            <div className="TbdNewPost__Buttons__Right">
+              <button className="TbdNewPost__Button" onClick={onClickSubmitButton}>Post</button>
+            </div>
           </div>
         </div>
       </div>

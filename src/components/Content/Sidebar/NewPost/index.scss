@@ -10,44 +10,21 @@ $accent-color: #0d77e2;
 }
 
 .TbdNewPost__MainReference {
-  // overflow: hidden;
-  // max-width: 100px;
-  // white-space: nowrap;
-  // text-overflow: ellipsis;
-  
-  // background-color: #eee;
-  // border-radius: 5px;
-  // padding: 5px 10px;
-  // color: #545454;
-  // cursor: pointer;
-  margin-bottom: 10px;
   display: flex;
   flex-direction: row;
   align-items: center; 
 }
 
-.TbdNewPost__MainReference__Add {
-  background-color: #eee;
-  height: 25px;
-  width: 25px;
-  border-radius: 50%;
-  background-image: url('../../../../../public/images/new-reference-icon.svg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 12px 12px;
-  cursor: pointer;
-  @include transform(rotate(45deg));
-}
-
-.TbdNewPost__MainReference__AddText {
-  margin-left: 8.5px;
-  margin-bottom: 2.5px;
-  cursor: pointer;
-}
+// .TbdNewPost__MainReference__AddText {
+//   margin-left: 8.5px;
+//   margin-bottom: 2.5px;
+//   color: #545454;
+//   cursor: pointer;
+// }
 
 .TbdNewPost__Content {
   font-size: 14px !important;
-  line-height: 18px !important;
+  line-height: 20px !important;
   padding: 0px;
   margin-top: 2px;
   border: none;
@@ -64,21 +41,42 @@ $accent-color: #0d77e2;
   display: none;
 }
 
-.TbdNewPost__Buttons__Submit {
+.TbdNewPost__Buttons {
   margin-top: 10px;
-  cursor: pointer;
-  border: none;
-  background-color: #eee;
-  color: #545454;
-  letter-spacing: 0.5px;
-  padding: 5px 12.5px;
-  border-radius: 25px;
+  display: flex;
+  justify-content: space-between;
 }
 
-.TbdNewPost__Buttons__Submit:hover {
+.TbdNewPost__Button {
+  background-color: #eee;
+  cursor: pointer;
+  border: none;
+  color: #545454;
+  padding: 5px 12.5px;
+  border-radius: 25px;
+  height: 30px;
+}
+
+.TbdNewPost__Button:hover {
   background-color: #e3e3e3;
 }
 
-.TbdNewPost__Buttons__Submit:focus {
+.TbdNewPost__Button:focus {
   outline: none;
+}
+
+.TbdNewPost__Button--AddHighlight {
+  background-image: url('../../../../../public/images/marker-gray.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  height: 30px;
+  width: 30px;
+  background-color: transparent;
+  margin-left: -4px;
+}
+
+.TbdNewPost__Button--AddHighlight:hover {
+  background-image: url('../../../../../public/images/marker-blue.svg');
+  background-color: #eff7fe;
 }
