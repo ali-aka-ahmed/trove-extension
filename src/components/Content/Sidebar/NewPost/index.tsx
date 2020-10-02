@@ -1,4 +1,4 @@
-import { Input } from 'antd';
+import { Input, Tooltip } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../../models/nodes/Post';
@@ -39,11 +39,13 @@ export default function NewPost(props: NewPostProps) {
     
   }, [canSubmit, post]);
   
-  const onClickAnchorButton = (e) => {
-    console.log("HELP")
-    setIsAnchored(false);
-    setIsAnchoring(true);
-  }
+  const onClickHighlightButton = useCallback((e) => {
+    if (!isAnchoring) {
+      setIsAnchored(false);
+    } 
+    
+    setIsAnchoring(!isAnchoring);
+  }, [isAnchoring]);
 
   const onClickSubmitButton = useCallback((e) => {
     submit();
@@ -93,6 +95,10 @@ export default function NewPost(props: NewPostProps) {
 
   const mainReferenceText = post.mainReference ? `Referencing "${'hi'}"` : 'Click to add reference';
 
+  // Classes
+  const highlightActiveClass = isAnchoring ? 'TbdNewPost__Buttons__AddHighlight--active' : '';
+  const highlightbuttonClass = `TbdNewPost__Buttons__AddHighlight ${highlightActiveClass}`;
+
   // Styles
   const anchorButtonStyles = useMemo(() => ({
     backgroundColor: isAnchored ? APP_COLOR : ERROR_COLOR
@@ -137,7 +143,12 @@ export default function NewPost(props: NewPostProps) {
           />
           <div className="TbdNewPost__Buttons">
             <div className="TbdNewPost__Buttons__Left">
-              <button className="TbdNewPost__Button TbdNewPost__Button--AddHighlight"></button>
+              <Tooltip title="Add highlight">
+                <button 
+                  className={`TbdNewPost__Button ${highlightbuttonClass}`}
+                  onClick={onClickHighlightButton}
+                />
+              </Tooltip>
             </div>
             <div className="TbdNewPost__Buttons__Right">
               <button className="TbdNewPost__Button" onClick={onClickSubmitButton}>Post</button>

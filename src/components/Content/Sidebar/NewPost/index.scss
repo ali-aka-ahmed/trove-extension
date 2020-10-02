@@ -58,14 +58,15 @@ $accent-color: #0d77e2;
 }
 
 .TbdNewPost__Button:hover {
-  background-color: #e3e3e3;
+  color: #0d77e2;
+  background-color: #eff7fe;
 }
 
 .TbdNewPost__Button:focus {
   outline: none;
 }
 
-.TbdNewPost__Button--AddHighlight {
+.TbdNewPost__Buttons__AddHighlight {
   background-image: url('../../../../../public/images/marker-gray.svg');
   background-position: center;
   background-repeat: no-repeat;
@@ -76,7 +77,11 @@ $accent-color: #0d77e2;
   margin-left: -4px;
 }
 
-.TbdNewPost__Button--AddHighlight:hover {
+.TbdNewPost__Buttons__AddHighlight:hover {
   background-image: url('../../../../../public/images/marker-blue.svg');
-  background-color: #eff7fe;
+  background-color: #fff9e5;
+}
+
+.TbdNewPost__Buttons__AddHighlight--active {
+  background-image: url('../../../../../public/images/marker-blue.svg');
 }
