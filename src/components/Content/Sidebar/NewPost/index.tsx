@@ -30,6 +30,18 @@ export default function NewPost(props: NewPostProps) {
     return !cantSubmit;
   }, [post]);
 
+  const getSubmitError = useCallback(() => {
+    if (!post.content || post.content.length === 0) {
+      return "Post can't be empty.";
+    } else if (post.content.length > MAX_POST_LENGTH) {
+      return `Post can't exceed ${MAX_POST_LENGTH} characters.`;
+    } else if (!post.mainReference) {
+      return 'Must link post to a highlight.';
+    }
+
+    return null;
+  }, [post]);
+
   const submit = useCallback(() => {
     // TODO: compute tagged users (this should prob happen in an onChange fn)
     // TODO: make sure anchor was done on this url
@@ -148,7 +160,6 @@ export default function NewPost(props: NewPostProps) {
             >
               {`@${props.user.username}`}
             </p>
-            {/* <p className="TbdPost__Header__Datetime">{getTimeAgo()}</p> */}
           </div>
           <TextArea 
             className="TbdNewPost__Content"
@@ -167,30 +178,17 @@ export default function NewPost(props: NewPostProps) {
               />
             </div>
             <div className="TbdNewPost__Buttons__Right">
-              <button className="TbdNewPost__Button" onClick={onClickSubmitButton}>Post</button>
+              <button 
+                className="TbdNewPost__Button" 
+                onClick={onClickSubmitButton}
+                disabled={!canSubmit()}
+              >
+                Post
+              </button>
             </div>
           </div>
         </div>
       </div>
-           {/* <TextArea 
-        placeholder="The pen is mightier than the sword."
-        autoSize={{ minRows: 4 }}
-      />
-      <Button 
-        style={anchorButtonStyles}
-        type="primary" 
-        shape="circle" 
-        onClick={clickAnchorButton}
-      >
-        A
-      </Button>
-      <Button 
-        style={postButtonStyles}
-        type="primary" 
-        onClick={clickSubmitButton}
-      >
-        POST
-      </Button> */}
     </div>
   );
 }
