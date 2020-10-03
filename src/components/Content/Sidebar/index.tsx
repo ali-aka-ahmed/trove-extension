@@ -155,7 +155,7 @@ export default function Sidebar() {
 
   const onClickNewPostButton = useCallback((e: React.MouseEvent) => {
     if (isComposing) {
-      highlighter.removeHighlight(HighlightClass.NewPost);
+      highlighter.removeNewPostHighlight();
     } else {
       // Attach anchor if text is already selected when new post button is clicked
       const selection = getSelection();
@@ -329,12 +329,12 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              {isComposing && <NewPost user={getCurrentUser()} />}
+              {isComposing && <NewPost user={getCurrentUser()} highlighter={highlighter} />}
               {renderPosts()}
               <button 
                 className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
                 onClick={onClickNewPostButton}
-              ></button>
+              />
             </div>
           )}
         </div>

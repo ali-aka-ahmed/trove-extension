@@ -85,3 +85,19 @@ $accent-color: #0d77e2;
 .TbdNewPost__Buttons__AddHighlight--active {
   background-image: url('../../../../../public/images/marker-blue.svg');
 }
+
+.TbdNewPost__Buttons__AddReference {
+  background-image: url('../../../../../public/images/reference.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  height: 30px;
+  width: 30px;
+  background-color: transparent;
+  margin-left: 5px;
+}
+
+.TbdNewPost__Buttons__AddReference:hover {
+  background-image: url('../../../../../public/images/reference-green.svg');
+  background-color: #e5f5ed;  
+}
