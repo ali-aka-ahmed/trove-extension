@@ -1,15 +1,18 @@
-import { Input, Tooltip } from 'antd';
+import { getSelection } from '@rangy/core';
+import { Input } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../../models/nodes/Post';
 import { User } from '../../../../models/nodes/User';
 import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
+import Highlighter from '../../helpers/Highlighter';
 
 const MAX_POST_LENGTH = 280;
 const { TextArea } = Input;
 
 interface NewPostProps {
+  highlighter: Highlighter;
   user: User;
 }
 
@@ -42,8 +45,10 @@ export default function NewPost(props: NewPostProps) {
   const onClickHighlightButton = useCallback((e) => {
     if (!isAnchoring) {
       setIsAnchored(false);
-    } 
-    
+    } else {
+      // Do nothing for now
+    }
+
     setIsAnchoring(!isAnchoring);
   }, [isAnchoring]);
 
@@ -66,15 +71,25 @@ export default function NewPost(props: NewPostProps) {
     // setIsAnchored(true);
   }, [post]);
 
-  // useEffect(() => {
-  //   if (isAnchoring) {
-  //     document.addEventListener('click', onClickPage);
-  //   } else {
-  //     document.removeEventListener('click', onClickPage);
-  //   }
+  const getNewSelection = useCallback(() => {
+    const selection = getSelection();
+    if (selection.toString()) {
+      const range = selection.getRangeAt(0);
+      props.highlighter.addNewPostHighlight(range);
+      selection.removeAllRanges();
+      setIsAnchoring(false);
+    }
+  }, [getSelection]);
 
-  //   return () => { document.removeEventListener('click', onClickPage); };
-  // }, [isAnchoring, onClickPage]);
+  useEffect(() => {
+    if (isAnchoring) {
+      document.addEventListener('mouseup', getNewSelection);
+    } else {
+      document.removeEventListener('mouseup', getNewSelection);
+    }
+
+    return () => { document.removeEventListener('mouseup', getNewSelection); };
+  }, [isAnchoring, getNewSelection]);
 
   useEffect(() => {
     if (contentRef.current) contentRef.current.focus();
@@ -143,12 +158,13 @@ export default function NewPost(props: NewPostProps) {
           />
           <div className="TbdNewPost__Buttons">
             <div className="TbdNewPost__Buttons__Left">
-              <Tooltip title="Add highlight">
-                <button 
-                  className={`TbdNewPost__Button ${highlightbuttonClass}`}
-                  onClick={onClickHighlightButton}
-                />
-              </Tooltip>
+              <button 
+                className={`TbdNewPost__Button ${highlightbuttonClass}`}
+                onClick={onClickHighlightButton}
+              />
+              <button 
+                className={`TbdNewPost__Button TbdNewPost__Buttons__AddReference`}
+              />
             </div>
             <div className="TbdNewPost__Buttons__Right">
               <button className="TbdNewPost__Button" onClick={onClickSubmitButton}>Post</button>
