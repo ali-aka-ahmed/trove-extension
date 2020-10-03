@@ -66,6 +66,16 @@ $accent-color: #0d77e2;
   outline: none;
 }
 
+.TbdNewPost__Button[disabled] {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.TbdNewPost__Button[disabled]:hover {
+  background-color: #eee;
+  color: #545454;
+}
+
 .TbdNewPost__Buttons__AddHighlight {
   background-image: url('../../../../../public/images/marker-gray.svg');
   background-position: center;
