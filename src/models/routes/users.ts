@@ -1,8 +1,8 @@
 import { BaseParams, BaseRes } from '.';
-import { User } from '../nodes/User';
+import { User } from '../entities/User';
 
 /**
- * ROUTES
+ * ROUTES for /users
  *
  * POST /
  * GET /:id
@@ -16,7 +16,7 @@ import { User } from '../nodes/User';
 /**
  * POST /
  */
-export interface GetUsersReqBody extends BaseParams {
+export interface GetUsersReqBody {
   username: string;
 }
 
