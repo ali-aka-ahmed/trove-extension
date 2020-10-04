@@ -15,20 +15,39 @@ export default class Highlighter {
     this.highlights = new Map<string, any[]>();
   }
 
+  public addNewPostHighlight = (
+    ranges: RangyRangeEx | RangyRangeEx[],
+    color: string='yellow'
+  ) => {
+    const new1 = this.highlights.get(HighlightClass.NewPost1);
+    if (!new1) {
+      this.addHighlight(ranges, HighlightClass.NewPost1, color);
+      this.removeHighlight(HighlightClass.NewPost2);
+    } else {
+      this.addHighlight(ranges, HighlightClass.NewPost2, color);
+      this.removeHighlight(HighlightClass.NewPost1);
+    }
+  }
+
+  public removeNewPostHighlight = () => {
+    this.removeHighlight(HighlightClass.NewPost1);
+    this.removeHighlight(HighlightClass.NewPost2);
+  }
+
   public addHighlight = (
     ranges: RangyRangeEx | RangyRangeEx[], 
     className: string, 
     color: string='yellow'
   ) => {
     try {
-      this.removeHighlight(className);
+      // this.removeHighlight(className);
       const applier = createClassApplier(className, {
         elementProperties: { 
           style: { 'background-color': color }
         }
       });
       this.highlighter.addClassApplier(applier);
-      const highlights = this.highlighter.highlightRanges(className, toArray(ranges));
+      const highlights = this.highlighter.highlightRanges(className, toArray(ranges), { exclusive: false });
       this.highlights.set(className, highlights);
     } catch (err) {
       console.error(err);
@@ -54,5 +73,7 @@ export default class Highlighter {
 export enum HighlightClass {
   HoverPost = 'TbdHighlight--Hover',
   NewPost   = 'TbdHighlight--New',
+  NewPost1  = 'TbdHighlight--New1',
+  NewPost2  = 'TbdHighlight--New2',
   Post      = 'TbdHighlight',
 }

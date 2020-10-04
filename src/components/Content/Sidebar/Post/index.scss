@@ -1,12 +1,15 @@
 .TbdPost {
-  display: flex;
-  flex-direction: row;
   padding: 15px;
   cursor: pointer;
 }
 
 .TbdPost:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdPost__Wrapper {
+  display: flex;
+  flex-direction: row;
 }
 
 .TbdPost__Left {
@@ -39,6 +42,11 @@
   font-weight: bold;
   margin: 0px;
   margin-right: 5px;
+  // max-height: 18px;
+  overflow: hidden;
+  max-width: 100px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .TbdPost__Header__Username {
