@@ -1,4 +1,4 @@
-import { toArray } from "../general";
+import { toArray } from "..";
 
 export interface Message {
   type: string;
