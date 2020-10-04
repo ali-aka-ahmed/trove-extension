@@ -1,10 +1,10 @@
 import { getSelection } from '@rangy/core';
+import { serializeRange } from '@rangy/serializer';
 import { Input } from 'antd';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
-import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
 import Highlighter from '../../helpers/Highlighter';
 
@@ -49,8 +49,9 @@ export default function NewPost(props: NewPostProps) {
     if (!canSubmit()) return;
     setPost({
       ...post,
-      url: '',
-      creationDatetime: Date.now()
+      creationDatetime: Date.now(),
+      domain: window.location.hostname,
+      url: window.location.href
     });
     
   }, [canSubmit, post]);
@@ -92,10 +93,22 @@ export default function NewPost(props: NewPostProps) {
     if (selection.toString()) {
       const range = selection.getRangeAt(0);
       props.highlighter.addNewPostHighlight(range);
+      setPost({
+        ...post, 
+        highlight: {
+          id: uuid(),
+          context: selection.toString(),
+          creationDatetime: Date.now(),
+          domain: window.location.hostname,
+          range: serializeRange(range),
+          text: selection.toString(),
+          url: window.location.href
+        }
+      });
       selection.removeAllRanges();
       setIsAnchoring(false);
     }
-  }, []);
+  }, [post]);
 
   useEffect(() => {
     if (isAnchoring) {
@@ -113,13 +126,17 @@ export default function NewPost(props: NewPostProps) {
     // Get user to populate Post props
     // TODO: Get User in Sidebar and pass it in as a prop
     get('user').then((items) => {
-      const newPost: Partial<Post> = { 
+      setPost({ 
         ...post,
         id: uuid(),
         content: '',
+        comments: [],
         creator: items.user,
-      };
-      setPost(newPost);
+        numComments: 0,
+        numLikes: 0,
+        references: [],
+        taggedUsers: [],
+      });
     });
   }, []);
 
@@ -127,15 +144,6 @@ export default function NewPost(props: NewPostProps) {
   const highlightActiveClass = isAnchoring ? 'TbdNewPost__Buttons__AddHighlight--active' : '';
   const highlightButtonClass = `TbdNewPost__Buttons__AddHighlight ${highlightActiveClass}`;
   const submitButtonDisabledClass = canSubmit() ? '' : 'TbdNewPost__Button--disabled';
-
-  // Styles
-  const anchorButtonStyles = useMemo(() => ({
-    backgroundColor: isAnchored ? APP_COLOR : ERROR_COLOR
-  }), [isAnchored]);
-
-  const postButtonStyles = useMemo(() => ({
-    backgroundColor: APP_COLOR
-  }), []);
 
   return (
     <div className="TbdNewPost">
