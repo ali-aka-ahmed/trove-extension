@@ -1,6 +1,6 @@
-import INotification from '../models/entities/Notification';
-import IPost from '../models/entities/Post';
-import IUser from '../models/entities/User';
+import { Notification as INotification } from '../models/entities/Notification';
+import { Post as IPost } from '../models/entities/Post';
+import { User as IUser } from '../models/entities/User';
 
 export const users: IUser[] = [
   {

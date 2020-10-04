@@ -1,6 +1,5 @@
 import Point from '../../components/Content/helpers/Point';
-import { User } from '../../models/nodes/User';
-
+import { User as IUser } from '../../models/entities/User';
 
 /**
  * Key to type mapping. For the love of god can Typescript implement negated types? Merge CS and
@@ -9,7 +8,7 @@ import { User } from '../../models/nodes/User';
 export interface CS {
   isAuthenticated: boolean;
   isExtensionOn: boolean;
-  user: User;
+  user: IUser;
 }
 
 export interface TabSettings {
