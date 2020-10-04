@@ -1,4 +1,4 @@
-import INotification from '../models/entities/INotification';
+import INotification from '../models/INotification';
 import { displayRelativeTime } from '../utils';
 import User from './User';
 
