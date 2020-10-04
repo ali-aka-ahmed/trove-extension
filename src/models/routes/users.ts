@@ -1,5 +1,5 @@
 import { BaseParams, BaseRes } from '.';
-import { User } from '../entities/User';
+import IUser from '../entities/IUser';
 
 /**
  * ROUTES for /users
@@ -53,7 +53,7 @@ export interface UpdateUserReqParams extends BaseParams {
  * POST /
  */
 export type UsersRes = {
-  users?: User[];
+  users?: IUser[];
 } & BaseRes;
 
 /**
@@ -61,5 +61,5 @@ export type UsersRes = {
  * POST /:id/update
  */
 export type UserRes = {
-  user?: User;
+  user?: IUser;
 } & BaseRes;

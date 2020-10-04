@@ -1,5 +1,5 @@
-import { User as IUser } from '../models/entities//User';
-import { Notification as INotification } from '../models/entities/Notification';
+import INotification from '../models/entities/INotification';
+import IUser from '../models/entities/IUser';
 import { displayRelativeTime } from '../utils';
 import User from './User';
 

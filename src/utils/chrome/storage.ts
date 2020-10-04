@@ -1,5 +1,5 @@
 import Point from '../../components/Content/helpers/Point';
-import { User as IUser } from '../../models/entities/User';
+import IUser from '../../models/entities/IUser';
 
 /**
  * Key to type mapping. For the love of god can Typescript implement negated types? Merge CS and
