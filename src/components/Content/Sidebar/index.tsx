@@ -232,6 +232,15 @@ export default function Sidebar() {
     anchorSidebar();
   }, [isOpen]);
 
+  const onResizeWindow = useCallback(() => {
+    anchorSidebar();
+  }, [anchorSidebar]);
+
+  useEffect(() => {
+    window.addEventListener('resize', onResizeWindow);
+    return () => window.addEventListener('resize', onResizeWindow);;
+  }, [onResizeWindow]);
+
   const syncer = new Syncer({
     isExtensionOn: setIsExtensionOn,
     isOpen: setIsOpen,
