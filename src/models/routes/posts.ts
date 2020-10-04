@@ -1,5 +1,4 @@
 import { BaseParams, BaseRes } from '.';
-import { Highlight } from '../entities/Highlight';
 import { Post } from '../entities/Post';
 
 /**
@@ -30,7 +29,13 @@ export interface CreatePostReqBody {
   creatorUserId: string;
   taggedUserIds: string[];
   url: string;
-  highlight?: Highlight;
+  highlightConstructor?: HighlightConstructor;
+}
+
+export interface HighlightConstructor {
+  context: string; // Highlighted text + surrounding words for context
+  text: string;
+  range: string; // Serialized Range object
 }
 
 /**
