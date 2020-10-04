@@ -4,16 +4,27 @@ $background-color: #fff;
 $accent-color: #0d77e2;
 
 .TbdNewPost {
-  display: flex;
-  flex-direction: row;
   padding: 15px;
-  padding-right: 20px;
+  // padding-right: 20px;
   border-bottom: 1px solid #ebebeb;
 }
 
+.TbdNewPost__MainReference {
+  display: flex;
+  flex-direction: row;
+  align-items: center; 
+}
+
+// .TbdNewPost__MainReference__AddText {
+//   margin-left: 8.5px;
+//   margin-bottom: 2.5px;
+//   color: #545454;
+//   cursor: pointer;
+// }
+
 .TbdNewPost__Content {
   font-size: 14px !important;
-  line-height: 18px !important;
+  line-height: 20px !important;
   padding: 0px;
   margin-top: 2px;
   border: none;
@@ -30,23 +41,63 @@ $accent-color: #0d77e2;
   display: none;
 }
 
-.TbdNewPost__Buttons__Submit {
-  margin-top: 5px;
-  // text-transform: uppercase;
+.TbdNewPost__Buttons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.TbdNewPost__Button {
+  background-color: #eee;
   cursor: pointer;
   border: none;
-  background-color: #eee;
   color: #545454;
-  letter-spacing: 0.5px;
   padding: 5px 12.5px;
   border-radius: 25px;
-  // font-weight: bold;
+  height: 30px;
 }
 
-.TbdNewPost__Buttons__Submit:hover {
-  background-color: #e3e3e3;
+.TbdNewPost__Button:hover {
+  color: #0d77e2;
+  background-color: #eff7fe;
 }
 
-.TbdNewPost__Buttons__Submit:focus {
+.TbdNewPost__Button:focus {
   outline: none;
+}
+
+.TbdNewPost__Buttons__AddHighlight {
+  background-image: url('../../../../../public/images/marker-gray.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  height: 30px;
+  width: 30px;
+  background-color: transparent;
+  margin-left: -4px;
+}
+
+.TbdNewPost__Buttons__AddHighlight:hover {
+  background-image: url('../../../../../public/images/marker-blue.svg');
+  background-color: #fff9e5;
+}
+
+.TbdNewPost__Buttons__AddHighlight--active {
+  background-image: url('../../../../../public/images/marker-blue.svg');
+}
+
+.TbdNewPost__Buttons__AddReference {
+  background-image: url('../../../../../public/images/reference.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  height: 30px;
+  width: 30px;
+  background-color: transparent;
+  margin-left: 5px;
+}
+
+.TbdNewPost__Buttons__AddReference:hover {
+  background-image: url('../../../../../public/images/reference-green.svg');
+  background-color: #e5f5ed;  
 }
