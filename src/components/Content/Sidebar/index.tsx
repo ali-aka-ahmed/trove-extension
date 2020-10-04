@@ -5,7 +5,7 @@ import { set } from '../../../utils/chrome/storage';
 import { getTabId, Message } from '../../../utils/chrome/tabs';
 import { posts as mockPosts, users } from '../../../utils/data';
 import Edge from '../helpers/Edge';
-import Highlighter, { HighlightClass } from '../helpers/Highlighter';
+import Highlighter from '../helpers/Highlighter';
 import Point from '../helpers/Point';
 import Syncer from '../helpers/Syncer';
 import NewPost from './NewPost';
@@ -161,7 +161,7 @@ export default function Sidebar() {
       const selection = getSelection();
       if (selection.toString()) {
         const range = selection.getRangeAt(0);
-        highlighter.addHighlight(range, HighlightClass.NewPost);
+        highlighter.addNewPostHighlight(range);
         selection.removeAllRanges();
       }
     }
@@ -330,8 +330,11 @@ export default function Sidebar() {
               style={contentStyles}
             >
               {isComposing && <NewPost user={getCurrentUser()} highlighter={highlighter} />}
+              {(posts.length === 0) && (
+                <div className="TbdSidebar__MainContent__EmptyMsg">No posts yet!</div>
+              )}
               {renderPosts()}
-              <button 
+              <button
                 className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
                 onClick={onClickNewPostButton}
               />

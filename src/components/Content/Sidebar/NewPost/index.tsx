@@ -8,7 +8,7 @@ import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
 import Highlighter from '../../helpers/Highlighter';
 
-const MAX_POST_LENGTH = 280;
+const MAX_POST_LENGTH = 180;
 const { TextArea } = Input;
 
 interface NewPostProps {
@@ -79,20 +79,13 @@ export default function NewPost(props: NewPostProps) {
     setIsAnchoring(!isAnchoring);
   }, [isAnchoring]);
 
-  const onClickPage = useCallback((e: MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.info('comment: clickpage');
-    // TODO: anchor point cannot be on tbd elements
-    
-    // TODO: anchoring via point
-    // setPost({
-    //   ...post,
-    //   anchor: getAnchor(e)
-    // });
-    // setIsAnchoring(false);
-    // setIsAnchored(true);
-  }, [post]);
+  useEffect(() => {
+    if (isAnchoring) getNewSelection();
+  }, [isAnchoring]);
+
+  const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPost({...post, content: e.target.value});
+  }
 
   const getNewSelection = useCallback(() => {
     const selection = getSelection();
@@ -102,7 +95,7 @@ export default function NewPost(props: NewPostProps) {
       selection.removeAllRanges();
       setIsAnchoring(false);
     }
-  }, [getSelection]);
+  }, []);
 
   useEffect(() => {
     if (isAnchoring) {
@@ -130,8 +123,6 @@ export default function NewPost(props: NewPostProps) {
       setPost(newPost);
     });
   }, []);
-
-  const mainReferenceText = post.mainReference ? `Referencing "${'hi'}"` : 'Click to add reference';
 
   // Classes
   const highlightActiveClass = isAnchoring ? 'TbdNewPost__Buttons__AddHighlight--active' : '';
@@ -177,6 +168,7 @@ export default function NewPost(props: NewPostProps) {
             className="TbdNewPost__Content"
             placeholder="The pen is mightier than the sword."
             autoSize={{ minRows: 2 }}
+            onChange={onChangeContent}
             ref={contentRef}
           />
           <div className="TbdNewPost__Buttons">
