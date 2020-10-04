@@ -1,28 +1,103 @@
-$background-color: #fff;
+@import '../../../../styles/general.scss';
 
-.TbdNewPost > .ant-input {
-  border-radius: 5px;
-  border-bottom-left-radius: 0px;
-  border-bottom-right-radius: 0px;
-  border: none;
-  border-bottom: 2px solid rgba(225, 225, 225, 0.3);
-  margin: 3px 0px 10px 0px;
-  background-color: $background-color;
-  resize: none;
+$background-color: #fff;
+$accent-color: #0d77e2;
+
+.TbdNewPost {
+  padding: 15px;
+  // padding-right: 20px;
+  border-bottom: 1px solid #ebebeb;
 }
 
-.TbdNewPost > .ant-input:focus {
+.TbdNewPost__MainReference {
+  display: flex;
+  flex-direction: row;
+  align-items: center; 
+}
+
+// .TbdNewPost__MainReference__AddText {
+//   margin-left: 8.5px;
+//   margin-bottom: 2.5px;
+//   color: #545454;
+//   cursor: pointer;
+// }
+
+.TbdNewPost__Content {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  padding: 0px;
+  margin-top: 2px;
+  border: none;
+  background-color: $background-color;
+  resize: none;
+  overflow: hidden;
+}
+
+.TbdNewPost__Content:focus {
   box-shadow: none;
 }
 
-.TbdNewPost > .ant-input::-webkit-resizer {
+.TbdNewPost__Content::-webkit-resizer {
   display: none;
 }
 
-.TbdNewPost > .ant-input::-webkit-input-placeholder,
-.TbdNewPost > .ant-input:-moz-placeholder, /* Firefox 18- */
-.TbdNewPost > .ant-input::-moz-placeholder,  /* Firefox 19+ */
-.TbdNewPost > .ant-input:-ms-input-placeholder,
-.TbdNewPost > .ant-input::placeholder {
-  color: rgba(225, 225, 225, 0.25);
+.TbdNewPost__Buttons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.TbdNewPost__Button {
+  background-color: #eee;
+  cursor: pointer;
+  border: none;
+  color: #545454;
+  padding: 5px 12.5px;
+  border-radius: 25px;
+  height: 30px;
+}
+
+.TbdNewPost__Button:hover {
+  color: #0d77e2;
+  background-color: #eff7fe;
+}
+
+.TbdNewPost__Button:focus {
+  outline: none;
+}
+
+.TbdNewPost__Buttons__AddHighlight {
+  background-image: url('../../../../../public/images/marker-gray.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  height: 30px;
+  width: 30px;
+  background-color: transparent;
+  margin-left: -4px;
+}
+
+.TbdNewPost__Buttons__AddHighlight:hover {
+  background-image: url('../../../../../public/images/marker-blue.svg');
+  background-color: #fff9e5;
+}
+
+.TbdNewPost__Buttons__AddHighlight--active {
+  background-image: url('../../../../../public/images/marker-blue.svg');
+}
+
+.TbdNewPost__Buttons__AddReference {
+  background-image: url('../../../../../public/images/reference.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  height: 30px;
+  width: 30px;
+  background-color: transparent;
+  margin-left: 5px;
+}
+
+.TbdNewPost__Buttons__AddReference:hover {
+  background-image: url('../../../../../public/images/reference-green.svg');
+  background-color: #e5f5ed;  
 }

@@ -7,7 +7,7 @@ export type BaseRes = {
 }
 
 /**
- * Base response object. Copy of core.ParamsDictionary in express.
+ * Base params object. Copy of core.ParamsDictionary in express.
  */
 export interface BaseParams {
   [key: string]: string;

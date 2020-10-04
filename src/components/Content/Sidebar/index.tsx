@@ -1,34 +1,37 @@
 import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Anchor, AnchorType } from '../../../models';
-import { get } from '../../../utils/chrome/storage';
-import { Message } from '../../../utils/chrome/tabs';
+import { Post as IPost } from '../../../models/entities/Post';
+import { set } from '../../../utils/chrome/storage';
+import { getTabId, Message } from '../../../utils/chrome/tabs';
+import { posts as mockPosts, users } from '../../../utils/data';
 import Edge from '../helpers/Edge';
 import Highlighter, { HighlightClass } from '../helpers/Highlighter';
 import Point from '../helpers/Point';
 import Syncer from '../helpers/Syncer';
 import NewPost from './NewPost';
+import PostComponent from './Post';
 
 export const SIDEBAR_MARGIN = 15;
 export const SIDEBAR_MARGIN_Y = 100;
 export const BUBBLE_HEIGHT = 55;
 export const BUBBLE_MARGIN = 20;
-export const CONTENT_HEIGHT = 350;
-export const CONTENT_WIDTH = 250;
+export const CONTENT_HEIGHT = 400;
+export const CONTENT_WIDTH = 300;
 export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
-  const [anchor, setAnchor] = useState<Anchor | undefined>(undefined);
-  const [closestEdge, setClosestEdge] = useState(Edge.Left);
+  const [closestEdge, setClosestEdge] = useState(Edge.Right);
   const [highlighter, setHighlighter] = useState(new Highlighter());
-  const [isComposing, setIsComposing] = useState(false);
+  const [isComposing, setIsComposing] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isHidden, setIsHidden] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [offset, setOffset] = useState(new Point(0, 0));
-  const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
+  const [position, setPosition] = useState(new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y));
+  const [posts, setPosts] = useState([] as IPost[]);
   const [shouldHide, setShouldHide] = useState(false);
+  const [tabId, setTabId] = useState('');
   const [wasDragged, setWasDragged] = useState(false);
   const bubbleRef = useRef(null);
   
@@ -96,7 +99,9 @@ export default function Sidebar() {
       setPosition(new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
-  }, [position, getSidebarWidth, getSidebarHeight]);
+
+    set({ [tabId]: { position } });
+  }, [position, tabId, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
     const point = Point.fromEvent(e)
@@ -127,13 +132,14 @@ export default function Sidebar() {
     } else {
       // Normal click
       setIsOpen(!isOpen);
+      set({ [tabId]: { isOpen } });
     }
 
     if (shouldHide) {
       setShouldHide(false);
       setIsExtensionOn(false);
     }
-  }, [isOpen, shouldHide, wasDragged, anchorSidebar]);
+  }, [isOpen, shouldHide, tabId, wasDragged, anchorSidebar]);
 
   const onClickPage = useCallback((e: MouseEvent) => {
     e.preventDefault();
@@ -149,16 +155,12 @@ export default function Sidebar() {
 
   const onClickNewPostButton = useCallback((e: React.MouseEvent) => {
     if (isComposing) {
-      highlighter.removeHighlight(HighlightClass.NewPost);
+      highlighter.removeNewPostHighlight();
     } else {
       // Attach anchor if text is already selected when new post button is clicked
       const selection = getSelection();
       if (selection.toString()) {
         const range = selection.getRangeAt(0);
-        setAnchor({
-          range: range,
-          type: AnchorType.Text
-        });
         highlighter.addHighlight(range, HighlightClass.NewPost);
         selection.removeAllRanges();
       }
@@ -184,11 +186,12 @@ export default function Sidebar() {
     if (isDragging) {
       setIsOpen(false);
       setWasDragged(true);
+      set({ [tabId]: { isOpen } });
 
       // Snap to exit bubble if applicable
       setPosition(snapToExitBubble(e) || Point.fromEvent(e).getOffset(offset));
     }
-  }, [isDragging, offset]);
+  }, [isDragging, isOpen, offset]);
 
   const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
@@ -230,9 +233,9 @@ export default function Sidebar() {
   }, [isOpen]);
 
   const syncer = new Syncer({
+    isExtensionOn: setIsExtensionOn,
     isOpen: setIsOpen,
     position: setPosition,
-    isExtensionOn: setIsExtensionOn
   });
 
   const onMessage = useCallback((
@@ -254,20 +257,36 @@ export default function Sidebar() {
   }, [onMessage]);
 
   useEffect(() => {
-    get('isExtensionOn').then((items) => {
-      if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
+    getTabId().then((tabId) => {
+      setTabId(tabId);
+      // syncer.load({ isExtensionOn: true }, tabId);
+      // anchorSidebar();
     });
     
     chrome.storage.onChanged.addListener((changes) => {
       console.log('changed')
       if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
     });
+
+    // TODO: Get list of posts for current URL
+    const url = window.location.href;
+    // setPosts(await server.getPosts(url));
+    if (mockPosts.some(post => post.url === url)) {
+      setPosts(mockPosts);
+    }
   }, []);
 
-  // Post list
-  const posts = () => {
-    
+  const getCurrentUser = () => {
+    // TODO: figure out how to do this later
+    return users.filter((user) => user.username === 'aki')[0];
   }
+
+  /**
+   * Render list of posts.
+   */
+  const renderPosts = useCallback(() => {
+    return posts.map(post => <PostComponent key={post.id} highlighter={highlighter} post={post} />);
+  }, [posts]);
 
   // Classes
   const positionText = closestEdge === Edge.Left ? 'left' : 'right';
@@ -310,11 +329,12 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              {isComposing && <NewPost anchor={anchor} />}
+              {isComposing && <NewPost user={getCurrentUser()} highlighter={highlighter} />}
+              {renderPosts()}
               <button 
                 className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
                 onClick={onClickNewPostButton}
-              ></button>
+              />
             </div>
           )}
         </div>
