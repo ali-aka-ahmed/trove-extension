@@ -1,20 +1,20 @@
 import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
-import { Notification as INotification, User as IUser } from '../../models';
+import Notification from '../../entities/Notification';
+import { User as IUser } from '../../models/entities/User';
 import { get, set } from '../../utils/chrome/storage';
 import { getAllTabs } from '../../utils/chrome/tabs';
-import { notifications as notificationData } from '../../utils/data';
 import { triggerSync } from '../Content/helpers/Syncer';
-import Notification from './Notification';
+import Notifications from './Notifications';
 import Profile from './Profile';
 import './style.scss';
 
-function Popup() {
+export default function Popup() {
   /**
    * State for all components in Popup.
    */
-  const [notifications, setNotifications] = useState<INotification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   /**
    * Global state.
@@ -41,20 +41,18 @@ function Popup() {
    * Establish socket to server to receive notifications.
    */
   useEffect(() => {
-    const getNotifications = async (): Promise<void> => {
-      const n = notificationData[0];
-      let notifs: INotification[] = [];
-      for (let i = 0; i <= 10; i++) {
-        let s: any = {};
-        s = Object.assign(s, n);
-        s.id = i.toString();
-        notifs.push(s);
-      }
-
-      setNotifications(notifs);
-    }
-
-    getNotifications();
+    // const getNotifications = async (): Promise<void> => {
+    //   const n = notificationData[0];
+    //   let notifs: Notification[] = [];
+    //   for (let i = 0; i <= 10; i++) {
+    //     let s: any = {};
+    //     s = Object.assign(s, n);
+    //     s.id = i.toString();
+    //     notifs.push(s);
+    //   }
+    //   setNotifications(notifs);
+    // }
+    // getNotifications();
   }, []);
 
   /**
@@ -71,9 +69,7 @@ function Popup() {
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="notifications" key="1">
           <div className="TbdPopupContainer__TabWrapper">
-            {notifications.map(n => (
-              <Notification key={n.id} notification={n} />
-            ))}
+            {notifications && <Notifications notifications={notifications} />}
           </div>
         </Tabs.TabPane>
         <Tabs.TabPane tab="profile" key="2">
@@ -92,5 +88,3 @@ function Popup() {
     </div>
   );
 };
-
-export default Popup;

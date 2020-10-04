@@ -4,8 +4,14 @@ import { getActiveTabs, Message } from "../utils/chrome/tabs";
 import { users } from '../utils/data';
 
 // Listen to messages sent from other parts of the extension
-chrome.runtime.onMessage.addListener(async (message: Message, sender, sendResponse) => {
-  if (message.type.slice(0, 5) === 'sync.') {
+chrome.runtime.onMessage.addListener(async (
+  message: Message, 
+  sender: chrome.runtime.MessageSender, 
+  sendResponse: (response: any) => void
+) => {
+  if (message.type === 'getTabId') {
+    sendResponse(sender.tab?.id);
+  } else if (message.type.slice(0, 5) === 'sync.') {
     triggerSync(await getActiveTabs(), message);
   }
 
