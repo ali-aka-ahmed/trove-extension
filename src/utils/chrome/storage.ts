@@ -6,6 +6,7 @@ import { User as IUser } from '../../models/entities/User';
  * TabSettings when they do.
  */
 export interface CS {
+  token: string;
   isAuthenticated: boolean;
   isExtensionOn: boolean;
   user: IUser;
