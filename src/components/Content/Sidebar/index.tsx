@@ -1,6 +1,6 @@
 import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Post from '../../../models/nodes/Post';
+import { Post as IPost } from '../../../models/entities/Post';
 import { set } from '../../../utils/chrome/storage';
 import { getTabId, Message } from '../../../utils/chrome/tabs';
 import { posts as mockPosts, users } from '../../../utils/data';
@@ -29,7 +29,7 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const [offset, setOffset] = useState(new Point(0, 0));
   const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
-  const [posts, setPosts] = useState([] as Post[]);
+  const [posts, setPosts] = useState([] as IPost[]);
   const [shouldHide, setShouldHide] = useState(false);
   const [tabId, setTabId] = useState('');
   const [wasDragged, setWasDragged] = useState(false);

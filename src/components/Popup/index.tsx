@@ -2,7 +2,7 @@ import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
 import Notification from '../../entities/Notification';
-import User from '../../models/nodes/User';
+import { User as IUser } from '../../models/entities/User';
 import { get, set } from '../../utils/chrome/storage';
 import { getAllTabs } from '../../utils/chrome/tabs';
 import { triggerSync } from '../Content/helpers/Syncer';
@@ -21,7 +21,7 @@ export default function Popup() {
    */
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
     get(null).then((items) => {

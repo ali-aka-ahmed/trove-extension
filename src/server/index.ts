@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { User } from '../models/nodes/User';
+import { User as IUser } from '../models/entities/User';
 import { get } from '../utils/chrome/storage';
 
 const api_inst = axios.create({
@@ -14,7 +14,7 @@ const api_inst = axios.create({
 
 export const updateDisplayName = async (displayName: string): Promise<{ 
   error?: Error, 
-  user: User | null,
+  user: IUser | null,
 }> => {
   let user = (await get('user')).user;
   user.displayName = displayName;
@@ -23,7 +23,7 @@ export const updateDisplayName = async (displayName: string): Promise<{
 
 export const updateUsername = async (username: string): Promise<{ 
   error?: Error, 
-  user: User | null,
+  user: IUser | null,
 }> => {
   let user = (await get('user')).user;
   user.username = username;
@@ -37,7 +37,7 @@ export const updateUsername = async (username: string): Promise<{
 
 export const updateColor = async (color: string): Promise<{ 
   error?: Error, 
-  user: User | null,
+  user: IUser | null,
 }> => {
   let user = (await get('user')).user;
   user.color = color;
