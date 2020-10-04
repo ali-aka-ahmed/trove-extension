@@ -2,12 +2,12 @@
  * Base response object.
  * If status is NOT successful (200 - 299), then message appears.
  */
-export interface BaseRes {
+export type BaseRes = {
   message?: string;
 }
 
 /**
- * Base response object. Copy of core.ParamsDictionary in express.
+ * Base params object. Copy of core.ParamsDictionary in express.
  */
 export interface BaseParams {
   [key: string]: string;

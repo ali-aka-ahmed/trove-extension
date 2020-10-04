@@ -3,13 +3,14 @@ import hexToRgba from 'hex-to-rgba';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import React from 'react';
-import Post, { Highlight } from '../../../../models/nodes/Post';
+import { Highlight as IHighlight } from '../../../../models/entities/Highlight';
+import { Post as IPost } from '../../../../models/entities/Post';
 import Highlighter, { HighlightClass } from '../../helpers/Highlighter';
 
 interface PostProps {
   highlighter: Highlighter;
-  post: Post;
-  highlight?: Highlight;
+  post: IPost;
+  highlight?: IHighlight;
 }
 
 export default function Post(props: PostProps) {

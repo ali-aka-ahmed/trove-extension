@@ -25,7 +25,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local config
-.env*
+.env
 .idea/
 .vscode
 

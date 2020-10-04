@@ -2,8 +2,8 @@ import { getSelection } from '@rangy/core';
 import { Input } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import Post from '../../../../models/nodes/Post';
-import { User } from '../../../../models/nodes/User';
+import Post from '../../../../entities/Post';
+import User from '../../../../entities/User';
 import { APP_COLOR, ERROR_COLOR } from '../../../../styles/constants';
 import { get } from '../../../../utils/chrome/storage';
 import Highlighter from '../../helpers/Highlighter';
@@ -24,7 +24,7 @@ export default function NewPost(props: NewPostProps) {
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
-    const cantSubmit = !post.mainReference 
+    const cantSubmit = !post.highlight 
       || !post.content 
       || post.content.length === 0
       || post.content.length > MAX_POST_LENGTH;
@@ -36,7 +36,7 @@ export default function NewPost(props: NewPostProps) {
       return "Post can't be empty.";
     } else if (post.content.length > MAX_POST_LENGTH) {
       return `Post can't exceed ${MAX_POST_LENGTH} characters.`;
-    } else if (!post.mainReference) {
+    } else if (!post.highlight) {
       return 'Must link post to a highlight.';
     }
 
@@ -118,7 +118,6 @@ export default function NewPost(props: NewPostProps) {
         id: uuid(),
         content: '',
         creator: items.user,
-        creatorUserId: items.user.id
       };
       setPost(newPost);
     });
