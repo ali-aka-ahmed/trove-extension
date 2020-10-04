@@ -2,9 +2,8 @@ import { getSelection } from '@rangy/core';
 import { serializeRange } from '@rangy/serializer';
 import { Input } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { v4 as uuid } from 'uuid';
-import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
+import { CreatePostReqBody } from '../../../../server/posts';
 import { get } from '../../../../utils/chrome/storage';
 import Highlighter from '../../helpers/Highlighter';
 
@@ -20,7 +19,7 @@ export default function NewPost(props: NewPostProps) {
   const [isAnchoring, setIsAnchoring] = useState(false);
   const [isAnchored, setIsAnchored] = useState(false);
   const [isHoveringSubmit, setIsHoveringSubmit] = useState(false);
-  const [post, setPost] = useState({} as Partial<Post>);
+  const [post, setPost] = useState({} as Partial<CreatePostReqBody>);
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
@@ -49,8 +48,6 @@ export default function NewPost(props: NewPostProps) {
     if (!canSubmit()) return;
     setPost({
       ...post,
-      creationDatetime: Date.now(),
-      domain: window.location.hostname,
       url: window.location.href
     });
     
@@ -96,10 +93,7 @@ export default function NewPost(props: NewPostProps) {
       setPost({
         ...post, 
         highlight: {
-          id: uuid(),
           context: selection.toString(),
-          creationDatetime: Date.now(),
-          domain: window.location.hostname,
           range: serializeRange(range),
           text: selection.toString(),
           url: window.location.href
@@ -128,14 +122,8 @@ export default function NewPost(props: NewPostProps) {
     get('user').then((items) => {
       setPost({ 
         ...post,
-        id: uuid(),
         content: '',
-        comments: [],
-        creator: items.user,
-        numComments: 0,
-        numLikes: 0,
-        references: [],
-        taggedUsers: [],
+        creatorUserId: items.user.id
       });
     });
   }, []);
