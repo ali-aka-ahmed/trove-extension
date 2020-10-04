@@ -20,7 +20,7 @@ export const CONTENT_WIDTH = 300;
 export const EXIT_BUBBLE_WIDTH = 55;
 
 export default function Sidebar() {
-  const [closestEdge, setClosestEdge] = useState(Edge.Left);
+  const [closestEdge, setClosestEdge] = useState(Edge.Right);
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isComposing, setIsComposing] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
@@ -28,7 +28,7 @@ export default function Sidebar() {
   const [isHidden, setIsHidden] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [offset, setOffset] = useState(new Point(0, 0));
-  const [position, setPosition] = useState(new Point(SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y));
+  const [position, setPosition] = useState(new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y));
   const [posts, setPosts] = useState([] as IPost[]);
   const [shouldHide, setShouldHide] = useState(false);
   const [tabId, setTabId] = useState('');
@@ -155,7 +155,7 @@ export default function Sidebar() {
 
   const onClickNewPostButton = useCallback((e: React.MouseEvent) => {
     if (isComposing) {
-      highlighter.removeHighlight(HighlightClass.NewPost);
+      highlighter.removeNewPostHighlight();
     } else {
       // Attach anchor if text is already selected when new post button is clicked
       const selection = getSelection();
@@ -329,12 +329,12 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              {isComposing && <NewPost user={getCurrentUser()} />}
+              {isComposing && <NewPost user={getCurrentUser()} highlighter={highlighter} />}
               {renderPosts()}
               <button 
                 className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
                 onClick={onClickNewPostButton}
-              ></button>
+              />
             </div>
           )}
         </div>

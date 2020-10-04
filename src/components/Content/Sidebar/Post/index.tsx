@@ -57,30 +57,32 @@ export default function Post(props: PostProps) {
       onMouseEnter={onMouseEnterPost}
       onMouseLeave={onMouseLeavePost}
     >
-      <div className="TbdPost__Left">
-        <div 
-          className="TbdPost__UserBubble" 
-          style={{ backgroundColor: props.post.creator.color }}
-        >
-          {props.post.creator.username[0]}
-        </div>
-      </div>
-      <div className="TbdPost__Right">
-        <div className="TbdPost__Header">
-          <p className="TbdPost__Header__DisplayName">
-            {props.post.creator.displayName}
-          </p>
-          <p 
-            className="TbdPost__Header__Username"
-            style={{ color: props.post.creator.color }}
+      <div className="TbdPost__Wrapper">
+        <div className="TbdPost__Left">
+          <div 
+            className="TbdPost__UserBubble" 
+            style={{ backgroundColor: props.post.creator.color }}
           >
-            {`@${props.post.creator.username}`}
-          </p>
-          <p className="TbdPost__Header__Datetime">{getTimeAgo()}</p>
+            {props.post.creator.username[0]}
+          </div>
         </div>
-        {getContent()}
-        <div className="TbdPost__Buttons">
-          {/* only comment button for now */}
+        <div className="TbdPost__Right">
+          <div className="TbdPost__Header">
+            <p className="TbdPost__Header__DisplayName">
+              {props.post.creator.displayName}
+            </p>
+            <p 
+              className="TbdPost__Header__Username"
+              style={{ color: props.post.creator.color }}
+            >
+              {`@${props.post.creator.username}`}
+            </p>
+            <p className="TbdPost__Header__Datetime">{getTimeAgo()}</p>
+          </div>
+          {getContent()}
+          <div className="TbdPost__Buttons">
+            {/* only comment button for now */}
+          </div>
         </div>
       </div>
     </div>
