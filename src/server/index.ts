@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { AuthRes, ForgotReqBody, LoginReqBody, SignupReqBody, UsernameReqBody, UsernameRes } from '../models/routes/auth';
+import { CreatePostReqBody, GetPostReqParams, GetPostsReqBody, PostRes, PostsRes } from '../models/routes/posts';
 import { GetUserReqParams, GetUsersReqBody, UpdateUserReqBody, UpdateUserReqParams, UserRes, UsersRes } from '../models/routes/users';
 import { get } from '../utils/chrome/storage';
 
@@ -108,4 +109,21 @@ export const updatePhoneNumber = async (phoneNumber: number): Promise<IUserRes> 
   const params: UpdateUserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { phoneNumber }
   return await api.post(`/users/${params.id}/update`, args);
+}
+
+/**
+ * /posts
+ */
+export const getPosts = async (userId: string, url: string): Promise<PostsRes> => {
+  const args: GetPostsReqBody = { userId, url }
+  return await api.post('/posts/', args);
+}
+
+export const getPost = async (postId: string): Promise<PostRes> => {
+  const params: GetPostReqParams = { id: postId };
+  return await api.get(`/posts/${params.id}`);
+}
+
+export const createPost = async (args: CreatePostReqBody): Promise<PostRes> => {
+  return await api.post('/posts/create', args);
 }
