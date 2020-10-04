@@ -238,7 +238,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     window.addEventListener('resize', onResizeWindow);
-    return () => window.addEventListener('resize', onResizeWindow);;
+    return () => window.removeEventListener('resize', onResizeWindow);
   }, [onResizeWindow]);
 
   const syncer = new Syncer({
