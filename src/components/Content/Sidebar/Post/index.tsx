@@ -3,8 +3,8 @@ import hexToRgba from 'hex-to-rgba';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import React from 'react';
-import { Highlight as IHighlight } from '../../../../models/entities/Highlight';
-import { Post as IPost } from '../../../../models/entities/Post';
+import IHighlight from '../../../../models/entities/IHighlight';
+import IPost from '../../../../models/entities/IPost';
 import Highlighter, { HighlightClass } from '../../helpers/Highlighter';
 
 interface PostProps {

@@ -1,5 +1,5 @@
 import { BaseParams, BaseRes } from '.';
-import { Notification } from '../entities/Notification';
+import INotification from '../entities/INotification';
 
 /**
  * ROUTES for /notifications
@@ -34,12 +34,12 @@ export interface GetNotificationReqParams extends BaseParams {
  * POST /
  */
 export type NotificationsRes = {
-  notifications?: Notification[];
+  notifications?: INotification[];
 } & BaseRes;
 
 /**
  * GET /:id
  */
 export type NotificationRes = {
-  notification?: Notification;
+  notification?: INotification;
 } & BaseRes;

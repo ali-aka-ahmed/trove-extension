@@ -1,6 +1,6 @@
 import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Post as IPost } from '../../../models/entities/Post';
+import IPost from '../../../models/entities/IPost';
 import { set } from '../../../utils/chrome/storage';
 import { getTabId, Message } from '../../../utils/chrome/tabs';
 import { posts as mockPosts, users } from '../../../utils/data';
