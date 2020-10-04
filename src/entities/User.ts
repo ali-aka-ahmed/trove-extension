@@ -1,4 +1,4 @@
-import IUser from '../models/entities/IUser';
+import IUser from '../models/IUser';
 
 export default class User implements IUser {
   public id: string;

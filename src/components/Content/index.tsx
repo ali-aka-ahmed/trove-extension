@@ -1,4 +1,3 @@
-// import 'antd/dist/antd.min.css';
 import antdStyles from 'antd/dist/antd.min.css?inject';
 import React from 'react';
 import tabStyles from '../../styles/tabs.scss?inject';

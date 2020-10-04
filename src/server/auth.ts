@@ -1,19 +1,25 @@
-import { BaseParams, BaseRes } from '.';
-import IUser from '../entities/IUser';
+import api, { AxiosRes, BaseParams, BaseRes } from '.';
+import IUser from '../models/IUser';
 
-/**
- * ROUTES for /auth
- *
- * POST /signup
- * POST /login
- * POST /forgot
- * POST /reset/:token
- * POST /username
- */
+type IAuthRes = AuthRes & AxiosRes;
+type IUsernameRes = UsernameRes & AxiosRes;
 
-/** ************************* */
-/** ********** REQ ********** */
-/** ************************* */
+export const signup = async (args: SignupReqBody): Promise<IAuthRes> => {
+  return await api.post(`/auth/signup`, args);
+};
+
+export const login = async (args: LoginReqBody): Promise<IAuthRes> => {
+  return await api.post(`/auth/login`, args);
+}
+
+export const forgotPassword = async (args: ForgotReqBody): Promise<IAuthRes> => {
+  return await api.post(`/auth/forgot`, args)
+}
+
+export const checkValidUsername = async (username: string): Promise<IUsernameRes> => {
+  const args: UsernameReqBody = { username }
+  return await api.post(`/auth/username`, args);
+}
 
 /**
  * POST /signup
@@ -66,10 +72,6 @@ export interface ResetReqParams extends BaseParams {
 export interface UsernameReqBody {
   username: string;
 }
-
-/** ************************* */
-/** ********** RES ********** */
-/** ************************* */
 
 /**
  * POST /signup
