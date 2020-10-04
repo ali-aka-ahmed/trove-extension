@@ -1,6 +1,5 @@
 import api, { BaseParams, BaseRes } from ".";
-import IHighlight from "../models/IHighlight";
-import IPost from "../models/IPost";
+import Post from "../entities/Post";
 
 export const getPosts = async (userId: string, url: string): Promise<PostsRes> => {
   const args: GetPostsReqBody = { userId, url }
@@ -31,8 +30,14 @@ export interface CreatePostReqBody {
   content: string;
   creatorUserId: string;
   taggedUserIds: string[];
-  highlight: IHighlight;
   url: string;
+  highlightConstructor?: HighlightConstructor;
+}
+
+export interface HighlightConstructor {
+  context: string; // Highlighted text + surrounding words for context
+  text: string;
+  range: string; // Serialized Range object
 }
 
 /**
@@ -46,7 +51,7 @@ export interface GetPostReqParams extends BaseParams {
  * POST /
  */
 export type PostsRes = {
-  posts?: IPost[];
+  posts?: Post[];
 } & BaseRes;
 
 /**
@@ -54,5 +59,5 @@ export type PostsRes = {
  * GET /:id
  */
 export type PostRes = {
-  post?: IPost;
+  post?: Post;
 } & BaseRes;
