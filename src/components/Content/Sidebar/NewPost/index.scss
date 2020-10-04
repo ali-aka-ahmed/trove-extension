@@ -5,7 +5,6 @@ $accent-color: #0d77e2;
 
 .TbdNewPost {
   padding: 15px;
-  // padding-right: 20px;
   border-bottom: 1px solid #ebebeb;
 }
 
@@ -14,13 +13,6 @@ $accent-color: #0d77e2;
   flex-direction: row;
   align-items: center; 
 }
-
-// .TbdNewPost__MainReference__AddText {
-//   margin-left: 8.5px;
-//   margin-bottom: 2.5px;
-//   color: #545454;
-//   cursor: pointer;
-// }
 
 .TbdNewPost__Content {
   font-size: 14px !important;

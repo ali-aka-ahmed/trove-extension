@@ -1,6 +1,6 @@
 import { EditOutlined, LoadingOutlined, SaveOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
-import { User as IUser } from '../../../models/entities/User';
+import IUser from '../../../models/entities/IUser';
 import { updateColor, updateDisplayName, updateUsername } from '../../../server';
 import { set } from '../../../utils/chrome/storage';
 import { validateDisplayName, validateUsername } from '../helpers/auth';
