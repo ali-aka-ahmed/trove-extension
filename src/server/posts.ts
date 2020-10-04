@@ -31,13 +31,12 @@ export interface CreatePostReqBody {
   creatorUserId: string;
   taggedUserIds: string[];
   url: string;
-  highlightConstructor?: HighlightConstructor;
-}
-
-export interface HighlightConstructor {
-  context: string; // Highlighted text + surrounding words for context
-  text: string;
-  range: string; // Serialized Range object
+  highlight?: {
+    context: string; // Highlighted text + surrounding words for context
+    text: string;
+    range: string; // Serialized Range object
+    url: string;
+  };
 }
 
 /**
