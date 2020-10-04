@@ -29,8 +29,8 @@ export interface CreatePostReqBody {
   content: string;
   creatorUserId: string;
   taggedUserIds: string[];
-  highlight: Highlight;
   url: string;
+  highlight?: Highlight;
 }
 
 /**
