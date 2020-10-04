@@ -1,9 +1,9 @@
 import { BaseParams, BaseRes } from '.';
-import { default as Post, TaggedUser } from '../nodes/Post';
-import { User } from '../nodes/User';
+import { Highlight } from '../entities/Highlight';
+import { Post } from '../entities/Post';
 
 /**
- * ROUTES
+ * ROUTES for /posts
  *
  * POST /
  * POST /create
@@ -17,7 +17,7 @@ import { User } from '../nodes/User';
 /**
  * POST /
  */
-export interface GetPostsReqBody extends BaseParams {
+export interface GetPostsReqBody {
   userId: string;
   url: string;
 }
@@ -25,11 +25,12 @@ export interface GetPostsReqBody extends BaseParams {
 /**
  * POST /create
  */
-export interface CreatePostReqBody extends BaseParams {
+export interface CreatePostReqBody {
   content: string;
-  creator: User;
+  creatorUserId: string;
+  taggedUserIds: string[];
+  highlight: Highlight;
   url: string;
-  taggedUsers: TaggedUser[];
 }
 
 /**
