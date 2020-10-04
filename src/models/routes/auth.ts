@@ -1,8 +1,8 @@
 import { BaseParams, BaseRes } from '.';
-import { User } from '../nodes/User';
+import { User } from '../entities/User';
 
 /**
- * ROUTES
+ * ROUTES for /auth
  *
  * POST /signup
  * POST /login
@@ -19,7 +19,6 @@ import { User } from '../nodes/User';
  * POST /signup
  */
 export interface SignupReqBody {
-  acceptorId: string;
   color: string;
   displayName: string;
   nominatorId: string;
@@ -77,16 +76,15 @@ export interface UsernameReqBody {
  * POST /login
  * POST /forgot
  * POST /reset/:token
- * @interface AuthRes
  */
-export interface AuthRes extends BaseRes {
+export type AuthRes = {
   user?: User;
   token?: string;
-}
+} & BaseRes;
 
 /**
  * POST /username
  */
-export interface UsernameRes extends BaseRes {
+export type UsernameRes = {
   exists?: boolean;
-}
+} & BaseRes;

@@ -1,7 +1,7 @@
 import { createClassApplier } from "@rangy/classapplier";
 import { RangyRangeEx } from "@rangy/core";
 import { Highlighter as RangyHighlighter } from "@rangy/highlighter";
-import { toArray } from "../../../utils/general";
+import { toArray } from "../../../utils";
 
 /**
  * Wrapper on top of Rangy Highlighter.
