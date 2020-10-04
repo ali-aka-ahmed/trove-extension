@@ -1,12 +1,12 @@
-import { User } from './User';
+import IUser from './IUser';
 
-export interface Notification {
+export default interface INotification {
   id: string;
   action: string;
   content: string;
-  sender: User;
+  sender: IUser;
   url: string;
   postId: string;
-  taggedUsers: User[];
+  taggedUsers: IUser[];
   creationDatetime: number;
 }

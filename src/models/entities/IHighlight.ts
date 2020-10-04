@@ -1,4 +1,4 @@
-export interface Highlight {
+export default interface IHighlight {
   id: string;
   context: string; // Highlighted text + surrounding words for context
   creationDatetime: number;

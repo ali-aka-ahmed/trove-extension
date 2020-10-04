@@ -1,4 +1,4 @@
-import { Highlight as IHighlight } from '../models/entities/Highlight';
+import IHighlight from '../models/entities/IHighlight';
 
 export default class Highlight implements IHighlight {
   public id: string;

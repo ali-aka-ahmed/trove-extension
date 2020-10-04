@@ -1,6 +1,6 @@
-import { Highlight as IHighlight } from '../models/entities/Highlight';
-import { Post as IPost } from '../models/entities/Post';
-import { User as IUser } from '../models/entities/User';
+import IHighlight from '../models/entities/IHighlight';
+import IPost from '../models/entities/IPost';
+import IUser from '../models/entities/IUser';
 import { displayRelativeTime } from '../utils';
 import Highlight from './Highlight';
 import User from './User';

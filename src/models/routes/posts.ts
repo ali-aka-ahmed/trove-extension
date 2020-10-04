@@ -1,6 +1,6 @@
 import { BaseParams, BaseRes } from '.';
-import { Highlight } from '../entities/Highlight';
-import { Post } from '../entities/Post';
+import IHighlight from '../entities/IHighlight';
+import IPost from '../entities/IPost';
 
 /**
  * ROUTES for /posts
@@ -29,7 +29,7 @@ export interface CreatePostReqBody {
   content: string;
   creatorUserId: string;
   taggedUserIds: string[];
-  highlight: Highlight;
+  highlight: IHighlight;
   url: string;
 }
 
@@ -48,7 +48,7 @@ export interface GetPostReqParams extends BaseParams {
  * POST /
  */
 export type PostsRes = {
-  posts?: Post[];
+  posts?: IPost[];
 } & BaseRes;
 
 /**
@@ -56,5 +56,5 @@ export type PostsRes = {
  * GET /:id
  */
 export type PostRes = {
-  post?: Post;
+  post?: IPost;
 } & BaseRes;

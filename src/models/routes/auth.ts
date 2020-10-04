@@ -1,5 +1,5 @@
 import { BaseParams, BaseRes } from '.';
-import { User } from '../entities/User';
+import IUser from '../entities/IUser';
 
 /**
  * ROUTES for /auth
@@ -78,7 +78,7 @@ export interface UsernameReqBody {
  * POST /reset/:token
  */
 export type AuthRes = {
-  user?: User;
+  user?: IUser;
   token?: string;
 } & BaseRes;
 
