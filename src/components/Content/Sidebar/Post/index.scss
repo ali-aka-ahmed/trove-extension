@@ -1,0 +1,60 @@
+.TbdPost {
+  padding: 15px;
+  cursor: pointer;
+}
+
+.TbdPost:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdPost__Wrapper {
+  display: flex;
+  flex-direction: row;
+}
+
+.TbdPost__Left {
+  margin-right: 7.5px;
+}
+
+.TbdPost__Right {
+  margin-top: -3.5px;
+  margin-left: 7.5px;
+  width: 100%;
+}
+
+.TbdPost__UserBubble {
+  height: 50px;
+  width: 50px;
+  border-radius: 25px;
+  text-align: center;
+  line-height: 48px; /* Should be 50 but looks more centered at 48 */
+  text-transform: uppercase;
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.TbdPost__Header {
+  display: flex;
+  flex-direction: row;
+}
+
+.TbdPost__Header__DisplayName {
+  font-weight: bold;
+  margin: 0px;
+  margin-right: 5px;
+  // max-height: 18px;
+  overflow: hidden;
+  max-width: 100px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.TbdPost__Header__Username {
+  margin: 0px;
+  margin-right: 5px;
+}
+
+.TbdPost__Header__Datetime {
+  margin: 0px;
+  color: #aaa;
+}
