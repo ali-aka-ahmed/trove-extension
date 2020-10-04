@@ -1,4 +1,4 @@
-import IPost from '../models/entities/IPost';
+import IPost from '../models/IPost';
 import { displayRelativeTime } from '../utils';
 import Highlight from './Highlight';
 import User from './User';
