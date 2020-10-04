@@ -1,5 +1,4 @@
 import INotification from '../models/entities/INotification';
-import IUser from '../models/entities/IUser';
 import { displayRelativeTime } from '../utils';
 import User from './User';
 
@@ -7,10 +6,10 @@ export default class Notification implements INotification {
   public id: string;
   public action: string;
   public content: string;
-  public sender: IUser;
+  public sender: User;
   public url: string;
   public postId: string;
-  public taggedUsers: IUser[];
+  public taggedUsers: User[];
   public creationDatetime: number;
 
   public constructor(n: INotification) {

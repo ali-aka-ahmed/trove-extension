@@ -1,6 +1,4 @@
-import IHighlight from '../models/entities/IHighlight';
 import IPost from '../models/entities/IPost';
-import IUser from '../models/entities/IUser';
 import { displayRelativeTime } from '../utils';
 import Highlight from './Highlight';
 import User from './User';
@@ -9,15 +7,15 @@ export default class Post implements IPost {
   public id: string;
   public content: string;
   public creationDatetime: number;
-  public creator: IUser;
+  public creator: User;
   public domain: string;
   public url: string;
-  public taggedUsers: IUser[];
+  public taggedUsers: User[];
   public numComments: number;
   public numLikes: number;
-  public highlight?: IHighlight;
-  public comments?: IPost[];
-  public references?: IPost[]; // posts in which other people referenced this post
+  public highlight?: Highlight;
+  public comments?: Post[];
+  public references?: Post[]; // posts in which other people referenced this post
 
   public constructor(p: IPost) {
     this.id = p.id;
