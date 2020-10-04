@@ -1,6 +1,6 @@
+import { toArray } from "../../../utils";
 import { CS, get, TabSettings } from "../../../utils/chrome/storage";
 import { Message, sendMessageToTab } from "../../../utils/chrome/tabs";
-import { toArray } from "../../../utils/general";
 import { SIDEBAR_MARGIN, SIDEBAR_MARGIN_Y } from "../Sidebar";
 import Point from "./Point";
 
