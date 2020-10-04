@@ -89,6 +89,13 @@ $_exit-bubble-border-big: 15px;
   right: 20px;
 }
 
+.TbdSidebar__MainContent__EmptyMsg {
+  color: #545454;
+  opacity: 50%;
+  padding: 15px;
+  text-align: center;
+}
+
 .TbdSidebar__MainContent__NewPostButton {
   height: 45px;
   width: 45px;
