@@ -1,11 +1,11 @@
 import React from 'react';
-import CNotification from '../../helpers/Notification';
+import NotificationObject from '../../../../entities/Notification';
 import '../../style.scss';
 import '../style.scss';
 import './style.scss';
 
 interface NotificationProps {
-  notification: CNotification;
+  notification: NotificationObject;
 }
 
 export default function Notification({ notification }: NotificationProps) {
