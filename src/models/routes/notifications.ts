@@ -1,10 +1,11 @@
 import { BaseParams, BaseRes } from '.';
-import { Notification } from '../../components/Popup/helpers/Notification';
+import { Notification } from '../entities/Notification';
 
 /**
- * ROUTES
+ * ROUTES for /notifications
  *
  * POST /
+ * GET /:id
  */
 
 /** ************************* */
@@ -14,7 +15,7 @@ import { Notification } from '../../components/Popup/helpers/Notification';
 /**
  * POST /
  */
-export interface GetNotificationsReqBody extends BaseParams {
+export interface GetNotificationsReqBody {
   userId: string;
 }
 

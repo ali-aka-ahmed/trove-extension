@@ -1,8 +1,8 @@
 import { BaseParams, BaseRes } from '.';
-import { User } from '../nodes/User';
+import { User } from '../entities/User';
 
 /**
- * ROUTES
+ * ROUTES for /auth
  *
  * POST /signup
  * POST /login
@@ -76,7 +76,6 @@ export interface UsernameReqBody {
  * POST /login
  * POST /forgot
  * POST /reset/:token
- * @interface AuthRes
  */
 export type AuthRes = {
   user?: User;
