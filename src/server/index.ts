@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { AuthRes, ForgotReqBody, LoginReqBody, SignupReqBody, UsernameReqBody, UsernameRes } from '../models/routes/auth';
+import { GetNotificationReqParams, GetNotificationsReqBody, NotificationRes, NotificationsRes } from '../models/routes/notifications';
 import { CreatePostReqBody, GetPostReqParams, GetPostsReqBody, PostRes, PostsRes } from '../models/routes/posts';
 import { GetUserReqParams, GetUsersReqBody, UpdateUserReqBody, UpdateUserReqParams, UserRes, UsersRes } from '../models/routes/users';
 import { get } from '../utils/chrome/storage';
@@ -126,4 +127,17 @@ export const getPost = async (postId: string): Promise<PostRes> => {
 
 export const createPost = async (args: CreatePostReqBody): Promise<PostRes> => {
   return await api.post('/posts/create', args);
+}
+
+/**
+ * /notifications
+ */
+export const getNotifications = async (): Promise<NotificationsRes> => {
+  const args: GetNotificationsReqBody = { userId: (await get('user')).user.id };
+  return await api.post('/notifications/', args);
+}
+
+export const getNotification = async (notificationId: string): Promise<NotificationRes> => {
+  const params: GetNotificationReqParams = { id: notificationId };
+  return await api.get(`/posts/${params.id}`);
 }
