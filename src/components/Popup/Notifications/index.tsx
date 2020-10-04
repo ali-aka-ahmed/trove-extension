@@ -1,9 +1,9 @@
 import React from 'react';
-import CNotification from '../helpers/Notification';
+import NotificationObject from '../../../entities/Notification';
 import Notification from './Notification';
 
 interface NotificationsProps {
-  notifications: CNotification[];
+  notifications: NotificationObject[];
 }
 
 export default function Notifications({ notifications }: NotificationsProps) {

@@ -1,11 +1,11 @@
 import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
+import Notification from '../../entities/Notification';
 import User from '../../models/nodes/User';
 import { get, set } from '../../utils/chrome/storage';
 import { getAllTabs } from '../../utils/chrome/tabs';
 import { triggerSync } from '../Content/helpers/Syncer';
-import Notification from './helpers/Notification';
 import Notifications from './Notifications';
 import Profile from './Profile';
 import './style.scss';
