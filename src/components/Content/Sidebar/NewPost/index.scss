@@ -66,6 +66,17 @@ $accent-color: #0d77e2;
   outline: none;
 }
 
+.TbdNewPost__Button--disabled {
+  cursor: default;
+  opacity: 0.5;
+  pointer-events: all;
+}
+
+.TbdNewPost__Button--disabled:hover {
+  background-color: #eee;
+  color: #545454;
+}
+
 .TbdNewPost__Buttons__AddHighlight {
   background-image: url('../../../../../public/images/marker-gray.svg');
   background-position: center;
@@ -100,4 +111,12 @@ $accent-color: #0d77e2;
 .TbdNewPost__Buttons__AddReference:hover {
   background-image: url('../../../../../public/images/reference-green.svg');
   background-color: #e5f5ed;  
+}
+
+.TbdNewPost__SubmitWarning {
+  background-color: #f9e8e8;
+  border-radius: 5px;
+  padding: 5px 12.5px;
+  margin-top: 5px;
+  color: #545454;
 }
