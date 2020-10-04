@@ -19,6 +19,7 @@ interface NewPostProps {
 export default function NewPost(props: NewPostProps) {
   const [isAnchoring, setIsAnchoring] = useState(false);
   const [isAnchored, setIsAnchored] = useState(false);
+  const [isHoveringSubmit, setIsHoveringSubmit] = useState(false);
   const [post, setPost] = useState({} as Partial<Post>);
   const contentRef = useRef<any>(null);
 
@@ -30,7 +31,7 @@ export default function NewPost(props: NewPostProps) {
     return !cantSubmit;
   }, [post]);
 
-  const getSubmitError = useCallback(() => {
+  const getSubmitWarning = useCallback(() => {
     if (!post.content || post.content.length === 0) {
       return "Post can't be empty.";
     } else if (post.content.length > MAX_POST_LENGTH) {
@@ -53,6 +54,20 @@ export default function NewPost(props: NewPostProps) {
     });
     
   }, [canSubmit, post]);
+
+  const onClickSubmit = useCallback((e) => {
+    submit();
+  }, [submit]);
+
+  const onMouseEnterSubmit = (e) => {
+    console.log('mouseEnter submit')
+    setIsHoveringSubmit(true);
+  }
+
+  const onMouseLeaveSubmit = (e) => {
+    console.log('mouseLeave submit')
+    setIsHoveringSubmit(false);
+  }
   
   const onClickHighlightButton = useCallback((e) => {
     if (!isAnchoring) {
@@ -63,10 +78,6 @@ export default function NewPost(props: NewPostProps) {
 
     setIsAnchoring(!isAnchoring);
   }, [isAnchoring]);
-
-  const onClickSubmitButton = useCallback((e) => {
-    submit();
-  }, [submit]);
 
   const onClickPage = useCallback((e: MouseEvent) => {
     e.preventDefault();
@@ -124,7 +135,8 @@ export default function NewPost(props: NewPostProps) {
 
   // Classes
   const highlightActiveClass = isAnchoring ? 'TbdNewPost__Buttons__AddHighlight--active' : '';
-  const highlightbuttonClass = `TbdNewPost__Buttons__AddHighlight ${highlightActiveClass}`;
+  const highlightButtonClass = `TbdNewPost__Buttons__AddHighlight ${highlightActiveClass}`;
+  const submitButtonDisabledClass = canSubmit() ? '' : 'TbdNewPost__Button--disabled';
 
   // Styles
   const anchorButtonStyles = useMemo(() => ({
@@ -149,7 +161,7 @@ export default function NewPost(props: NewPostProps) {
             {props.user.username[0]}
           </div>
         </div>
-        <div className="TbdPost__Right">
+        <div className="TbdPost__Right">  
           <div className="TbdPost__Header">
             <p className="TbdPost__Header__DisplayName">
               {props.user.displayName}
@@ -170,7 +182,7 @@ export default function NewPost(props: NewPostProps) {
           <div className="TbdNewPost__Buttons">
             <div className="TbdNewPost__Buttons__Left">
               <button 
-                className={`TbdNewPost__Button ${highlightbuttonClass}`}
+                className={`TbdNewPost__Button ${highlightButtonClass}`}
                 onClick={onClickHighlightButton}
               />
               <button 
@@ -179,9 +191,10 @@ export default function NewPost(props: NewPostProps) {
             </div>
             <div className="TbdNewPost__Buttons__Right">
               <button 
-                className="TbdNewPost__Button" 
-                onClick={onClickSubmitButton}
-                disabled={!canSubmit()}
+                className={`TbdNewPost__Button ${submitButtonDisabledClass}`}
+                onClick={onClickSubmit}
+                onMouseEnter={onMouseEnterSubmit}
+                onMouseLeave={onMouseLeaveSubmit}
               >
                 Post
               </button>
@@ -189,6 +202,11 @@ export default function NewPost(props: NewPostProps) {
           </div>
         </div>
       </div>
+      {!canSubmit() && isHoveringSubmit && (
+        <div className="TbdNewPost__SubmitWarning">
+          {getSubmitWarning()}
+        </div>
+      )}
     </div>
   );
 }
