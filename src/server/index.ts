@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { AuthRes, ForgotReqBody, GetUserReqParams, GetUsersReqBody, LoginReqBody, SignupReqBody, UpdateUserReqBody, UpdateUserReqParams, UsernameReqBody, UsernameRes, UserRes, UsersRes } from '../models';
+import { AuthRes, ForgotReqBody, LoginReqBody, SignupReqBody, UsernameReqBody, UsernameRes } from '../models/routes/auth';
+import { GetUserReqParams, GetUsersReqBody, UpdateUserReqBody, UpdateUserReqParams, UserRes, UsersRes } from '../models/routes/users';
 import { get } from '../utils/chrome/storage';
 
 // FOR DEV
