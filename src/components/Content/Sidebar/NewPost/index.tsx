@@ -50,7 +50,6 @@ export default function NewPost(props: NewPostProps) {
       ...post,
       url: window.location.href
     });
-    
   }, [canSubmit, post]);
 
   const onClickSubmit = useCallback((e) => {
@@ -82,7 +81,35 @@ export default function NewPost(props: NewPostProps) {
   }, [isAnchoring]);
 
   const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setPost({...post, content: e.target.value});
+    const target = e.target;
+    setPost({...post, content: target.value});
+    
+    // Get word text cursor is in
+    if (target.selectionStart === target.selectionEnd) {
+      // Find start
+      let startIdx = Math.max(Math.min(target.selectionStart - 1, target.value.length - 1), 0);
+      while (startIdx > 0) {
+        if (target.value[startIdx].match(/\s/)) {
+          startIdx++;
+          break;
+        }
+
+        startIdx--;
+      }
+      
+      // Find end
+      let endIdx = Math.max(target.selectionStart, 0);
+      while (endIdx < target.value.length) {
+        if (target.value[endIdx].match(/\s/)) break;
+        endIdx++;
+      }
+
+      // Get current word and determine if it is a handle
+      let currWord = target.value.slice(startIdx, endIdx);
+      const newIdx = target.selectionStart - startIdx;
+
+      console.log(currWord, newIdx);
+    }
   }
 
   const getNewSelection = useCallback(() => {
