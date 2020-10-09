@@ -338,15 +338,17 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              {isComposing && <NewPost user={getCurrentUser()} highlighter={highlighter} />}
-              {(posts.length === 0) && (
-                <div className="TbdSidebar__MainContent__EmptyMsg">No posts yet!</div>
-              )}
-              {renderPosts()}
-              <button
-                className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
-                onClick={onClickNewPostButton}
-              />
+              <div className="TbdSidebar__MainContent__Wrapper">
+                {isComposing && <NewPost user={getCurrentUser()} highlighter={highlighter} />}
+                {(posts.length === 0) && (
+                  <div className="TbdSidebar__MainContent__EmptyMsg">No posts yet!</div>
+                )}
+                {renderPosts()}
+                <button
+                  className={`TbdSidebar__MainContent__NewPostButton ${newPostButtonClass}`} 
+                  onClick={onClickNewPostButton}
+                />
+              </div>
             </div>
           )}
         </div>
