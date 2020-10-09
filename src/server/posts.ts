@@ -1,63 +1,122 @@
-import api, { BaseParams, BaseRes } from ".";
-import Post from "../entities/Post";
+import api, { AxiosRes, BaseParams, BaseRes } from '.';
+import IPost from '../entities/Post';
 
-export const getPosts = async (userId: string, url: string): Promise<PostsRes> => {
-  const args: GetPostsReqBody = { userId, url }
+type IPostsRes = PostsRes & AxiosRes;
+type IPostRes = PostRes & AxiosRes;
+
+export const getPosts = async (url: string): Promise<IPostsRes> => {
+  const args: GetPostsReqBody = { url }
   return await api.post('/posts/', args);
 }
 
-export const getPost = async (postId: string): Promise<PostRes> => {
-  const params: GetPostReqParams = { id: postId };
+export const getPost = async (postId: string): Promise<IPostRes> => {
+  const params: PostReqParams = { id: postId };
   return await api.get(`/posts/${params.id}`);
 }
 
-export const createPost = async (args: CreatePostReqBody): Promise<PostRes> => {
+export const createPost = async (args: CreatePostReqBody): Promise<IPostRes> => {
   return await api.post('/posts/create', args);
 }
 
+export const createComment = async (parentPostId: string, args: CreateCommentReqBody): Promise<IPostRes> => {
+  const params: PostReqParams = { id: parentPostId };
+  return await api.post(`/posts/${params.id}/comment/create`, args);
+}
+
+export const deletePostAndChildren = async (postId: string): Promise<AxiosRes> => {
+  const params: PostReqParams = { id: postId };
+  return await api.get(`/posts/${params.id}/comment/delete`);
+}
+
+export const editPost = async (postId: string, args: EditPostReqBody): Promise<AxiosRes> => {
+  const params: PostReqParams = { id: postId };
+  return await api.post(`/posts/${params.id}/update`, args);
+}
+
+export const likePost = async (postId: string): Promise<AxiosRes> => {
+  const params: PostReqParams = { id: postId };
+  return await api.get(`/posts/${params.id}/like/create`);
+}
+
+export const unlikePost = async (postId: string): Promise<AxiosRes> => {
+  const params: PostReqParams = { id: postId };
+  return await api.get(`/posts/${params.id}/like/delete`);
+}
+
+/** ************************* */
+/** ********** REQ ********** */
+/** ************************* */
+
 /**
- * POST /
+ * POST /posts/
  */
-export interface GetPostsReqBody {
-  userId: string;
+interface GetPostsReqBody {
   url: string;
 }
 
 /**
- * POST /create
+ * POST /posts/create
  */
-export interface CreatePostReqBody {
+interface CreatePostReqBody {
   content: string;
-  creatorUserId: string;
-  taggedUserIds: string[];
   url: string;
+  taggedUserIds?: string[];
+  highlightConstructor: HighlightConstructor;
+}
+
+/**
+ * POST /posts/:id/comment/create
+ */
+interface CreateCommentReqBody {
+  content: string;
+  url: string;
+  taggedUserIds?: string[]; // if you tag someone, they can see this post and everything in the thread
   highlightConstructor?: HighlightConstructor;
 }
 
-export interface HighlightConstructor {
+/**
+ * POST /posts/:id/update
+ */
+interface EditPostReqBody {
+  newContent?: string;
+  newTaggedUserIds?: string[];
+  highlightConstructor?: HighlightConstructor;
+}
+
+interface HighlightConstructor {
   context: string; // Highlighted text + surrounding words for context
   text: string;
   range: string; // Serialized Range object
 }
 
 /**
- * GET /:id
+ * GET /posts/:id
+ * GET /posts/:id/delete
+ * POST /posts/:id/comment/create
+ * POST /posts/:id/like/create
+ * GET /posts/:id/like/delete
  */
-export interface GetPostReqParams extends BaseParams {
+interface PostReqParams extends BaseParams {
   id: string;
 }
 
+/** ************************* */
+/** ********** RES ********** */
+/** ************************* */
+
 /**
- * POST /
+ * POST /posts/
  */
-export type PostsRes = {
-  posts?: Post[];
+type PostsRes = {
+  posts?: IPost[]; // does not include comments for each post
 } & BaseRes;
 
 /**
- * POST /
- * GET /:id
+ * GET /posts/:id
+ * POST /posts/create
+ * POST /posts/:id/comment/create
  */
-export type PostRes = {
-  post?: Post;
+type PostRes = {
+  thread?: IPost[]; // first index is parent ([parent, child, child of child, ...])
+  post?: IPost; // includes comments
 } & BaseRes;
