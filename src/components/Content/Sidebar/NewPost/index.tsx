@@ -4,9 +4,10 @@ import { Input } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import User from '../../../../entities/User';
 import IUser from '../../../../models/IUser';
-import { createPost, CreatePostReqBody } from '../../../../server/posts';
+import { CreatePostReqBody } from '../../../../server/posts';
 import { handleUsernameSearch } from '../../../../server/users';
 import { get } from '../../../../utils/chrome/storage';
+import { sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import Highlighter from '../../helpers/Highlighter';
 
 const MAX_USERNAME_LENGTH = 20;
@@ -23,7 +24,6 @@ export default function NewPost(props: NewPostProps) {
   const [isAnchoring, setIsAnchoring] = useState(false);
   const [isAnchored, setIsAnchored] = useState(false);
   const [isHoveringSubmit, setIsHoveringSubmit] = useState(false);
-  const [isTagging, setIsTagging] = useState(false);
   const [post, setPost] = useState({} as CreatePostReqBody);
   const [suggestedUsers, setSuggestedUsers] = useState([] as IUser[]);
   const [tagBounds, setTagBounds] = useState({ start: 0, end: 0 });
@@ -49,15 +49,18 @@ export default function NewPost(props: NewPostProps) {
     return null;
   }, [post]);
 
-  const submit = useCallback(() => {
+  const submit = useCallback(async () => {
     // TODO: compute tagged users (this should prob happen in an onChange fn)
     // TODO: make sure anchor was done on this url
+    console.log('start submit')
     if (!canSubmit()) return;
     setPost({
       ...post,
       url: window.location.href
     });
-    createPost(post);
+    console.log('submitting...')
+    const success = await sendMessageToExtension({ type: 'createPost', post });
+    console.log(success);
   }, [canSubmit, post]);
 
   const onClickSubmit = useCallback((e) => {
@@ -92,7 +95,9 @@ export default function NewPost(props: NewPostProps) {
     const target = e.target;
     setPost({...post, content: target.value});
     setContent(target.value);
+
 console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
+
     // Get word text cursor is in
     if (target.selectionStart === target.selectionEnd) {
       // Find start
