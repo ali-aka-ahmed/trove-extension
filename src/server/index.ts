@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { get } from '../utils/chrome/storage';
 
 /**
  * What we append onto the response object.
@@ -37,7 +36,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = (await get('token')).token;
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyOWVkN2E1OC1kZjU3LTRiNDgtYmU2Ny04MGEyZDA1ODMzMWIiLCJpYXQiOjE2MDIxODczMzJ9.a7QTjHX4CWV_NoUdyc3qFtfCZ4LK_yR0Dho8IYrrIs0"; //(await get('token')).token;
   token ? config.headers.Authorization = `bearer ${token}` : null;
   return config;
 });

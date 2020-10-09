@@ -3,10 +3,13 @@ import { serializeRange } from '@rangy/serializer';
 import { Input } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import User from '../../../../entities/User';
-import { CreatePostReqBody } from '../../../../server/posts';
+import IUser from '../../../../models/IUser';
+import { createPost, CreatePostReqBody } from '../../../../server/posts';
+import { handleUsernameSearch } from '../../../../server/users';
 import { get } from '../../../../utils/chrome/storage';
 import Highlighter from '../../helpers/Highlighter';
 
+const MAX_USERNAME_LENGTH = 20;
 const MAX_POST_LENGTH = 180;
 const { TextArea } = Input;
 
@@ -16,10 +19,14 @@ interface NewPostProps {
 }
 
 export default function NewPost(props: NewPostProps) {
+  const [content, setContent] = useState('');
   const [isAnchoring, setIsAnchoring] = useState(false);
   const [isAnchored, setIsAnchored] = useState(false);
   const [isHoveringSubmit, setIsHoveringSubmit] = useState(false);
-  const [post, setPost] = useState({} as Partial<CreatePostReqBody>);
+  const [isTagging, setIsTagging] = useState(false);
+  const [post, setPost] = useState({} as CreatePostReqBody);
+  const [suggestedUsers, setSuggestedUsers] = useState([] as IUser[]);
+  const [tagBounds, setTagBounds] = useState({ start: 0, end: 0 });
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
@@ -50,6 +57,7 @@ export default function NewPost(props: NewPostProps) {
       ...post,
       url: window.location.href
     });
+    createPost(post);
   }, [canSubmit, post]);
 
   const onClickSubmit = useCallback((e) => {
@@ -80,10 +88,11 @@ export default function NewPost(props: NewPostProps) {
     if (isAnchoring) getNewSelection();
   }, [isAnchoring]);
 
-  const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const onChangeContent = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const target = e.target;
     setPost({...post, content: target.value});
-    
+    setContent(target.value);
+console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
     // Get word text cursor is in
     if (target.selectionStart === target.selectionEnd) {
       // Find start
@@ -106,10 +115,25 @@ export default function NewPost(props: NewPostProps) {
 
       // Get current word and determine if it is a handle
       let currWord = target.value.slice(startIdx, endIdx);
-      const newIdx = target.selectionStart - startIdx;
-
-      console.log(currWord, newIdx);
+      const match = currWord.match(/^@[a-zA-Z0-9_]{1,20}/);
+      let users: IUser[];
+      if (match) {
+        const handle = match[0].slice(1);
+        try {
+          console.log('searching...')
+          users = (await handleUsernameSearch(handle)).users;
+          setTagBounds({ start: startIdx, end: startIdx + match[0].length });
+        } catch (err) {
+          users = [];
+        }
+        
+        setSuggestedUsers(users);
+      } else {
+        setSuggestedUsers([]);
+      }
     }
+
+    console.log('onchange finish')
   }
 
   const getNewSelection = useCallback(() => {
@@ -142,7 +166,7 @@ export default function NewPost(props: NewPostProps) {
   }, [isAnchoring, getNewSelection]);
 
   useEffect(() => {
-    if (contentRef.current) contentRef.current.focus();
+    // if (contentRef.current) contentRef.current.focus();
 
     // Get user to populate Post props
     // TODO: Get User in Sidebar and pass it in as a prop
@@ -154,6 +178,54 @@ export default function NewPost(props: NewPostProps) {
       });
     });
   }, []);
+
+  const tagUser = (user: IUser) => {
+    const newContent = content.slice(0, tagBounds.start) 
+      + `@${user.username} ` 
+      + content.slice(tagBounds.end);
+    setContent(newContent);
+
+    // TODO: NOT WORKING (move cursor to appropriate location)
+    contentRef.current.focus();
+    // console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
+    // contentRef.current.resizableTextArea.textArea.selectionStart = 0;
+    // contentRef.current.resizableTextArea.textArea.selectionEnd = 0;
+    // contentRef.current.resizableTextArea.textArea.setSelectionRange(0, 0);
+    // console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
+    // console.log(contentRef.current)
+    setTagBounds({ start: 0, end: 0 });
+    setSuggestedUsers([]);
+  }
+
+  const renderSuggestedUsers = () => {
+    return suggestedUsers.map((user) => (
+      <button 
+        className="TbdSuggestedUsers__SuggestedUser"
+        key={user.id}
+        onClick={() => tagUser(user)}
+      >
+        <div className="TbdSuggestedUser__Left">
+          <div 
+            className="TbdSuggestedUser__UserBubble" 
+            style={{ backgroundColor: user.color }}
+          >
+            {user.username[0]}
+          </div>
+        </div>
+        <div className="TbdSuggestedUser__Right">
+          <p className="TbdSuggestedUser__DisplayName">
+            {user.displayName}
+          </p>
+          <p 
+            className="TbdSuggestedUser__Username"
+            style={{ color: user.color }}
+          >
+            {`@${user.username}`}
+          </p>
+        </div>
+      </button>
+    ));
+  }
 
   // Classes
   const highlightActiveClass = isAnchoring ? 'TbdNewPost__Buttons__AddHighlight--active' : '';
@@ -191,8 +263,14 @@ export default function NewPost(props: NewPostProps) {
             placeholder="The pen is mightier than the sword."
             autoSize={{ minRows: 2 }}
             onChange={onChangeContent}
+            value={content}
             ref={contentRef}
           />
+          {suggestedUsers.length > 0 && (
+            <div className="TbdNewPost__SuggestedUsers">
+              {renderSuggestedUsers()}
+            </div>
+          )}
           <div className="TbdNewPost__Buttons">
             <div className="TbdNewPost__Buttons__Left">
               <button 
