@@ -1,4 +1,5 @@
 import { triggerSync } from "../components/Content/helpers/Syncer";
+import { createPost } from "../server/posts";
 import { set } from '../utils/chrome/storage';
 import { getActiveTabs, Message } from "../utils/chrome/tabs";
 import { users } from '../utils/data';
@@ -13,6 +14,12 @@ chrome.runtime.onMessage.addListener(async (
     case 'getTabId':
       sendResponse(sender.tab?.id);
       break;
+    case 'createPost': {
+      if (!message.post) break;
+      const post = await createPost(message.post);
+      sendResponse(!!post);
+      break;
+    }
     case 'sync':
       triggerSync(await getActiveTabs(), message);
       break;
