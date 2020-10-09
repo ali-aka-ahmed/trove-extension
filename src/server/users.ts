@@ -81,7 +81,7 @@ export interface UpdateUserReqParams extends BaseParams {
  * POST /
  */
 export type UsersRes = {
-  users?: IUser[];
+  users: IUser[];
 } & BaseRes;
 
 /**

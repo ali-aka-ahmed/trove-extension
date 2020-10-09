@@ -46,6 +46,7 @@ $_exit-bubble-border-big: 15px;
   background-color: $background-color;
   border-radius: 5px;
   position: relative;
+  overflow: hidden;
   z-index: -2;
   @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
 }

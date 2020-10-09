@@ -33,6 +33,77 @@ $accent-color: #0d77e2;
   display: none;
 }
 
+.TbdNewPost__SuggestedUsers {
+  border-radius: 5px;
+  background-color: #fff;
+  position: absolute;
+  overflow: hidden;
+  min-width: 150px;
+  z-index: 2;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
+}
+
+.TbdSuggestedUsers__SuggestedUser {
+  height: 60px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+  border: none;
+  border-top: 1px solid #ebebeb;
+  background-color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.TbdSuggestedUsers__SuggestedUser:first-child {
+  border-top: none;
+}
+
+.TbdSuggestedUsers__SuggestedUser:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdSuggestedUsers__SuggestedUser:focus {
+  outline: none;
+}
+
+.TbdSuggestedUser__Right {
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px;
+}
+
+.TbdSuggestedUser__UserBubble {
+  height: 40px;
+  width: 40px;
+  border-radius: 20px;
+  text-align: center;
+  line-height: 38px; /* Should be 50 but looks more centered at 48 */
+  text-transform: uppercase;
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.TbdSuggestedUser__DisplayName {
+  font-weight: bold;
+  margin: 0px;
+  margin-right: 5px;
+  overflow: hidden;
+  max-width: 127.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.TbdSuggestedUser__Username {
+  margin: 0px;
+  margin-right: 5px;
+  overflow: hidden;
+  max-width: 127.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .TbdNewPost__Buttons {
   margin-top: 10px;
   display: flex;
