@@ -50,8 +50,10 @@ export default class Syncer {
     });
   }
 
-  public sync = <K extends keyof CS>(message: Message) => {
-    const keys: K[] = message.type.split('.').slice(1) as K[];
+  // TODO: make keyof CS -> generic extends keyof as it is more specific
+  public sync = (message: Message) => {
+    if (message.type !== 'sync' || !message.sync) return;
+    const keys: (keyof CS)[] = message.sync;
     if (keys.length === 0) return;
     get(keys).then((items) => this.update(items));
   }
@@ -71,9 +73,7 @@ export default class Syncer {
  * @param keys 
  */
 export const requestSync = <K extends keyof CS>(keys: K | K[]) => {
-  const keysList = toArray(keys);
-  const type = `sync.${keysList.join('.')}`;
-  chrome.runtime.sendMessage({ type });
+  chrome.runtime.sendMessage({ type: 'sync', sync: toArray(keys) });
 }
 
 /**
@@ -81,17 +81,18 @@ export const requestSync = <K extends keyof CS>(keys: K | K[]) => {
  * @param tabs 
  * @param message 
  */
-export const triggerSync = <K extends keyof CS>(
+export const triggerSync = (
   tabs: number | number[] | chrome.tabs.Tab | chrome.tabs.Tab[], 
-  message: K | K[] | Message
+  message: keyof CS | (keyof CS)[] | Message
 ) => {
+  // To list
   if (typeof message === 'string') {
     message = [message];
   }
 
+  // To Message object
   if (typeof message[0] === 'string') {
-    const type = `sync.${(message as string[]).join('.')}`;
-    message = { type };
+    message = { type: 'sync', sync: message as (keyof CS)[] };
   }
 
   sendMessageToTab(tabs, message as Message);
