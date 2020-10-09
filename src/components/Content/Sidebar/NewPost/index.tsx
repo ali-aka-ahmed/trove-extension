@@ -5,7 +5,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import User from '../../../../entities/User';
 import IUser from '../../../../models/IUser';
 import { CreatePostReqBody } from '../../../../server/posts';
-import { handleUsernameSearch } from '../../../../server/users';
 import { get } from '../../../../utils/chrome/storage';
 import { sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import Highlighter from '../../helpers/Highlighter';
@@ -126,7 +125,10 @@ console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
         const handle = match[0].slice(1);
         try {
           console.log('searching...')
-          users = (await handleUsernameSearch(handle)).users;
+          users = await sendMessageToExtension({
+            type: 'handleUsernameSearch', 
+            name: handle 
+          }) as IUser[];
           setTagBounds({ start: startIdx, end: startIdx + match[0].length });
         } catch (err) {
           users = [];
