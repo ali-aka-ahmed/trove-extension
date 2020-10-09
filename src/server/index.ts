@@ -28,11 +28,10 @@ export interface BaseParams {
 // FOR DEV
 // 1. "http://localhost:5000/*" -> add to manifest.json for testing locally
 // 2. Replace the token in the request interceptor with a token retrieved from Postman
-
 const api = axios.create({
-    baseURL: process.env.REACT_APP_BACKEND_URL,
-    timeout: 2000,
-    headers: { 'Content-Type': 'application/json' },
+  baseURL: process.env.REACT_APP_BACKEND_URL,
+  timeout: 2000,
+  headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use(async (config) => {
