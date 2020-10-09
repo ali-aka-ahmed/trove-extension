@@ -9,10 +9,13 @@ chrome.runtime.onMessage.addListener(async (
   sender: chrome.runtime.MessageSender, 
   sendResponse: (response: any) => void
 ) => {
-  if (message.type === 'getTabId') {
-    sendResponse(sender.tab?.id);
-  } else if (message.type.slice(0, 5) === 'sync.') {
-    triggerSync(await getActiveTabs(), message);
+  switch (message.type) {
+    case 'getTabId':
+      sendResponse(sender.tab?.id);
+      break;
+    case 'sync':
+      triggerSync(await getActiveTabs(), message);
+      break;
   }
 
   return true;
