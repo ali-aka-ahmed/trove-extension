@@ -178,8 +178,7 @@ console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
     get('user').then((items) => {
       setPost({ 
         ...post,
-        content: '',
-        creatorUserId: items.user.id
+        content: ''
       });
     });
   }, []);
