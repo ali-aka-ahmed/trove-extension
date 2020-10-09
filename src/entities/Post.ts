@@ -10,11 +10,12 @@ export default class Post implements IPost {
   public creator: User;
   public domain: string;
   public url: string;
-  public taggedUsers: User[];
+  public taggedUsers: User[]; // must contain values for parent post
   public numComments: number;
   public numLikes: number;
+  public comments: Post[];
+  public parentPostId?: string;
   public highlight?: Highlight;
-  public comments?: Post[];
   public references?: Post[]; // posts in which other people referenced this post
 
   public constructor(p: IPost) {
@@ -27,12 +28,21 @@ export default class Post implements IPost {
     this.taggedUsers = p.taggedUsers.map((u) => new User(u));
     this.numComments = p.numComments;
     this.numLikes = p.numLikes;
-    if (p.highlight) this.highlight = new Highlight(p.highlight);
     if (p.comments) this.comments = p.comments.map((p) => new Post(p));
+    if (p.parentPostId) this.parentPostId = p.parentPostId
+    if (p.highlight) this.highlight = new Highlight(p.highlight);
     if (p.references) this.references = p.references.map((p) => new Post(p));
   }
 
   get time() {
     return displayRelativeTime(this.creationDatetime)
+  };
+
+  get isTopOfThread() {
+    return !this.parentPostId
+  };
+  
+  get isComment() {
+    return !!this.parentPostId
   };
 };
