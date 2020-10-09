@@ -4,6 +4,7 @@ import { CS } from "./storage";
 
 export interface Message {
   type: string;
+  name?: string;
   post?: CreatePostReqBody;
   sync?: (keyof CS)[];
 }
