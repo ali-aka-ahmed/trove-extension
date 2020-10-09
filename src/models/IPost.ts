@@ -8,10 +8,11 @@ export default interface IPost {
   creator: IUser;
   domain: string;
   url: string;
-  taggedUsers: IUser[];
+  taggedUsers: IUser[]; // must contain values for parent post
   numComments: number;
   numLikes: number;
-  highlight?: IHighlight;
   comments?: IPost[];
+  parentPostId?: string; // only exists if comment
+  highlight?: IHighlight;
   references?: IPost[]; // posts in which other people referenced this post
 }

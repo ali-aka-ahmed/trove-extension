@@ -11,58 +11,51 @@ export const handleUsernameSearch = async (searchText: string): Promise<IUsersRe
 }
 
 export const getUser = async (id: string): Promise<UserRes> => {
-  const params: GetUserReqParams = { id }
+  const params: UserReqParams = { id }
   return await api.get(`/users/${params.id}`);
 }
 
 export const updateDisplayName = async (displayName: string): Promise<IUserRes> => {
-  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const params: UserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { displayName }
   return await api.post(`/users/${params.id}/update`, args);
 }
 
 export const updateUsername = async (username: string): Promise<IUserRes> => {
-  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const params: UserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { username }
   return await api.post(`/users/${params.id}/update`, args);
 }
 
 export const updateColor = async (color: string): Promise<IUserRes> => {
-  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const params: UserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { color }
   return await api.post(`/users/${params.id}/update`, args);
 }
 
 export const updateEmail = async (email: string): Promise<IUserRes> => {
-  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const params: UserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { email }
   return await api.post(`/users/${params.id}/update`, args);
 }
 
 export const updatePhoneNumber = async (phoneNumber: number): Promise<IUserRes> => {
-  const params: UpdateUserReqParams = { id: (await get('user')).user.id };
+  const params: UserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { phoneNumber }
   return await api.post(`/users/${params.id}/update`, args);
 }
 
 /**
- * POST /
+ * POST /users/
  */
-export interface GetUsersReqBody {
+interface GetUsersReqBody {
   username: string;
 }
 
 /**
- * GET /:id
+ * POST /users/:id/update
  */
-export interface GetUserReqParams extends BaseParams {
-  id: string;
-}
-
-/**
- * POST /:id/update
- */
-export interface UpdateUserReqBody {
+interface UpdateUserReqBody {
   color?: string; // Hex code
   displayName?: string;
   email?: string; // either email, or phoneNumber
@@ -71,23 +64,24 @@ export interface UpdateUserReqBody {
 }
 
 /**
- * POST /:id/update
+ * GET /users/:id
+ * POST /users/:id/update
  */
-export interface UpdateUserReqParams extends BaseParams {
+interface UserReqParams extends BaseParams {
   id: string;
 }
 
 /**
- * POST /
+ * POST /users/
  */
-export type UsersRes = {
+type UsersRes = {
   users: IUser[];
 } & BaseRes;
 
 /**
- * GET /:id
- * POST /:id/update
+ * GET /users/:id
+ * POST /users/:id/update
  */
-export type UserRes = {
+type UserRes = {
   user?: IUser;
 } & BaseRes;
