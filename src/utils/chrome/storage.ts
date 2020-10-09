@@ -6,9 +6,9 @@ import IUser from '../../models/IUser';
  * TabSettings when they do.
  */
 export interface CS {
-  token: string;
   isAuthenticated: boolean;
   isExtensionOn: boolean;
+  token: string;
   user: IUser;
 }
 

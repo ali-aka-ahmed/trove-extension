@@ -1,7 +1,9 @@
 import { toArray } from "..";
+import { CS } from "./storage";
 
 export interface Message {
   type: string;
+  sync?: (keyof CS)[];
 }
 
 export interface Response {
