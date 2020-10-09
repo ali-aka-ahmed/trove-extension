@@ -1,8 +1,10 @@
 import { toArray } from "..";
+import { CreatePostReqBody } from "../../server/posts";
 import { CS } from "./storage";
 
 export interface Message {
   type: string;
+  post?: CreatePostReqBody;
   sync?: (keyof CS)[];
 }
 
