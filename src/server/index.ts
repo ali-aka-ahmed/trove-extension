@@ -42,10 +42,17 @@ api.interceptors.request.use(async (config) => {
 
 api.interceptors.response.use((response) => {
   // (200-299)
+  console.log('response', response)
   response.data.success = true;
   return response.data;
 }, (error) => {
   // outside of (200-299)
+  console.log('config', error.config)
+  console.log('code', error.code);
+  console.log('request', error.request);
+  console.log('response', error.response);
+  console.log(error.isAxiosError, error.isJSON)
+  
   error.response.data.success = false;
   const errorMessage = error.response.data.message
   if (!errorMessage) error.response.data.message = error.message;
