@@ -339,7 +339,13 @@ export default function Sidebar() {
               style={contentStyles}
             >
               <div className="TbdSidebar__MainContent__Wrapper">
-                {isComposing && <NewPost user={getCurrentUser()} highlighter={highlighter} />}
+                {isComposing && (
+                  <NewPost
+                    setIsComposing={setIsComposing} 
+                    user={getCurrentUser()} 
+                    highlighter={highlighter} 
+                  />
+                )}
                 {(posts.length === 0) && (
                   <div className="TbdSidebar__MainContent__EmptyMsg">No posts yet!</div>
                 )}
