@@ -68,6 +68,10 @@ $accent-color: #0d77e2;
   outline: none;
 }
 
+.TbdSuggestedUsers__SuggestedUser--selected {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 .TbdSuggestedUser__Right {
   display: flex;
   flex-direction: column;
