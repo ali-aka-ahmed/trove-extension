@@ -57,7 +57,7 @@ export default function NewPost(props: NewPostProps) {
       ...post,
       url: window.location.href
     });
-    console.log('submitting...')
+    console.log('submitting...', post)
     const success = await sendMessageToExtension({ type: 'createPost', post });
     console.log(success);
   }, [canSubmit, post]);
@@ -180,22 +180,31 @@ console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
     get('user').then((items) => {
       setPost({ 
         ...post,
-        content: ''
+        content: '',
+        taggedUserIds: []
       });
     });
   }, []);
 
   const tagUser = (user: IUser) => {
+    // Autocomplete username
     const newContent = content.slice(0, tagBounds.start) 
       + `@${user.username} ` 
       + content.slice(tagBounds.end);
     setContent(newContent);
 
+    // Add user id to taggedUserIds and update post
+    if (!post.taggedUserIds!.some(id => id === user.id)) {
+      const taggedUserIdsCopy = post.taggedUserIds!.slice(0);
+      taggedUserIdsCopy.push(user.id);
+      setPost({ ...post, content: newContent, taggedUserIds: taggedUserIdsCopy });
+    }
+    
     // TODO: NOT WORKING (move cursor to appropriate location)
     contentRef.current.focus();
     // console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
-    // contentRef.current.resizableTextArea.textArea.selectionStart = 0;
-    // contentRef.current.resizableTextArea.textArea.selectionEnd = 0;
+    contentRef.current.resizableTextArea.textArea.selectionStart = 0;
+    contentRef.current.resizableTextArea.textArea.selectionEnd = 0;
     // contentRef.current.resizableTextArea.textArea.setSelectionRange(0, 0);
     // console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
     // console.log(contentRef.current)
