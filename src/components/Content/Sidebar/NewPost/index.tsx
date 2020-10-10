@@ -15,6 +15,7 @@ const { TextArea } = Input;
 
 interface NewPostProps {
   highlighter: Highlighter;
+  setIsComposing: React.Dispatch<React.SetStateAction<boolean>>;
   user: User;
 }
 
@@ -58,8 +59,11 @@ export default function NewPost(props: NewPostProps) {
       url: window.location.href
     });
     console.log('submitting...', post)
-    const success = await sendMessageToExtension({ type: 'createPost', post });
+    const success = await sendMessageToExtension({ type: 'createPost', post })
+      .catch(err => console.error(err));
     console.log(success);
+
+    props.setIsComposing(false);
   }, [canSubmit, post]);
 
   const onClickSubmit = useCallback((e) => {
