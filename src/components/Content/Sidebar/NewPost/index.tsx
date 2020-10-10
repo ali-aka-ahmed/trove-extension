@@ -26,6 +26,7 @@ export default function NewPost(props: NewPostProps) {
   const [isHoveringSubmit, setIsHoveringSubmit] = useState(false);
   const [post, setPost] = useState({} as CreatePostReqBody);
   const [suggestedUsers, setSuggestedUsers] = useState([] as IUser[]);
+  const [suggestedUsersIdx, setSuggestedUsersIdx] = useState(0);
   const [tagBounds, setTagBounds] = useState({ start: 0, end: 0 });
   const contentRef = useRef<any>(null);
 
@@ -147,6 +148,50 @@ console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
     console.log('onchange finish')
   }
 
+  /**
+   * Handle actions triggered by specific keystrokes in textarea. Currently used to navigate 
+   * autocomplete dropdown with keyboard.
+   */
+  const onKeyDownContent = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const showSuggestedUsers = suggestedUsers.length > 0;
+    switch (e.key) {
+      case 'ArrowUp': {
+        if (showSuggestedUsers) {
+          e.preventDefault();
+          setSuggestedUsersIdx(Math.max(0, suggestedUsersIdx - 1));
+        }
+
+        break;
+      }
+      case 'ArrowDown': {
+        if (showSuggestedUsers) {
+          e.preventDefault();
+          const newIdx = Math.min(suggestedUsers.length - 1, suggestedUsersIdx + 1);
+          setSuggestedUsersIdx(newIdx);
+        }
+
+        break;
+      }
+      case 'Enter': {
+        if (showSuggestedUsers) {
+          e.preventDefault();
+          tagUser(suggestedUsers[suggestedUsersIdx]);
+        }
+
+        break;
+      }
+      case 'Escape': {
+        if (showSuggestedUsers) {
+          e.preventDefault();
+          setSuggestedUsers([]);
+          setSuggestedUsersIdx(0);
+        }
+
+        break;
+      }
+    }
+  }
+
   const getNewSelection = useCallback(() => {
     const selection = getSelection();
     if (selection.toString()) {
@@ -212,38 +257,46 @@ console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
     // contentRef.current.resizableTextArea.textArea.setSelectionRange(0, 0);
     // console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
     // console.log(contentRef.current)
+
+    // Reset state
     setTagBounds({ start: 0, end: 0 });
     setSuggestedUsers([]);
+    setSuggestedUsersIdx(0);
   }
 
   const renderSuggestedUsers = () => {
-    return suggestedUsers.map((user) => (
-      <button 
-        className="TbdSuggestedUsers__SuggestedUser"
-        key={user.id}
-        onClick={() => tagUser(user)}
-      >
-        <div className="TbdSuggestedUser__Left">
-          <div 
-            className="TbdSuggestedUser__UserBubble" 
-            style={{ backgroundColor: user.color }}
-          >
-            {user.username[0]}
+    return suggestedUsers.map((user, idx) => {
+      const suggestedUserSelectedClass = (idx === suggestedUsersIdx)
+        ? 'TbdSuggestedUsers__SuggestedUser--selected' 
+        : '';
+      return (
+        <button 
+          className={`TbdSuggestedUsers__SuggestedUser ${suggestedUserSelectedClass}`}
+          key={user.id}
+          onClick={() => tagUser(user)}
+        >
+          <div className="TbdSuggestedUser__Left">
+            <div 
+              className="TbdSuggestedUser__UserBubble" 
+              style={{ backgroundColor: user.color }}
+            >
+              {user.username[0]}
+            </div>
           </div>
-        </div>
-        <div className="TbdSuggestedUser__Right">
-          <p className="TbdSuggestedUser__DisplayName">
-            {user.displayName}
-          </p>
-          <p 
-            className="TbdSuggestedUser__Username"
-            style={{ color: user.color }}
-          >
-            {`@${user.username}`}
-          </p>
-        </div>
-      </button>
-    ));
+          <div className="TbdSuggestedUser__Right">
+            <p className="TbdSuggestedUser__DisplayName">
+              {user.displayName}
+            </p>
+            <p 
+              className="TbdSuggestedUser__Username"
+              style={{ color: user.color }}
+            >
+              {`@${user.username}`}
+            </p>
+          </div>
+        </button>
+      );
+    });
   }
 
   // Classes
@@ -282,6 +335,7 @@ console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
             placeholder="The pen is mightier than the sword."
             autoSize={{ minRows: 2 }}
             onChange={onChangeContent}
+            onKeyDown={onKeyDownContent}
             value={content}
             ref={contentRef}
           />
