@@ -100,8 +100,6 @@ export default function NewPost(props: NewPostProps) {
     setPost({...post, content: target.value});
     setContent(target.value);
 
-console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
-
     // Get word text cursor is in
     if (target.selectionStart === target.selectionEnd) {
       // Find start
@@ -144,8 +142,6 @@ console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
         setSuggestedUsers([]);
       }
     }
-
-    console.log('onchange finish')
   }
 
   /**
@@ -153,6 +149,7 @@ console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
    * autocomplete dropdown with keyboard.
    */
   const onKeyDownContent = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    e.stopPropagation();
     const showSuggestedUsers = suggestedUsers.length > 0;
     switch (e.key) {
       case 'ArrowUp': {
@@ -172,7 +169,8 @@ console.log(contentRef.current.resizableTextArea.textArea.selectionStart)
 
         break;
       }
-      case 'Enter': {
+      case 'Enter': 
+      case 'Tab': {
         if (showSuggestedUsers) {
           e.preventDefault();
           tagUser(suggestedUsers[suggestedUsersIdx]);
