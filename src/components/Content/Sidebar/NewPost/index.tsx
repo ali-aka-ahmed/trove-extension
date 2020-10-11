@@ -100,53 +100,61 @@ export default function NewPost(props: NewPostProps) {
     setSuggestedUsersIdx(0);
   }
 
+  const getSuggestedUsers = async (ta: HTMLTextAreaElement) => {
+    if (ta.selectionStart !== ta.selectionEnd) return null;
+
+    // Find start
+    let startIdx = Math.max(Math.min(ta.selectionStart - 1, ta.value.length - 1), 0);
+    while (startIdx > 0) {
+      if (ta.value[startIdx].match(/\s/)) {
+        startIdx++;
+        break;
+      }
+
+      startIdx--;
+    }
+    
+    // Find end
+    let endIdx = Math.max(ta.selectionStart, 0);
+    while (endIdx < ta.value.length) {
+      if (ta.value[endIdx].match(/\s/)) break;
+      endIdx++;
+    }
+
+    // Get word text cursor is in
+    const handle = ta.value.slice(startIdx, endIdx);
+
+    // Determine if it is a handle
+    const match = handle.match(/^@[a-zA-Z0-9_]{1,20}/);
+    let users: IUser[];
+    if (match) {
+      const prefix = match[0].slice(1);
+      try {
+        // Get users with usernames starting with this prefix
+        users = await sendMessageToExtension({
+          type: 'handleUsernameSearch', 
+          name: prefix 
+        }) as IUser[];
+        setTagBounds({ start: startIdx, end: startIdx + match[0].length });
+      } catch (err) {
+        users = [];
+      }
+      
+      setSuggestedUsers(users);
+    } else {
+      setSuggestedUsers([]);
+    }
+  }
+
   const onChangeContent = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const target = e.target;
     setPost({...post, content: target.value});
     setContent(target.value);
+    await getSuggestedUsers(target);      
+  }
 
-    // Get word text cursor is in
-    if (target.selectionStart === target.selectionEnd) {
-      // Find start
-      let startIdx = Math.max(Math.min(target.selectionStart - 1, target.value.length - 1), 0);
-      while (startIdx > 0) {
-        if (target.value[startIdx].match(/\s/)) {
-          startIdx++;
-          break;
-        }
-
-        startIdx--;
-      }
-      
-      // Find end
-      let endIdx = Math.max(target.selectionStart, 0);
-      while (endIdx < target.value.length) {
-        if (target.value[endIdx].match(/\s/)) break;
-        endIdx++;
-      }
-
-      // Get current word and determine if it is a handle
-      let currWord = target.value.slice(startIdx, endIdx);
-      const match = currWord.match(/^@[a-zA-Z0-9_]{1,20}/);
-      let users: IUser[];
-      if (match) {
-        const handle = match[0].slice(1);
-        try {
-          console.log('searching...')
-          users = await sendMessageToExtension({
-            type: 'handleUsernameSearch', 
-            name: handle 
-          }) as IUser[];
-          setTagBounds({ start: startIdx, end: startIdx + match[0].length });
-        } catch (err) {
-          users = [];
-        }
-        
-        setSuggestedUsers(users);
-      } else {
-        setSuggestedUsers([]);
-      }
-    }
+  const onClickContent = async (e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
+    await getSuggestedUsers(e.target as HTMLTextAreaElement);
   }
 
   /**
@@ -339,6 +347,7 @@ export default function NewPost(props: NewPostProps) {
             autoSize={{ minRows: 2 }}
             onBlur={onBlurContent}
             onChange={onChangeContent}
+            onClick={onClickContent}
             onKeyDown={onKeyDownContent}
             value={content}
             ref={contentRef}
