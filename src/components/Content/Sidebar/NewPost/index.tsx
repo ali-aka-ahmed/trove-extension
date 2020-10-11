@@ -95,6 +95,11 @@ export default function NewPost(props: NewPostProps) {
     if (isAnchoring) getNewSelection();
   }, [isAnchoring]);
 
+  const onBlurContent = () => {
+    setSuggestedUsers([]);
+    setSuggestedUsersIdx(0);
+  }
+
   const onChangeContent = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const target = e.target;
     setPost({...post, content: target.value});
@@ -332,6 +337,7 @@ export default function NewPost(props: NewPostProps) {
             className="TbdNewPost__Content"
             placeholder="The pen is mightier than the sword."
             autoSize={{ minRows: 2 }}
+            onBlur={onBlurContent}
             onChange={onChangeContent}
             onKeyDown={onKeyDownContent}
             value={content}
