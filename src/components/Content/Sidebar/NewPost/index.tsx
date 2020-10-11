@@ -100,6 +100,11 @@ export default function NewPost(props: NewPostProps) {
     setSuggestedUsersIdx(0);
   }
 
+  /**
+   * Get current word cursor is in and return all users who have usernames for which the given 
+   * word is a prefix for.
+   * @param ta 
+   */
   const getSuggestedUsers = async (ta: HTMLTextAreaElement) => {
     if (ta.selectionStart !== ta.selectionEnd) return null;
 
@@ -146,6 +151,10 @@ export default function NewPost(props: NewPostProps) {
     }
   }
 
+  /**
+   * Update textarea and hide/show suggested users dropdown appropriately.
+   * @param e 
+   */
   const onChangeContent = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const target = e.target;
     setPost({...post, content: target.value});
@@ -153,6 +162,10 @@ export default function NewPost(props: NewPostProps) {
     await getSuggestedUsers(target);      
   }
 
+  /**
+   * Hide/show suggested users dropdown appropriately.
+   * @param e 
+   */
   const onClickContent = async (e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
     await getSuggestedUsers(e.target as HTMLTextAreaElement);
   }
@@ -203,6 +216,11 @@ export default function NewPost(props: NewPostProps) {
     }
   }
 
+  /**
+   * Get selection and save it as a highlight. Seems like text within our content script is
+   * excluded from highlightable text by default because it sits inside a shadow DOM and therefore
+   * has a different parent document.
+   */
   const getNewSelection = useCallback(() => {
     const selection = getSelection();
     if (selection.toString()) {
@@ -246,6 +264,10 @@ export default function NewPost(props: NewPostProps) {
     });
   }, []);
 
+  /**
+   * Autocomplete current user handle and add user to taggedUserIds.
+   * @param user 
+   */
   const tagUser = (user: IUser) => {
     // Autocomplete username
     const newContent = content.slice(0, tagBounds.start) 
@@ -275,6 +297,9 @@ export default function NewPost(props: NewPostProps) {
     setSuggestedUsersIdx(0);
   }
 
+  /**
+   * Render suggested users dropdown.
+   */
   const renderSuggestedUsers = () => {
     return suggestedUsers.map((user, idx) => {
       const suggestedUserSelectedClass = (idx === suggestedUsersIdx)
