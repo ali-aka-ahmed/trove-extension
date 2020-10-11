@@ -7,7 +7,6 @@ import { posts as mockPosts, users } from '../../../utils/data';
 import Edge from '../helpers/Edge';
 import Highlighter from '../helpers/Highlighter';
 import Point from '../helpers/Point';
-import Syncer from '../helpers/Syncer';
 import NewPost from './NewPost';
 import PostComponent from './Post';
 
@@ -241,20 +240,14 @@ export default function Sidebar() {
     return () => window.removeEventListener('resize', onResizeWindow);
   }, [onResizeWindow]);
 
-  const syncer = new Syncer({
-    isExtensionOn: setIsExtensionOn,
-    isOpen: setIsOpen,
-    position: setPosition,
-  });
-
   const onMessage = useCallback((
     message: Message, 
     sender: chrome.runtime.MessageSender, 
     sendResponse: (response: any) => void
   ) => {
-    console.log('Received message')
-    if (message.type.slice(0, 5) === 'sync.') {
-      syncer.sync(message);
+    switch (message.type) {
+      case 'sync':
+        break; 
     }
 
     return true;
@@ -268,8 +261,7 @@ export default function Sidebar() {
   useEffect(() => {
     getTabId().then((tabId) => {
       setTabId(tabId);
-      // syncer.load({ isExtensionOn: true }, tabId);
-      // anchorSidebar();
+      anchorSidebar();
     });
     
     chrome.storage.onChanged.addListener((changes) => {
