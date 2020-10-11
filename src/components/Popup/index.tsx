@@ -4,8 +4,6 @@ import React, { useEffect, useState } from 'react';
 import Notification from '../../entities/Notification';
 import IUser from '../../models/IUser';
 import { get, set } from '../../utils/chrome/storage';
-import { getAllTabs } from '../../utils/chrome/tabs';
-import { triggerSync } from '../Content/helpers/Syncer';
 import Notifications from './Notifications';
 import Profile from './Profile';
 import './style.scss';
@@ -60,8 +58,7 @@ export default function Popup() {
    * @param checked New global on/off value.
    */
   const handleOnOff = async (checked: boolean) => {
-    await set({ isExtensionOn: checked })
-      .then(async () => { triggerSync(await getAllTabs(), 'isExtensionOn'); });
+    await set({ isExtensionOn: checked });
   }
 
   return (
