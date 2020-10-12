@@ -9,6 +9,7 @@ import { getTabId, Message, sendMessageToExtension } from '../../../utils/chrome
 import Edge from '../helpers/Edge';
 import Highlighter from '../helpers/Highlighter';
 import Point from '../helpers/Point';
+import { key } from '../helpers/utils';
 import NewPost from './NewPost';
 import PostComponent from './Post';
 
@@ -103,7 +104,7 @@ export default function Sidebar() {
       setClosestEdge(Edge.Right);
     }
 
-    set({ [tabId]: { position } });
+    set({ [key(tabId, 'position')]: position });
   }, [position, tabId, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -134,7 +135,7 @@ export default function Sidebar() {
     } else {
       // Normal click
       setIsOpen(!isOpen);
-      set({ [tabId]: { isOpen } });
+      set({ [key(tabId, 'isOpen')]: isOpen });
     }
 
     if (shouldHide) {
@@ -185,7 +186,7 @@ export default function Sidebar() {
     if (isDragging) {
       setIsOpen(false);
       setWasDragged(true);
-      set({ [tabId]: { isOpen } });
+      set({ [key(tabId, 'isOpen')]: isOpen });
 
       // Snap to exit bubble if applicable
       setPosition(snapToExitBubble(e) || Point.fromEvent(e).getOffset(offset));
