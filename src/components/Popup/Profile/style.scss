@@ -76,7 +76,10 @@
 
 .TbdProfile__ColorText {
   @include TbdFont--small;
-  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 300ms;
 }
 
 .TbdProfile__ColorPreview {
@@ -155,4 +158,9 @@
   @include TbdProfile__EditWrapper;
   flex-direction: column;
   padding-bottom: 5px;
+}
+
+.TbdProfile__Loading {
+  margin-left: 10px;
+  transition: 300ms;
 }
