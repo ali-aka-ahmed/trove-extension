@@ -176,7 +176,7 @@ export default function Profile({ user }: ProfileProps) {
         <div className="TbdProfile__Color TbdProfile__EditColor">
           <div className="TbdProfile__ColorText">
             Accent Color
-            {loading === 'color' && <LoadingOutlined />}
+            {loading === 'color' && <div className="TbdProfile__Loading"><LoadingOutlined /></div>}
           </div>
           <ColorPicker onSelect={saveColor} />
         </div>
