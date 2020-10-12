@@ -1,6 +1,7 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import React, { useState } from 'react';
+import User from '../../../entities/User';
 import { login } from '../../../server/auth';
 import { set } from '../../../utils/chrome/storage';
 import { createLoginArgs } from '../helpers/auth';
@@ -12,7 +13,7 @@ interface AuthViewProps {}
 export default function AuthView({}: AuthViewProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const handleUsernameInput = (e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
@@ -27,7 +28,7 @@ export default function AuthView({}: AuthViewProps) {
     if (!res.success) setError(res.message);
     else await set({
       isAuthenticated: true,
-      user: res.user,
+      user: new User(res.user!),
       token: res.token
     });
     setUsername('');

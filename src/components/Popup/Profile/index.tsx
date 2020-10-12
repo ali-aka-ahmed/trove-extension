@@ -1,4 +1,5 @@
 import { EditOutlined, LoadingOutlined, SaveOutlined } from '@ant-design/icons';
+import { Alert } from 'antd';
 import React, { useState } from 'react';
 import IUser from '../../../models/IUser';
 import { updateColor, updateDisplayName, updateUsername } from '../../../server/users';
@@ -32,8 +33,9 @@ export default function Profile({ user }: ProfileProps) {
   const saveDisplayName = async () => {
     if (displayName === user.displayName) {
       setEditable(null);
+      setShowError(null);
       return;
-    }
+    }    
     setLoading('displayName');
     const vRes = validateDisplayName(displayName)
     if (!vRes.success) {
@@ -46,6 +48,7 @@ export default function Profile({ user }: ProfileProps) {
     if (res.success) {
       await set({ user: res.user });
       setEditable(null);
+      setShowError(null);
     } else {
       setShowError('displayName');
       setErrorMessage(res.message);
@@ -56,6 +59,7 @@ export default function Profile({ user }: ProfileProps) {
   const saveUsername = async () => {
     if (username === user.username) {
       setEditable(null);
+      setShowError(null);
       return;
     }
     setLoading('username');
@@ -70,6 +74,7 @@ export default function Profile({ user }: ProfileProps) {
     if (res.success) {
       await set({ user: res.user });
       setEditable(null);
+      setShowError(null);
     } else {
       setShowError('username');
       setErrorMessage(res.message);
@@ -80,6 +85,7 @@ export default function Profile({ user }: ProfileProps) {
   const saveColor = async (newColor: string) => {
     if (newColor === user.color) {
       setEditable(null);
+      setShowError(null);
       return;
     }
     setLoading('color');
@@ -87,13 +93,14 @@ export default function Profile({ user }: ProfileProps) {
     if (res.success) {
       await set({ user: res.user });
       setEditable(null);
+      setShowError(null);
     } else {
       setShowError('color');
       setErrorMessage(res.message);
     }
     setLoading(null);
   }
-
+  
   return (
     <div className="TbdProfile__Wrapper">
       <div className="TbdProfile__Header">
@@ -197,6 +204,12 @@ export default function Profile({ user }: ProfileProps) {
           </div>
         </div>
       )}
+      <div className={`TbdProfile__Error ${showError 
+        ? 'TbdProfile__Error--show'
+        : 'TbdProfile__Error--hide'}`}
+      >
+        <Alert showIcon message={errorMessage} type='error' className='TbdProfile__Alert' />
+      </div>
     </div>
   );
 }
