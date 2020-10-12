@@ -1,10 +1,13 @@
+import { LoadingOutlined } from '@ant-design/icons';
 import { getSelection } from '@rangy/core';
 import { serializeRange } from '@rangy/serializer';
 import { Input } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
+import IPost from '../../../../models/IPost';
 import IUser from '../../../../models/IUser';
-import { CreatePostReqBody } from '../../../../server/posts';
+import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { get } from '../../../../utils/chrome/storage';
 import { sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import Highlighter from '../../helpers/Highlighter';
@@ -14,6 +17,8 @@ const MAX_POST_LENGTH = 180;
 const { TextArea } = Input;
 
 interface NewPostProps {
+  posts: IPost[];
+  setPosts: (posts: IPost[]) => void;
   highlighter: Highlighter;
   setIsComposing: React.Dispatch<React.SetStateAction<boolean>>;
   user: User;
@@ -28,6 +33,8 @@ export default function NewPost(props: NewPostProps) {
   const [suggestedUsers, setSuggestedUsers] = useState([] as IUser[]);
   const [suggestedUsersIdx, setSuggestedUsersIdx] = useState(0);
   const [tagBounds, setTagBounds] = useState({ start: 0, end: 0 });
+  const [loading, setLoading] = useState(false);
+  const [requestErrorMessage, setRequestErrorMessage] = useState('');
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
@@ -45,6 +52,8 @@ export default function NewPost(props: NewPostProps) {
       return `Post can't exceed ${MAX_POST_LENGTH} characters.`;
     } else if (!post.highlight) {
       return 'Must link post to a highlight.';
+    } else if (requestErrorMessage) {
+      return requestErrorMessage
     }
 
     return null;
@@ -53,18 +62,20 @@ export default function NewPost(props: NewPostProps) {
   const submit = useCallback(async () => {
     // TODO: compute tagged users (this should prob happen in an onChange fn)
     // TODO: make sure anchor was done on this url
-    console.log('start submit')
     if (!canSubmit()) return;
-    setPost({
-      ...post,
-      url: window.location.href
-    });
-    console.log('submitting...', post)
-    const success = await sendMessageToExtension({ type: 'createPost', post })
-      .catch(err => console.error(err));
-    console.log(success);
-
-    props.setIsComposing(false);
+    setLoading(true);
+    const args = { ...post, url: window.location.href }
+    console.log('submitting...', args)
+    sendMessageToExtension({ type: 'createPost', post: args }).then((res: IPostRes) => {
+      if (res.success) {
+        const newPosts = props.posts.concat([new Post(res.post!)])
+        props.setPosts(newPosts);
+        props.setIsComposing(false);
+      } else {
+        setRequestErrorMessage(res.message);
+      }
+      setLoading(false)
+    })
   }, [canSubmit, post]);
 
   const onClickSubmit = useCallback((e) => {
@@ -393,19 +404,23 @@ export default function NewPost(props: NewPostProps) {
               />
             </div>
             <div className="TbdNewPost__Buttons__Right">
-              <button 
-                className={`TbdNewPost__Button ${submitButtonDisabledClass}`}
-                onClick={onClickSubmit}
-                onMouseEnter={onMouseEnterSubmit}
-                onMouseLeave={onMouseLeaveSubmit}
-              >
-                Post
-              </button>
+              {!loading ? (
+                <button 
+                  className={`TbdNewPost__Button ${submitButtonDisabledClass}`}
+                  onClick={onClickSubmit}
+                  onMouseEnter={onMouseEnterSubmit}
+                  onMouseLeave={onMouseLeaveSubmit}
+                >
+                  Post
+                </button>
+              ) : (
+                <div className='TbdNewPost__Loading'><LoadingOutlined /></div>
+              )}
             </div>
           </div>
         </div>
       </div>
-      {!canSubmit() && isHoveringSubmit && (
+      {((!canSubmit() && isHoveringSubmit) || requestErrorMessage) && (
         <div className="TbdNewPost__SubmitWarning">
           {getSubmitWarning()}
         </div>

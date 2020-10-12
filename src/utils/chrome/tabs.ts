@@ -4,6 +4,7 @@ import { CreatePostReqBody } from "../../server/posts";
 export interface Message {
   type: string;
   name?: string;
+  url?: string;
   post?: CreatePostReqBody;
 }
 
