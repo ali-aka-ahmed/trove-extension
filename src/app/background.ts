@@ -1,6 +1,7 @@
 import { triggerSync } from '../components/Content/helpers/Syncer';
-import { createPost } from '../server/posts';
+import { createPost, getPosts } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
+import { get1, remove, set } from '../utils/chrome/storage';
 import { getActiveTabs, Message } from '../utils/chrome/tabs';
 
 // Listen to messages sent from other parts of the extension
@@ -12,8 +13,8 @@ chrome.runtime.onMessage.addListener(async (
   switch (message.type) {
     case 'createPost': {
       if (!message.post) break;
-      const post = await createPost(message.post);
-      sendResponse(!!post);
+      const res = await createPost(message.post);
+      sendResponse(res);
       break;
     }
     case 'getTabId':
@@ -28,6 +29,11 @@ chrome.runtime.onMessage.addListener(async (
     case 'sync':
       triggerSync(await getActiveTabs(), message);
       break;
+    case 'getPosts':
+      if (!message.url) break;
+      const res = await getPosts(message.url);
+      sendResponse(res);
+      break;
   }
 
   return true;
@@ -39,8 +45,22 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 });
 
 chrome.runtime.onStartup.addListener(async () => {
+  const isAuthenticated = await get1('isAuthenticated')
+  if (!isAuthenticated) {
+    await Promise.all([
+      set({ isExtensionOn: false }),
+      remove(['token', 'user'])
+    ])
+  }
 });
 
 // Extension installed or updated
 chrome.runtime.onInstalled.addListener(async () => {
+  const isAuthenticated = await get1('isAuthenticated')
+  if (!isAuthenticated) {
+    await Promise.all([
+      set({ isExtensionOn: false }),
+      remove(['token', 'user'])
+    ])
+  }
 });

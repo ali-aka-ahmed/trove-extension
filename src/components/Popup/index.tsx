@@ -2,7 +2,7 @@ import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
 import Notification from '../../entities/Notification';
-import IUser from '../../models/IUser';
+import User from '../../entities/User';
 import { get, set } from '../../utils/chrome/storage';
 import { getAllTabs } from '../../utils/chrome/tabs';
 import { triggerSync } from '../Content/helpers/Syncer';
@@ -22,19 +22,19 @@ export default function Popup() {
    */
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<IUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     get(null).then((items) => {
       if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
       if (items.isAuthenticated) setIsAuthenticated(items.isAuthenticated);
-      if (items.user) setUser(items.user);
+      if (items.user) setUser(new User(items.user));
     });
     
     chrome.storage.onChanged.addListener((changes) => {
       if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
       if (changes.isAuthenticated) setIsAuthenticated(changes.isAuthenticated.newValue);
-      if (changes.user) setUser(changes.user.newValue);
+      if (changes.user) setUser(new User(changes.user.newValue));
     });
   }, []);
 
