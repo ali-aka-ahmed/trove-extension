@@ -1,7 +1,7 @@
 import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import IPost from '../../../models/IPost';
-import { set } from '../../../utils/chrome/storage';
+import { get, set } from '../../../utils/chrome/storage';
 import { getTabId, Message } from '../../../utils/chrome/tabs';
 import { posts as mockPosts, users } from '../../../utils/data';
 import Edge from '../helpers/Edge';
@@ -17,17 +17,18 @@ export const BUBBLE_MARGIN = 20;
 export const CONTENT_HEIGHT = 400;
 export const CONTENT_WIDTH = 300;
 export const EXIT_BUBBLE_WIDTH = 55;
+export const DEFAULT_POSITION = new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y);
 
 export default function Sidebar() {
   const [closestEdge, setClosestEdge] = useState(Edge.Right);
   const [highlighter, setHighlighter] = useState(new Highlighter());
-  const [isComposing, setIsComposing] = useState(true);
+  const [isComposing, setIsComposing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isHidden, setIsHidden] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [offset, setOffset] = useState(new Point(0, 0));
-  const [position, setPosition] = useState(new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y));
+  const [position, setPosition] = useState(DEFAULT_POSITION);
   const [posts, setPosts] = useState([] as IPost[]);
   const [shouldHide, setShouldHide] = useState(false);
   const [tabId, setTabId] = useState('');
@@ -261,11 +262,19 @@ export default function Sidebar() {
   useEffect(() => {
     getTabId().then((tabId) => {
       setTabId(tabId);
-      anchorSidebar();
+
+      // Load & set tab-specific settings
+      const isOpenKey = `${tabId}.isOpen`;
+      const positionKey = `${tabId}.position`;
+      get({ [isOpenKey]: true, [positionKey]: DEFAULT_POSITION })
+        .then((items) => {
+          setIsOpen(items[isOpenKey]);
+          setPosition(items[positionKey]);
+        });
     });
     
+    // Update extension-wide settings
     chrome.storage.onChanged.addListener((changes) => {
-      console.log('changed')
       if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
     });
 
@@ -275,6 +284,8 @@ export default function Sidebar() {
     if (mockPosts.some(post => post.url === url)) {
       setPosts(mockPosts);
     }
+
+    anchorSidebar();
   }, []);
 
   const getCurrentUser = () => {
