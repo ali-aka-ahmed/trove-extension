@@ -23,7 +23,7 @@ export const DEFAULT_POSITION = new Point(document.documentElement.clientWidth, 
 
 export default function Sidebar() {
   const [user, setUser] = useState<User | null>(null);
-  const [isExtensionOn, setIsExtensionOn] = useState(true);
+  const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [closestEdge, setClosestEdge] = useState(Edge.Right);
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isComposing, setIsComposing] = useState(false);
@@ -273,17 +273,22 @@ export default function Sidebar() {
     getTabId().then((tabId) => {
       setTabId(tabId);
 
-      // Load & set tab-specific settings
+      // Load & set settings
       const isOpenKey = `${tabId}.isOpen`;
       const positionKey = `${tabId}.position`;
-      get({ [isOpenKey]: true, [positionKey]: DEFAULT_POSITION })
-        .then((items) => {
-          setIsOpen(items[isOpenKey]);
-          setPosition(items[positionKey]);
-        });
+      get({
+        isAuthenticated: false,
+        isExtensionOn: false,
+        [isOpenKey]: true,
+        [positionKey]: DEFAULT_POSITION 
+      }).then((items) => {
+        setIsExtensionOn(items.isAuthenticated && items.isExtensionOn);
+        setIsOpen(items[isOpenKey]);
+        setPosition(items[positionKey]);
+      });
     });
     
-    // Update extension-wide settings
+    // Listener to update extension-wide settings
     chrome.storage.onChanged.addListener((changes) => {
       if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
     });
