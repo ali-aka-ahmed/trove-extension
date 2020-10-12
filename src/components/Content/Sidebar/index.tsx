@@ -1,9 +1,11 @@
 import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import PostObject from '../../../entities/Post';
+import User from '../../../entities/User';
 import IPost from '../../../models/IPost';
+import { IPostsRes } from '../../../server/posts';
 import { get, set } from '../../../utils/chrome/storage';
-import { getTabId, Message } from '../../../utils/chrome/tabs';
-import { posts as mockPosts, users } from '../../../utils/data';
+import { getTabId, Message, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from '../helpers/Edge';
 import Highlighter from '../helpers/Highlighter';
 import Point from '../helpers/Point';
@@ -20,11 +22,12 @@ export const EXIT_BUBBLE_WIDTH = 55;
 export const DEFAULT_POSITION = new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y);
 
 export default function Sidebar() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [closestEdge, setClosestEdge] = useState(Edge.Right);
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isComposing, setIsComposing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [isHidden, setIsHidden] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [offset, setOffset] = useState(new Point(0, 0));
@@ -124,7 +127,6 @@ export default function Sidebar() {
   const onClickBubble = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('clickbubble');
 
     if (wasDragged) {
       // Click event firing after drag
@@ -144,7 +146,6 @@ export default function Sidebar() {
   const onClickPage = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('clickpage');
 
     const event = new MouseEvent('click', {
       bubbles: true,
@@ -172,7 +173,6 @@ export default function Sidebar() {
   const onDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondragstart');
 
     setOffset(Point.fromEvent(e).getOffset(position));
     setIsDragging(true);
@@ -181,7 +181,6 @@ export default function Sidebar() {
   const onDrag = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondrag');
     
     if (isDragging) {
       setIsOpen(false);
@@ -196,7 +195,6 @@ export default function Sidebar() {
   const onDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.info('ondragend');
     setIsDragging(false);
 
     // onClick isn't called after a drag if mouseup is beyond bounds of window 
@@ -260,6 +258,18 @@ export default function Sidebar() {
   }, [onMessage]);
 
   useEffect(() => {
+    get(null).then((items) => {
+      if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
+      if (items.user) setUser(new User(items.user));
+    });
+
+    chrome.storage.onChanged.addListener((changes) => {
+      if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
+      if (changes.user) setUser(new User(changes.user.newValue));
+    });
+  })
+
+  useEffect(() => {
     getTabId().then((tabId) => {
       setTabId(tabId);
 
@@ -278,20 +288,18 @@ export default function Sidebar() {
       if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
     });
 
-    // TODO: Get list of posts for current URL
+    // Get posts for current page
     const url = window.location.href;
-    // setPosts(await server.getPosts(url));
-    if (mockPosts.some(post => post.url === url)) {
-      setPosts(mockPosts);
-    }
+    sendMessageToExtension({ type: 'getPosts', url }).then((res: IPostsRes) => {
+      if (res.success) {
+        const posts = res.posts!.map((p) => new PostObject(p));
+        setPosts(posts);
+      };
+    })
 
+    // Position bubble properly
     anchorSidebar();
   }, []);
-
-  const getCurrentUser = () => {
-    // TODO: figure out how to do this later
-    return users.filter((user) => user.username === 'aki')[0];
-  }
 
   /**
    * Render list of posts.
@@ -342,10 +350,12 @@ export default function Sidebar() {
               style={contentStyles}
             >
               <div className="TbdSidebar__MainContent__Wrapper">
-                {isComposing && (
+                {isComposing && user && (
                   <NewPost
+                    posts={posts}
+                    setPosts={setPosts}
                     setIsComposing={setIsComposing} 
-                    user={getCurrentUser()} 
+                    user={user} 
                     highlighter={highlighter} 
                   />
                 )}
