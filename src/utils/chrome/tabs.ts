@@ -1,13 +1,11 @@
 import { toArray } from "..";
 import { CreatePostReqBody } from "../../server/posts";
-import { CS } from "./storage";
 
 export interface Message {
   type: string;
   name?: string;
   url?: string;
   post?: CreatePostReqBody;
-  sync?: (keyof CS)[];
 }
 
 export interface Response {

@@ -9,7 +9,6 @@ import { getTabId, Message, sendMessageToExtension } from '../../../utils/chrome
 import Edge from '../helpers/Edge';
 import Highlighter from '../helpers/Highlighter';
 import Point from '../helpers/Point';
-import Syncer from '../helpers/Syncer';
 import NewPost from './NewPost';
 import PostComponent from './Post';
 
@@ -20,18 +19,19 @@ export const BUBBLE_MARGIN = 20;
 export const CONTENT_HEIGHT = 400;
 export const CONTENT_WIDTH = 300;
 export const EXIT_BUBBLE_WIDTH = 55;
+export const DEFAULT_POSITION = new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y);
 
 export default function Sidebar() {
   const [user, setUser] = useState<User | null>(null);
   const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [closestEdge, setClosestEdge] = useState(Edge.Right);
   const [highlighter, setHighlighter] = useState(new Highlighter());
-  const [isComposing, setIsComposing] = useState(true);
+  const [isComposing, setIsComposing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [offset, setOffset] = useState(new Point(0, 0));
-  const [position, setPosition] = useState(new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y));
+  const [position, setPosition] = useState(DEFAULT_POSITION);
   const [posts, setPosts] = useState([] as IPost[]);
   const [shouldHide, setShouldHide] = useState(false);
   const [tabId, setTabId] = useState('');
@@ -239,19 +239,14 @@ export default function Sidebar() {
     return () => window.removeEventListener('resize', onResizeWindow);
   }, [onResizeWindow]);
 
-  const syncer = new Syncer({
-    isExtensionOn: setIsExtensionOn,
-    isOpen: setIsOpen,
-    position: setPosition,
-  });
-
   const onMessage = useCallback((
     message: Message, 
     sender: chrome.runtime.MessageSender, 
     sendResponse: (response: any) => void
   ) => {
-    if (message.type.slice(0, 5) === 'sync.') {
-      syncer.sync(message);
+    switch (message.type) {
+      case 'sync':
+        break; 
     }
 
     return true;
@@ -277,10 +272,23 @@ export default function Sidebar() {
   useEffect(() => {
     getTabId().then((tabId) => {
       setTabId(tabId);
-      // syncer.load({ isExtensionOn: true }, tabId);
-      // anchorSidebar();
+
+      // Load & set tab-specific settings
+      const isOpenKey = `${tabId}.isOpen`;
+      const positionKey = `${tabId}.position`;
+      get({ [isOpenKey]: true, [positionKey]: DEFAULT_POSITION })
+        .then((items) => {
+          setIsOpen(items[isOpenKey]);
+          setPosition(items[positionKey]);
+        });
+    });
+    
+    // Update extension-wide settings
+    chrome.storage.onChanged.addListener((changes) => {
+      if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
     });
 
+    // Get posts for current page
     const url = window.location.href;
     sendMessageToExtension({ type: 'getPosts', url }).then((res: IPostsRes) => {
       if (res.success) {
@@ -288,6 +296,9 @@ export default function Sidebar() {
         setPosts(posts);
       };
     })
+
+    // Position bubble properly
+    anchorSidebar();
   }, []);
 
   /**
