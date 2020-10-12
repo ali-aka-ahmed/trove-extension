@@ -1,7 +1,9 @@
 import { createPost, getPosts } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
-import { get1, remove, set } from '../utils/chrome/storage';
+import { get, get1, remove, set } from '../utils/chrome/storage';
 import { Message } from '../utils/chrome/tabs';
+
+get(null).then(items => console.log(items));
 
 // Listen to messages sent from other parts of the extension
 chrome.runtime.onMessage.addListener(async (
