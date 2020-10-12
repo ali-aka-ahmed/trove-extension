@@ -1,0 +1,93 @@
+@import '../style.scss';
+@import '../../../styles/general.scss';
+
+.TbdAuthView {
+  margin-bottom: $footer-height;
+  height: fit-content;
+  width: 100%;
+  padding: 20px 15px;
+  line-height: $line-height;
+}
+
+.TbdAuthView__Header {
+  @include TbdFont--large;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.TbdAuthView__Header__Emoji {
+  margin-left: 5px;
+}
+
+.TbdAuthView__FieldWrapper {
+  margin-top: 10px;
+}
+
+.TbdAuthView__Label {
+ @include TbdFont--small;
+}
+
+.TbdAuthView__InputWrapper {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  position: relative;
+  border: 2px solid #dddddd;
+  border-radius: 3px;
+  background-color: #ffffff;
+  transition: 150ms;
+  padding-right: 10px;
+}
+
+.TbdAuthView__InputWrapper:hover {
+  border: 2px solid rgba(13, 119, 226, 0.5); // #0d77e2 with 0.5 opacity
+  transition: 150ms;
+}
+
+.TbdAuthView__InputWrapper:focus-within {
+  border: 2px solid #0d77e2; // #0d77e2 with 0.5 opacity
+  transition: 150ms;
+  box-shadow: 0 0 3px 3px rgba(13, 119, 226, 0.2);
+}
+
+.TbdAuthView__Input {
+  @include TbdFont;
+  width: 100%;
+  height: 100%;
+  outline: 0;
+  border: 0;
+  transition: 150ms;
+  background-color: transparent;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-size: 14px;
+}
+
+.TbdAuthView__Button {
+  @include TbdFont;
+  cursor: pointer;
+  margin-top: 15px;
+  width: 25%;
+  transition: 150ms;
+}
+
+.TbdAuthView__Error {
+  margin-top: 10px;
+}
+
+.TbdAuthView__Error--hide {
+  display: none;
+}
+
+.TbdAuthView__Alert {
+  @include TbdFont;
+}
+
+.TbdAuthView__Loading {
+  margin-top: 10px;
+  margin-left: 5px;
+  font-size: 18px;
+  color: #0d77e2;
+}
