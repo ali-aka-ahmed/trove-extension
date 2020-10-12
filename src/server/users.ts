@@ -2,8 +2,8 @@ import api, { AxiosRes, BaseParams, BaseRes } from '.';
 import IUser from '../models/IUser';
 import { get } from '../utils/chrome/storage';
 
-type IUsersRes = UsersRes & AxiosRes;
-type IUserRes = UserRes & AxiosRes;
+export type IUsersRes = UsersRes & AxiosRes;
+export type IUserRes = UserRes & AxiosRes;
 
 export const handleUsernameSearch = async (searchText: string): Promise<IUsersRes> => {
   const args: GetUsersReqBody = { username: searchText }

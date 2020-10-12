@@ -1,6 +1,7 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import React, { useState } from 'react';
+import User from '../../../entities/User';
 import { login } from '../../../server/auth';
 import { set } from '../../../utils/chrome/storage';
 import { createLoginArgs } from '../helpers/auth';
@@ -27,7 +28,7 @@ export default function AuthView({}: AuthViewProps) {
     if (!res.success) setError(res.message);
     else await set({
       isAuthenticated: true,
-      user: res.user,
+      user: new User(res.user!),
       token: res.token
     });
     setUsername('');
