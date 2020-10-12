@@ -22,12 +22,11 @@ export const EXIT_BUBBLE_WIDTH = 55;
 export const DEFAULT_POSITION = new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y);
 
 export default function Sidebar() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [closestEdge, setClosestEdge] = useState(Edge.Right);
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isComposing, setIsComposing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [offset, setOffset] = useState(new Point(0, 0));
@@ -35,6 +34,7 @@ export default function Sidebar() {
   const [posts, setPosts] = useState([] as IPost[]);
   const [shouldHide, setShouldHide] = useState(false);
   const [tabId, setTabId] = useState('');
+  const [user, setUser] = useState<User | null>(null);
   const [wasDragged, setWasDragged] = useState(false);
   const bubbleRef = useRef(null);
   
@@ -279,18 +279,21 @@ export default function Sidebar() {
       get({
         isAuthenticated: false,
         isExtensionOn: false,
+        user: null,
         [isOpenKey]: true,
         [positionKey]: DEFAULT_POSITION 
       }).then((items) => {
         setIsExtensionOn(items.isAuthenticated && items.isExtensionOn);
         setIsOpen(items[isOpenKey]);
         setPosition(items[positionKey]);
+        setUser(items.user);
       });
     });
     
     // Listener to update extension-wide settings
-    chrome.storage.onChanged.addListener((changes) => {
-      if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
+    chrome.storage.onChanged.addListener((change) => {
+      if (change.isExtensionOn !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
+      if (change.user !== undefined) setUser(new User(change.user.newValue));
     });
 
     // Get posts for current page
