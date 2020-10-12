@@ -37,9 +37,9 @@ interface SignupReqBody {
 /**
  * POST /auth/login
  */
-interface LoginReqBody {
+export interface LoginReqBody {
   email?: string; // either email, phoneNumber or username
-  phoneNumber?: number; // include country code ex. 13017872508
+  phoneNumber?: string; // include country code ex. 13017872508
   username?: string;
   password: string;
 }
