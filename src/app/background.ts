@@ -1,8 +1,7 @@
-import { triggerSync } from '../components/Content/helpers/Syncer';
 import { createPost, getPosts } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
 import { get1, remove, set } from '../utils/chrome/storage';
-import { getActiveTabs, Message } from '../utils/chrome/tabs';
+import { Message } from '../utils/chrome/tabs';
 
 // Listen to messages sent from other parts of the extension
 chrome.runtime.onMessage.addListener(async (
@@ -17,6 +16,12 @@ chrome.runtime.onMessage.addListener(async (
       sendResponse(res);
       break;
     }
+    case 'getPosts': {
+      if (!message.url) break;
+      const res = await getPosts(message.url);
+      sendResponse(res);
+      break;
+    }
     case 'getTabId':
       sendResponse(sender.tab?.id);
       break;
@@ -27,12 +32,6 @@ chrome.runtime.onMessage.addListener(async (
       break;
     }
     case 'sync':
-      triggerSync(await getActiveTabs(), message);
-      break;
-    case 'getPosts':
-      if (!message.url) break;
-      const res = await getPosts(message.url);
-      sendResponse(res);
       break;
   }
 
