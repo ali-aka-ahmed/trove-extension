@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { get1 } from '../utils/chrome/storage';
 
 /**
  * What we append onto the response object.
@@ -35,7 +36,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyOWVkN2E1OC1kZjU3LTRiNDgtYmU2Ny04MGEyZDA1ODMzMWIiLCJpYXQiOjE2MDIxODczMzJ9.a7QTjHX4CWV_NoUdyc3qFtfCZ4LK_yR0Dho8IYrrIs0"; //(await get('token')).token;
+  const token = await get1('token');
   token ? config.headers.Authorization = `bearer ${token}` : null;
   return config;
 });
@@ -47,6 +48,7 @@ api.interceptors.response.use((response) => {
   return response.data;
 }, (error) => {
   // outside of (200-299)
+  console.log('error', error)
   console.log('config', error.config)
   console.log('code', error.code);
   console.log('request', error.request);
