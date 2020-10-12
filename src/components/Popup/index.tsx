@@ -18,21 +18,25 @@ export default function Popup() {
   /**
    * Global state.
    */
-  const [isExtensionOn, setIsExtensionOn] = useState(true);
+  const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    get(null).then((items) => {
-      if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
-      if (items.isAuthenticated) setIsAuthenticated(items.isAuthenticated);
-      if (items.user) setUser(new User(items.user));
+    get({
+      isAuthenticated: false,
+      isExtensionOn: false,
+      user: null
+    }).then((items) => {
+      setIsAuthenticated(items.isAuthenticated);
+      setIsExtensionOn(items.isAuthenticated && items.isExtensionOn);
+      setUser(new User(items.user));
     });
     
-    chrome.storage.onChanged.addListener((changes) => {
-      if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
-      if (changes.isAuthenticated) setIsAuthenticated(changes.isAuthenticated.newValue);
-      if (changes.user) setUser(new User(changes.user.newValue));
+    chrome.storage.onChanged.addListener((change) => {
+      if (change.isExtensionOn !== undefined)   setIsExtensionOn(change.isExtensionOn.newValue);
+      if (change.isAuthenticated !== undefined) setIsAuthenticated(change.isAuthenticated.newValue);
+      if (change.user !== undefined)            setUser(new User(change.user.newValue));
     });
   }, []);
 
