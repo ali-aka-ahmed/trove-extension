@@ -28,10 +28,10 @@ export const deletePostAndChildren = async (postId: string): Promise<AxiosRes> =
   return await api.get(`/posts/${params.id}/comment/delete`);
 }
 
-export const editPost = async (postId: string, args: EditPostReqBody): Promise<AxiosRes> => {
-  const params: PostReqParams = { id: postId };
-  return await api.post(`/posts/${params.id}/update`, args);
-}
+// export const editPost = async (postId: string, args: EditPostReqBody): Promise<AxiosRes> => {
+//   const params: PostReqParams = { id: postId };
+//   return await api.post(`/posts/${params.id}/update`, args);
+// }
 
 export const likePost = async (postId: string): Promise<AxiosRes> => {
   const params: PostReqParams = { id: postId };
@@ -80,11 +80,11 @@ export interface CreateCommentReqBody {
 /**
  * POST /posts/:id/update
  */
-export interface EditPostReqBody {
-  newContent?: string;
-  newTaggedUserIds?: string[];
-  highlight?: HighlightParam;
-}
+// export interface EditPostReqBody {
+//   newContent?: string;
+//   newTaggedUserIds?: string[];
+//   highlight?: HighlightParam;
+// }
 
 /**
  * GET /posts/:id

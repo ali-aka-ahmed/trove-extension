@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Notification from '../../entities/Notification';
 import IUser from '../../models/IUser';
 import { get, set } from '../../utils/chrome/storage';
+import AuthView from './AuthView';
 import Notifications from './Notifications';
 import Profile from './Profile';
 import './style.scss';
@@ -60,21 +61,25 @@ export default function Popup() {
   const handleOnOff = async (checked: boolean) => {
     await set({ isExtensionOn: checked });
   }
-
+  
   return (
     <div className="TbdPopupContainer">
-      <Tabs defaultActiveKey="1">
-        <Tabs.TabPane tab="notifications" key="1">
-          <div className="TbdPopupContainer__TabWrapper">
-            {notifications && <Notifications notifications={notifications} />}
-          </div>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="profile" key="2">
-          <div className="TbdPopupContainer__TabWrapper">
-            {user && <Profile user={user} />}
-          </div>
-        </Tabs.TabPane>
-      </Tabs>
+      {isAuthenticated ? (
+        <Tabs defaultActiveKey="1">
+          <Tabs.TabPane tab="notifications" key="1">
+            <div className="TbdPopupContainer__TabWrapper">
+              {notifications && <Notifications notifications={notifications} />}
+            </div>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="profile" key="2">
+            <div className="TbdPopupContainer__TabWrapper">
+              {user && <Profile user={user} />}
+            </div>
+          </Tabs.TabPane>
+        </Tabs>
+      ) : (
+        <AuthView />
+      )}
       <div className="TbdPopupContainer__OnOffWrapper">
         <div className="TbdPopupContainer__OnOffTextWrapper">
           <div>Turn Accord</div>
