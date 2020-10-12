@@ -1,8 +1,8 @@
 import api, { AxiosRes, BaseParams, BaseRes } from '.';
 import IPost from '../entities/Post';
 
-type IPostsRes = PostsRes & AxiosRes;
-type IPostRes = PostRes & AxiosRes;
+export type IPostsRes = PostsRes & AxiosRes;
+export type IPostRes = PostRes & AxiosRes;
 
 export const getPosts = async (url: string): Promise<IPostsRes> => {
   const args: GetPostsReqBody = { url }

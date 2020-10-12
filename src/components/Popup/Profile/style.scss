@@ -164,3 +164,15 @@
   margin-left: 10px;
   transition: 300ms;
 }
+
+.TbdProfile__Error {
+  margin-top: 10px;
+}
+
+.TbdProfile__Error--hide {
+  display: none;
+}
+
+.TbdProfile__Alert {
+  @include TbdFont;
+}
