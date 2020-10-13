@@ -25,6 +25,10 @@ export default class Point implements IPoint {
     return new Point(this.x - p.x, this.y - p.y);
   }
 
+  public toString = () => {
+    return `Point (${this.x}, ${this.y})`;
+  }
+
   public static fromEvent = (e: MouseEvent | React.MouseEvent | TouchEvent | React.TouchEvent) => {
     const e1 = e as MouseEvent | React.MouseEvent;
     if (e1.clientX !== undefined) return new Point(e1.clientX, e1.clientY);
@@ -38,5 +42,5 @@ export default class Point implements IPoint {
 
   public static toJSON = (p: Point): IPoint => {
     return {x: p.x, y: p.y};
-  } 
+  }
 }
