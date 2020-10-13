@@ -18,7 +18,6 @@ chrome.runtime.onMessage.addListener(async (
   switch (message.type) {
     case 'createPost': {
       if (!message.post) break;
-      console.log("POST", message.post)
       const res = await createPost(message.post);
       sendResponse(res);
       break;
