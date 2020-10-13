@@ -1,7 +1,6 @@
-import { DEFAULT_POSITION } from '../components/Content/Sidebar';
 import { createPost, getPosts } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
-import { get, get1, key, remove, set } from '../utils/chrome/storage';
+import { get, get1, remove, set } from '../utils/chrome/storage';
 import { Message } from '../utils/chrome/tabs';
 
 get(null).then(items => {
@@ -74,8 +73,8 @@ chrome.runtime.onInstalled.addListener(async () => {
 chrome.tabs.onCreated.addListener(async (tab: chrome.tabs.Tab) => {
   if (tab.id === undefined) return;
   const tabId = tab.id.toString();
-  await set({
-    [key(tabId, 'isOpen')]: false,
-    [key(tabId, 'position')]: DEFAULT_POSITION
-  });
+  // await set({
+  //   [key(tabId, 'isOpen')]: false,
+  //   [key(tabId, 'position')]: Point.toJSON(DEFAULT_POSITION)
+  // });
 });

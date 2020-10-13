@@ -1,13 +1,4 @@
 const path = require('path');
-const dotenv = require('dotenv');
-const webpack = require('webpack');
-
-// Hack to make dotenv work client-side
-const env = dotenv.config().parsed;
-const envKeys = Object.keys(env).reduce((prev, next) => {
-  prev[`process.env.${next}`] = JSON.stringify(env[next]);
-  return prev;
-}, {});
 
 module.exports = {
   entry: {
@@ -84,8 +75,5 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js']
-  },
-  plugins: [
-    new webpack.DefinePlugin(envKeys)
-  ]
+  }
 };
