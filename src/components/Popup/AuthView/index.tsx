@@ -29,7 +29,8 @@ export default function AuthView({}: AuthViewProps) {
     else await set({
       isAuthenticated: true,
       user: new User(res.user!),
-      token: res.token
+      token: res.token,
+      isExtensionOn: true,
     });
     setUsername('');
     setPassword('');
