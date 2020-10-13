@@ -118,3 +118,12 @@ export function clear(area: AreaName='local'): Promise<void> {
     });
   });
 }
+
+/**
+ * Get key for given tab and property.
+ * @param tabId 
+ * @param prop 
+ */
+export const key = (tabId: string, prop: string): string => {
+  return tabId + '.' + prop;
+}
