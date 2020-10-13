@@ -1,15 +1,13 @@
 import { deserializeRange } from '@rangy/serializer';
 import hexToRgba from 'hex-to-rgba';
-import TimeAgo from 'javascript-time-ago';
-import en from 'javascript-time-ago/locale/en';
 import React from 'react';
+import PostObject from '../../../../entities/Post';
 import IHighlight from '../../../../models/IHighlight';
-import IPost from '../../../../models/IPost';
 import Highlighter, { HighlightClass } from '../../helpers/Highlighter';
 
 interface PostProps {
   highlighter: Highlighter;
-  post: IPost;
+  post: PostObject;
   highlight?: IHighlight;
 }
 
@@ -37,19 +35,14 @@ export default function Post(props: PostProps) {
 
   const getContent = () => {
     // TODO: color tagged handles appropriately
+    // see notification i already have this
     return (
       <div className="TbdPost__Content">
         {props.post.content}
       </div>
     );
   }
-
-  const getTimeAgo = () => {
-    TimeAgo.addLocale(en);
-    const timeAgo = new TimeAgo('en-US');
-    return timeAgo.format(props.post.creationDatetime, 'twitter');
-  }
-
+  
   return (
     <div 
       className="TbdPost" 
@@ -77,7 +70,7 @@ export default function Post(props: PostProps) {
             >
               {`@${props.post.creator.username}`}
             </p>
-            <p className="TbdPost__Header__Datetime">{getTimeAgo()}</p>
+            <p className="TbdPost__Header__Datetime">{props.post.timeAgo}</p>
           </div>
           {getContent()}
           <div className="TbdPost__Buttons">
