@@ -52,9 +52,13 @@ $_exit-bubble-border-big: 15px;
 }
 
 .TbdSidebar__MainContent__Wrapper {
-  overflow: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
   height: 100%;
 }
+.TbdSidebar__MainContent__Wrapper::-webkit-scrollbar { width: 0 !important }
+.TbdSidebar__MainContent__Wrapper { overflow: -moz-scrollbars-none; }
+.TbdSidebar__MainContent__Wrapper { -ms-overflow-style: none; }
 
 .TbdSidebar__MainContent:before {
   position: absolute;
