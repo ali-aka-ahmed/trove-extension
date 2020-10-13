@@ -32,7 +32,11 @@ export default class Point implements IPoint {
     return new Point(e2.touches[0].clientX, e2.touches[0].clientY);
   }
 
-  public static fromJSON = (p: IPoint) => {
+  public static fromJSON = (p: IPoint): Point => {
     return new Point(p.x, p.y);
   }
+
+  public static toJSON = (p: Point): IPoint => {
+    return {x: p.x, y: p.y};
+  } 
 }
