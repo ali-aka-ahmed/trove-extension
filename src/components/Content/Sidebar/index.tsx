@@ -18,7 +18,10 @@ export const BUBBLE_MARGIN = 20;
 export const CONTENT_HEIGHT = 400;
 export const CONTENT_WIDTH = 300;
 export const EXIT_BUBBLE_WIDTH = 55;
-export const DEFAULT_POSITION = new Point(document.documentElement.clientWidth, SIDEBAR_MARGIN_Y);
+export const DEFAULT_POSITION = new Point(
+  document.documentElement.clientWidth, 
+  SIDEBAR_MARGIN_Y
+);
 
 export default function Sidebar() {
   const [closestEdge, setClosestEdge] = useState(Edge.Right);
@@ -222,13 +225,14 @@ export default function Sidebar() {
   }, [wasDragged, onClickPage]);
 
   useEffect(() => {
-    set({ [key(tabId, 'isOpen')]: isOpen });
     // anchorSidebar();
+    set({ [key(tabId, 'isOpen')]: isOpen });
   }, [isOpen]);
 
   useEffect(() => {
     if (!isDragging && !position.equals(DEFAULT_POSITION)) {
-      console.log('updating position', position)
+      console.log('updating position: ' + position)
+      // anchorSidebar();
       set({ [key(tabId, 'position')]: Point.toJSON(position) });
     }
   }, [position]);
@@ -261,7 +265,7 @@ export default function Sidebar() {
   }, [onMessage]);
 
   useEffect(() => {
-    console.log('default position: ', DEFAULT_POSITION)
+    console.log('default position: ' + DEFAULT_POSITION)
     getTabId().then((tabId) => {
       setTabId(tabId);
 
@@ -273,13 +277,11 @@ export default function Sidebar() {
         [key(tabId, 'isOpen')]: false,
         [key(tabId, 'position')]: DEFAULT_POSITION 
       }).then((items) => {
+        console.log('getting position: ' + Point.fromJSON(items[key(tabId, 'position')]))
         setIsExtensionOn(items.isAuthenticated && items.isExtensionOn);
         setIsOpen(items[key(tabId, 'isOpen')]);
         setPosition(Point.fromJSON(items[key(tabId, 'position')]));
-        setUser(items.user);
-
-        // Position bubble properly
-        anchorSidebar();
+        setUser(items.user);        
       });
     });
     
