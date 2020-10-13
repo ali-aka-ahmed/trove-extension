@@ -64,7 +64,6 @@ export default function NewPost(props: NewPostProps) {
     if (!canSubmit()) return;
     setLoading(true);
     const args = { ...post, url: window.location.href }
-    console.log('submitting...', args)
     sendMessageToExtension({ type: 'createPost', post: args }).then((res: IPostRes) => {
       if (res.success) {
         const newPosts = ([new Post(res.post!)]).concat(props.posts);
