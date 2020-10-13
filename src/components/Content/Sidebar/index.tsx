@@ -4,12 +4,11 @@ import PostObject from '../../../entities/Post';
 import User from '../../../entities/User';
 import IPost from '../../../models/IPost';
 import { IPostsRes } from '../../../server/posts';
-import { get, set } from '../../../utils/chrome/storage';
+import { get, key, set } from '../../../utils/chrome/storage';
 import { getTabId, Message, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from '../helpers/Edge';
 import Highlighter from '../helpers/Highlighter';
 import Point from '../helpers/Point';
-import { key } from '../helpers/utils';
 import NewPost from './NewPost';
 import PostComponent from './Post';
 
@@ -103,8 +102,6 @@ export default function Sidebar() {
       setPosition(new Point(newX, newY));
       setClosestEdge(Edge.Right);
     }
-
-    set({ [key(tabId, 'position')]: position });
   }, [position, tabId, getSidebarWidth, getSidebarHeight]);
 
   const snapToExitBubble = (e: MouseEvent | TouchEvent) => {
@@ -135,7 +132,6 @@ export default function Sidebar() {
     } else {
       // Normal click
       setIsOpen(!isOpen);
-      set({ [key(tabId, 'isOpen')]: isOpen });
     }
 
     if (shouldHide) {
@@ -186,7 +182,6 @@ export default function Sidebar() {
     if (isDragging) {
       setIsOpen(false);
       setWasDragged(true);
-      set({ [key(tabId, 'isOpen')]: isOpen });
 
       // Snap to exit bubble if applicable
       setPosition(snapToExitBubble(e) || Point.fromEvent(e).getOffset(offset));
@@ -228,8 +223,17 @@ export default function Sidebar() {
   }, [wasDragged, onClickPage]);
 
   useEffect(() => {
-    anchorSidebar();
+    set({ [key(tabId, 'isOpen')]: isOpen });
+    // anchorSidebar();
   }, [isOpen]);
+
+  useEffect(() => {
+    console.log(position)
+    if (!isDragging && !position.equals(DEFAULT_POSITION)) {
+      console.log('updating position', position)
+      set({ [key(tabId, 'position')]: position });
+    }
+  }, [position])
 
   const onResizeWindow = useCallback(() => {
     anchorSidebar();
@@ -259,35 +263,26 @@ export default function Sidebar() {
   }, [onMessage]);
 
   useEffect(() => {
-    get(null).then((items) => {
-      if (items.isExtensionOn) setIsExtensionOn(items.isExtensionOn);
-      if (items.user) setUser(new User(items.user));
-    });
-
-    chrome.storage.onChanged.addListener((changes) => {
-      if (changes.isExtensionOn) setIsExtensionOn(changes.isExtensionOn.newValue);
-      if (changes.user) setUser(new User(changes.user.newValue));
-    });
-  })
-
-  useEffect(() => {
+    console.log('default position: ', DEFAULT_POSITION)
     getTabId().then((tabId) => {
       setTabId(tabId);
 
       // Load & set settings
-      const isOpenKey = `${tabId}.isOpen`;
-      const positionKey = `${tabId}.position`;
       get({
         isAuthenticated: false,
         isExtensionOn: false,
         user: null,
-        [isOpenKey]: true,
-        [positionKey]: DEFAULT_POSITION 
+        [key(tabId, 'isOpen')]: true,
+        [key(tabId, 'position')]: DEFAULT_POSITION 
       }).then((items) => {
+        console.log('isOpen', items[key(tabId, 'isOpen')], 'position', items[key(tabId, 'position')]);
         setIsExtensionOn(items.isAuthenticated && items.isExtensionOn);
-        setIsOpen(items[isOpenKey]);
-        setPosition(items[positionKey]);
+        setIsOpen(items[key(tabId, 'isOpen')]);
+        setPosition(Point.fromJSON(items[key(tabId, 'position')]));
         setUser(items.user);
+
+        // Position bubble properly
+        // anchorSidebar();
       });
     });
     
@@ -304,10 +299,7 @@ export default function Sidebar() {
         const posts = res.posts!.map((p) => new PostObject(p));
         setPosts(posts);
       };
-    })
-
-    // Position bubble properly
-    anchorSidebar();
+    });
   }, []);
 
   /**
