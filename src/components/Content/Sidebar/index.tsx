@@ -290,16 +290,20 @@ export default function Sidebar() {
       if (change.isExtensionOn !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
       if (change.user !== undefined) setUser(new User(change.user.newValue));
     });
-
-    // Get posts for current page
-    const url = window.location.href;
-    sendMessageToExtension({ type: 'getPosts', url }).then((res: IPostsRes) => {
-      if (res.success) {
-        const posts = res.posts!.map((p) => new Post(p));
-        setPosts(posts);
-      };
-    });
   }, []);
+
+  useEffect(() => {
+    // Get posts for current page
+    if (isExtensionOn && isOpen) {
+      const url = window.location.href;
+      sendMessageToExtension({ type: 'getPosts', url }).then((res: IPostsRes) => {
+        if (res.success) {
+          const posts = res.posts!.map((p) => new Post(p));
+          setPosts(posts);
+        };
+      });
+    }
+  }, [isExtensionOn, isOpen]);
 
   /**
    * Render list of posts.
