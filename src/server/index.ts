@@ -1,5 +1,32 @@
 import axios from 'axios';
+import { DEV_BACKEND_URL, ENV, PROD_BACKEND_URL } from '../config';
 import { get1 } from '../utils/chrome/storage';
+
+const BACKEND_URL = ENV === 'production' ? PROD_BACKEND_URL : DEV_BACKEND_URL;
+
+const api = axios.create({
+  baseURL: BACKEND_URL,
+  timeout: 2000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+api.interceptors.request.use(async (config) => {
+  const token = await get1('token');
+  token ? config.headers.Authorization = `bearer ${token}` : null;
+  return config;
+});
+
+api.interceptors.response.use((response) => {
+  // (200-299)
+  response.data.success = true;
+  return response.data;
+}, (error) => {
+  // outside of (200-299) 
+  error.response.data.success = false;
+  const errorMessage = error.response.data.message
+  if (!errorMessage) error.response.data.message = error.message;
+  return error.response.data;
+});
 
 /**
  * What we append onto the response object.
@@ -25,32 +52,5 @@ export type BaseRes = {
 export interface BaseParams {
   [key: string]: string;
 }
-
-// FOR DEV
-// 1. "http://localhost:5000/*" -> add to manifest.json for testing locally
-// 2. Replace the token in the request interceptor with a token retrieved from Postman
-const api = axios.create({
-  baseURL: process.env.REACT_APP_BACKEND_URL,
-  timeout: 2000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-api.interceptors.request.use(async (config) => {
-  const token = await get1('token');
-  token ? config.headers.Authorization = `bearer ${token}` : null;
-  return config;
-});
-
-api.interceptors.response.use((response) => {
-  // (200-299)
-  response.data.success = true;
-  return response.data;
-}, (error) => {
-  // outside of (200-299) 
-  error.response.data.success = false;
-  const errorMessage = error.response.data.message
-  if (!errorMessage) error.response.data.message = error.message;
-  return error.response.data;
-});
 
 export default api;
