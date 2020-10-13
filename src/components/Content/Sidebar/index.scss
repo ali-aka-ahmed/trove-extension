@@ -24,8 +24,9 @@ $_exit-bubble-border-big: 15px;
 }
 
 .TbdSidebar:not(.react-draggable-dragging) {
-  -webkit-transition: -webkit-transform 0.5s ease-out; /* Safari */
-  transition: transform 0.12s ease-out;
+  // -webkit-transition: -webkit-transform 0.5s ease-out; /* Safari */
+  // transition: transform 0.12s ease-out;
+  transition: none;
 }
 
 .TbdSidebar__LogoBubble {
