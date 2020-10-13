@@ -1,8 +1,7 @@
 import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import PostObject from '../../../entities/Post';
+import Post from '../../../entities/Post';
 import User from '../../../entities/User';
-import IPost from '../../../models/IPost';
 import { IPostsRes } from '../../../server/posts';
 import { get, key, set } from '../../../utils/chrome/storage';
 import { getTabId, Message, sendMessageToExtension } from '../../../utils/chrome/tabs';
@@ -31,7 +30,7 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [offset, setOffset] = useState(new Point(0, 0));
   const [position, setPosition] = useState(DEFAULT_POSITION);
-  const [posts, setPosts] = useState([] as IPost[]);
+  const [posts, setPosts] = useState([] as Post[]);
   const [shouldHide, setShouldHide] = useState(false);
   const [tabId, setTabId] = useState('');
   const [user, setUser] = useState<User | null>(null);
@@ -294,7 +293,7 @@ export default function Sidebar() {
     const url = window.location.href;
     sendMessageToExtension({ type: 'getPosts', url }).then((res: IPostsRes) => {
       if (res.success) {
-        const posts = res.posts!.map((p) => new PostObject(p));
+        const posts = res.posts!.map((p) => new Post(p));
         setPosts(posts);
       };
     });
