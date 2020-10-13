@@ -10,6 +10,8 @@ import Profile from './Profile';
 import './style.scss';
 
 export default function Popup() {
+  const [loading, setLoading] = useState(true);
+
   /**
    * State for all components in Popup.
    */
@@ -23,6 +25,7 @@ export default function Popup() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    setLoading(true)
     get({
       isAuthenticated: false,
       isExtensionOn: false,
@@ -31,8 +34,9 @@ export default function Popup() {
       setIsAuthenticated(items.isAuthenticated);
       setIsExtensionOn(items.isAuthenticated && items.isExtensionOn);
       setUser(new User(items.user));
+      setLoading(false)
     });
-    
+
     chrome.storage.onChanged.addListener((change) => {
       if (change.isExtensionOn !== undefined)   setIsExtensionOn(change.isExtensionOn.newValue);
       if (change.isAuthenticated !== undefined) setIsAuthenticated(change.isAuthenticated.newValue);
@@ -66,6 +70,7 @@ export default function Popup() {
     await set({ isExtensionOn: checked });
   }
   
+  if (loading) return <div className="TbdPopupContainer--loading"/>
   return (
     <div className="TbdPopupContainer">
       {isAuthenticated ? (
