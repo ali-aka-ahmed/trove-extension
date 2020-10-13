@@ -228,12 +228,11 @@ export default function Sidebar() {
   }, [isOpen]);
 
   useEffect(() => {
-    console.log(position)
     if (!isDragging && !position.equals(DEFAULT_POSITION)) {
       console.log('updating position', position)
-      set({ [key(tabId, 'position')]: position });
+      set({ [key(tabId, 'position')]: Point.toJSON(position) });
     }
-  }, [position])
+  }, [position]);
 
   const onResizeWindow = useCallback(() => {
     anchorSidebar();
@@ -272,17 +271,16 @@ export default function Sidebar() {
         isAuthenticated: false,
         isExtensionOn: false,
         user: null,
-        [key(tabId, 'isOpen')]: true,
+        [key(tabId, 'isOpen')]: false,
         [key(tabId, 'position')]: DEFAULT_POSITION 
       }).then((items) => {
-        console.log('isOpen', items[key(tabId, 'isOpen')], 'position', items[key(tabId, 'position')]);
         setIsExtensionOn(items.isAuthenticated && items.isExtensionOn);
         setIsOpen(items[key(tabId, 'isOpen')]);
         setPosition(Point.fromJSON(items[key(tabId, 'position')]));
         setUser(items.user);
 
         // Position bubble properly
-        // anchorSidebar();
+        anchorSidebar();
       });
     });
     
