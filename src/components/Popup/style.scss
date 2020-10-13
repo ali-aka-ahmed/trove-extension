@@ -67,3 +67,8 @@ body, html {
   color: #ffffff;
   @include TbdFont--large; 
 }
+
+.TbdPopupContainer--loading {
+  height: 0px;
+  width: 0px;
+}
