@@ -1,5 +1,6 @@
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en';
 import IPost from '../models/IPost';
-import { displayRelativeTime } from '../utils';
 import Highlight from './Highlight';
 import User from './User';
 
@@ -34,8 +35,11 @@ export default class Post implements IPost {
     if (p.references) this.references = p.references.map((p) => new Post(p));
   }
 
-  get time() {
-    return displayRelativeTime(this.creationDatetime)
+  get timeAgo() {
+    TimeAgo.addLocale(en);
+    const timeAgo = new TimeAgo('en-US');
+    return timeAgo.format(this.creationDatetime, 'twitter');
+    // return displayRelativeTime(this.creationDatetime)
   };
 
   get isTopOfThread() {

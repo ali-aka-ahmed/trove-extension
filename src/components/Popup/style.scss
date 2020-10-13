@@ -33,10 +33,10 @@ body, html {
   overflow-y: auto;
 }
 
-.TbdPopupContainer__OnOffWrapper {
+.TbdPopupContainer__BottomWrapper {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  align-items: flex-end;
+  justify-content: space-between;
   padding: 5px 15px;
   position: fixed;
   background-color: #fafafa;
@@ -66,4 +66,30 @@ body, html {
   justify-content: center;
   color: #ffffff;
   @include TbdFont--large; 
+}
+
+.TbdPopupContainer--loading {
+  height: 0px;
+  width: 0px;
+}
+
+.TbdPopupContainer__Button {
+  @include TbdFont;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: 150ms;
+}
+
+.TbdPopupContainer__Loading {
+  margin-top: 10px;
+  margin-left: 5px;
+  font-size: 18px;
+  color: #0d77e2;
+}
+
+.TbdPopupContainer__OnOffWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }

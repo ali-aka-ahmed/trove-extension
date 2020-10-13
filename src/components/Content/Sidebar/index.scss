@@ -52,7 +52,8 @@ $_exit-bubble-border-big: 15px;
 }
 
 .TbdSidebar__MainContent__Wrapper {
-  overflow: hidden;
+  overflow: scroll;
+  height: 100%;
 }
 
 .TbdSidebar__MainContent:before {
