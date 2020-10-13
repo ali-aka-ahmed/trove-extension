@@ -1,9 +1,13 @@
+import { DEFAULT_POSITION } from '../components/Content/Sidebar';
 import { createPost, getPosts } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
-import { get, get1, remove, set } from '../utils/chrome/storage';
+import { get, get1, key, remove, set } from '../utils/chrome/storage';
 import { Message } from '../utils/chrome/tabs';
 
-get(null).then(items => console.log(items));
+get(null).then(items => {
+  // Object.keys(items).forEach(key => remove(key)); 
+  console.log(items);
+});
 
 // Listen to messages sent from other parts of the extension
 chrome.runtime.onMessage.addListener(async (
@@ -46,22 +50,32 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 });
 
 chrome.runtime.onStartup.addListener(async () => {
-  const isAuthenticated = await get1('isAuthenticated')
+  const isAuthenticated = await get1('isAuthenticated');
   if (!isAuthenticated) {
     await Promise.all([
       set({ isExtensionOn: false }),
       remove(['token', 'user'])
-    ])
+    ]);
   }
 });
 
 // Extension installed or updated
 chrome.runtime.onInstalled.addListener(async () => {
-  const isAuthenticated = await get1('isAuthenticated')
+  const isAuthenticated = await get1('isAuthenticated');
   if (!isAuthenticated) {
     await Promise.all([
       set({ isExtensionOn: false }),
       remove(['token', 'user'])
-    ])
+    ]);
   }
+});
+
+// On tab create
+chrome.tabs.onCreated.addListener(async (tab: chrome.tabs.Tab) => {
+  if (tab.id === undefined) return;
+  const tabId = tab.id.toString();
+  await set({
+    [key(tabId, 'isOpen')]: false,
+    [key(tabId, 'position')]: DEFAULT_POSITION
+  });
 });
