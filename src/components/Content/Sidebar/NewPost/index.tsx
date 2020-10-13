@@ -5,7 +5,6 @@ import { Input } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
-import IPost from '../../../../models/IPost';
 import IUser from '../../../../models/IUser';
 import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { get } from '../../../../utils/chrome/storage';
@@ -17,8 +16,8 @@ const MAX_POST_LENGTH = 180;
 const { TextArea } = Input;
 
 interface NewPostProps {
-  posts: IPost[];
-  setPosts: (posts: IPost[]) => void;
+  posts: Post[];
+  setPosts: (posts: Post[]) => void;
   highlighter: Highlighter;
   setIsComposing: React.Dispatch<React.SetStateAction<boolean>>;
   user: User;
@@ -65,10 +64,9 @@ export default function NewPost(props: NewPostProps) {
     if (!canSubmit()) return;
     setLoading(true);
     const args = { ...post, url: window.location.href }
-    console.log('submitting...', args)
     sendMessageToExtension({ type: 'createPost', post: args }).then((res: IPostRes) => {
       if (res.success) {
-        const newPosts = props.posts.concat([new Post(res.post!)])
+        const newPosts = ([new Post(res.post!)]).concat(props.posts);
         props.setPosts(newPosts);
         props.setIsComposing(false);
       } else {
