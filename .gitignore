@@ -27,7 +27,9 @@ yarn-error.log*
 # local config
 .env
 .env.production
+.env.local
 .idea/
 .vscode
 
-# custom
+# keys
+src/config
