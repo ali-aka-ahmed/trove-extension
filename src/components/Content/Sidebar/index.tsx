@@ -19,7 +19,7 @@ export const CONTENT_HEIGHT = 400;
 export const CONTENT_WIDTH = 300;
 export const EXIT_BUBBLE_WIDTH = 55;
 export const DEFAULT_POSITION = new Point(
-  document.documentElement.clientWidth, 
+  document.documentElement.clientWidth - BUBBLE_HEIGHT - SIDEBAR_MARGIN, 
   SIDEBAR_MARGIN_Y
 );
 
