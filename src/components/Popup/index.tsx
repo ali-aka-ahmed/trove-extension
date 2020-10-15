@@ -2,8 +2,10 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
+import { socket } from '../../app/background';
 import Notification from '../../entities/Notification';
 import User from '../../entities/User';
+import INotification from '../../models/INotification';
 import { get, remove, set } from '../../utils/chrome/storage';
 import AuthView from './AuthView';
 import Notifications from './Notifications';
@@ -11,65 +13,59 @@ import Profile from './Profile';
 import './style.scss';
 
 export default function Popup() {
-  const [loading, setLoading] = useState(true);
-
-  /**
-   * State for all components in Popup.
-   */
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  
   /**
    * Global state.
    */
   const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    setLoading(true)
     get({
       isAuthenticated: false,
       isExtensionOn: false,
-      user: null
+      user: null,
+      notifications: [],
     }).then((items) => {
       setIsAuthenticated(items.isAuthenticated);
       if (items.isAuthenticated) {
+        setNotifications(items.notifications.map((n: INotification) => new Notification(n)));
         setIsExtensionOn(items.isExtensionOn);
         setUser(new User(items.user));
       }
-      setLoading(false)
     });
 
     chrome.storage.onChanged.addListener((change) => {
-      if (change.isExtensionOn !== undefined)   setIsExtensionOn(change.isExtensionOn.newValue);
-      if (change.isAuthenticated !== undefined) setIsAuthenticated(change.isAuthenticated.newValue);
-      if (change.user !== undefined)            setUser(new User(change.user.newValue));
+      if (change.isExtensionOn !== undefined) {
+        if (change.isExtensionOn.newValue) setIsExtensionOn(change.isExtensionOn.newValue);
+        else setIsExtensionOn(false);
+      }
+      if (change.isAuthenticated !== undefined) {
+        if (change.isAuthenticated.newValue) setIsAuthenticated(change.isAuthenticated.newValue);
+        else setIsAuthenticated(false);
+      }
+      if (change.user !== undefined) {
+        if (change.user.newValue) setUser(new User(change.user.newValue));
+        else setUser(null)
+      }
+      if (change.notifications !== undefined) {
+        if (change.notifications.newValue) setNotifications(change.notifications.newValue.map((n: INotification) => new Notification(n)));
+        else setNotifications([])
+      }
     });
   }, []);
 
   const handleLogout = async () => {
+    setLogoutLoading(true)
     const items = await get(null)
+    socket.emit('leave room', items.user.id);
     await remove(Object.keys(items))
     await set({ isAuthenticated: false })
+    setLogoutLoading(false)
   }
-
-  /**
-   * Establish socket to server to receive notifications.
-   */
-  useEffect(() => {
-    // const getNotifications = async (): Promise<void> => {
-    //   const n = notificationData[0];
-    //   let notifs: Notification[] = [];
-    //   for (let i = 0; i <= 10; i++) {
-    //     let s: any = {};
-    //     s = Object.assign(s, n);
-    //     s.id = i.toString();
-    //     notifs.push(s);
-    //   }
-    //   setNotifications(notifs);
-    // }
-    // getNotifications();
-  }, []);
 
   /**
    * Turn extension on/off. Save to global state.
@@ -80,7 +76,6 @@ export default function Popup() {
     await set({ isExtensionOn: checked });
   }
   
-  if (loading) return <div className="TbdPopupContainer--loading"/>
   return (
     <div className="TbdPopupContainer">
       {isAuthenticated ? (
@@ -109,7 +104,7 @@ export default function Popup() {
         </div>
         {isAuthenticated ? (
           <div className='TbdPopupContainer__ButtonWrapper'>
-            {!loading ? (
+            {!logoutLoading ? (
               <button
                 className='TbdPopupContainer__Button'
                 onClick={handleLogout}

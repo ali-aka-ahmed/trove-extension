@@ -1,3 +1,5 @@
+import io from 'socket.io-client';
+import { DEV_BACKEND_URL, ENV, PROD_BACKEND_URL } from '../config';
 import { createPost, getPosts } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
 import { get, get1, remove, set } from '../utils/chrome/storage';
@@ -6,6 +8,19 @@ import { Message } from '../utils/chrome/tabs';
 get(null).then(items => {
   // Object.keys(items).forEach(key => remove(key)); 
   console.log(items);
+});
+
+const BACKEND_URL = ENV === 'production' ? PROD_BACKEND_URL : DEV_BACKEND_URL;
+export const socket = io.connect(BACKEND_URL);
+
+socket.on('notifications', async (notifications: Notification[]) => {
+  await set({ notifications })
+});
+
+socket.on('notification', async (n: Notification) => {
+  const notifications = await get1('notifications')
+  const newNotifications = [n].concat(notifications)
+  await set({ notifications: newNotifications })
 });
 
 // Listen to messages sent from other parts of the extension
@@ -55,6 +70,9 @@ chrome.runtime.onStartup.addListener(async () => {
       set({ isExtensionOn: false }),
       remove(['token', 'user'])
     ]);
+  } else {
+    const user = await get1('user')
+    socket.emit('join room', user.id);
   }
 });
 
@@ -66,6 +84,9 @@ chrome.runtime.onInstalled.addListener(async () => {
       set({ isExtensionOn: false }),
       remove(['token', 'user'])
     ]);
+  } else {
+    const user = await get1('user')
+    socket.emit('join room', user.id);
   }
 });
 
