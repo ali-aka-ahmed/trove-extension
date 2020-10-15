@@ -7,6 +7,7 @@ import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
 import IUser from '../../../../models/IUser';
 import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
+import { log } from '../../../../utils';
 import { get } from '../../../../utils/chrome/storage';
 import { sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import Highlighter from '../../helpers/Highlighter';
@@ -28,6 +29,7 @@ export default function NewPost(props: NewPostProps) {
   const [isAnchoring, setIsAnchoring] = useState(false);
   const [isAnchored, setIsAnchored] = useState(false);
   const [isHoveringSubmit, setIsHoveringSubmit] = useState(false);
+  const [isMouseDownSuggestedUser, setIsMouseDownSuggestedUser] = useState(false);
   const [post, setPost] = useState({} as CreatePostReqBody);
   const [suggestedUsers, setSuggestedUsers] = useState([] as IUser[]);
   const [suggestedUsersIdx, setSuggestedUsersIdx] = useState(0);
@@ -72,21 +74,32 @@ export default function NewPost(props: NewPostProps) {
       } else {
         setRequestErrorMessage(res.message);
       }
-      setLoading(false)
-    })
+
+      setLoading(false);
+    });
   }, [canSubmit, post]);
 
   const onClickSubmit = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    log('onclick submit');
+
     submit();
   }, [submit]);
 
   const onMouseEnterSubmit = (e) => {
-    console.log('mouseEnter submit')
+    e.preventDefault();
+    e.stopPropagation();
+    log('onmouseenter submit');
+
     setIsHoveringSubmit(true);
   }
 
   const onMouseLeaveSubmit = (e) => {
-    console.log('mouseLeave submit')
+    e.preventDefault();
+    e.stopPropagation();
+    log('onmouseleave submit');
+
     setIsHoveringSubmit(false);
   }
   
@@ -104,9 +117,13 @@ export default function NewPost(props: NewPostProps) {
     if (isAnchoring) getNewSelection();
   }, [isAnchoring]);
 
-  const onBlurContent = () => {
-    setSuggestedUsers([]);
-    setSuggestedUsersIdx(0);
+  const onBlurContent = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    log('onblur content');
+    
+    if (!isMouseDownSuggestedUser) {
+      setSuggestedUsers([]);
+      setSuggestedUsersIdx(0);
+    }
   }
 
   /**
@@ -176,6 +193,10 @@ export default function NewPost(props: NewPostProps) {
    * @param e 
    */
   const onClickContent = async (e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    log('onclick content');
+
     await getSuggestedUsers(e.target as HTMLTextAreaElement);
   }
 
@@ -306,6 +327,37 @@ export default function NewPost(props: NewPostProps) {
     setSuggestedUsersIdx(0);
   }
 
+  const onClickSuggestedUser = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, user: User) => {
+    e.preventDefault();
+    e.stopPropagation();
+    log('onclick suggesteduser');
+
+    setIsMouseDownSuggestedUser(false);
+    tagUser(user);
+  }
+
+  const onMouseDownSuggestedUser = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    log('onmousedown suggesteduser');
+
+    // Becase mousedown fires before onblur, we can use this to subvert content onblur when 
+    // user clicks on suggest users dropdown
+    setIsMouseDownSuggestedUser(true);
+  }
+
+  const onMouseLeaveSuggestedUser = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    log('onmouseleave suggesteduser');
+
+    // If user drags off of a suggested user after mousedown, the dropdown can't be closed by 
+    // clicking outside of content because content is no longer focused and onblur is no longer
+    // triggered. Therefore, we must focus content if the cursor leaves the suggested user entry.
+    if (isMouseDownSuggestedUser) {
+      contentRef.current.focus();
+      setIsMouseDownSuggestedUser(false);
+    }
+  }
+
   /**
    * Render suggested users dropdown.
    */
@@ -318,7 +370,9 @@ export default function NewPost(props: NewPostProps) {
         <button 
           className={`TbdSuggestedUsers__SuggestedUser ${suggestedUserSelectedClass}`}
           key={user.id}
-          onClick={() => tagUser(user)}
+          onClick={(e) => onClickSuggestedUser(e, user)}
+          onMouseDown={onMouseDownSuggestedUser}
+          onMouseLeave={onMouseLeaveSuggestedUser}
         >
           <div className="TbdSuggestedUser__Left">
             <div 
