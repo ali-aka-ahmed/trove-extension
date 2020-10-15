@@ -1,6 +1,7 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import React, { useState } from 'react';
+import { socket } from '../../../app/background';
 import User from '../../../entities/User';
 import { login } from '../../../server/auth';
 import { set } from '../../../utils/chrome/storage';
@@ -20,18 +21,22 @@ export default function AuthView({}: AuthViewProps) {
   const handlePasswordInput = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
 
   const handleLogin = async () => {
-    if (username === '') return setError('enter your phone, email or username');
-    if (password === '') return setError('enter your password');
+    if (username === '') return setError('Enter your phone number, email or username');
+    if (password === '') return setError('Enter your password');
     setLoading(true);
     const args = createLoginArgs(username, password);
     const res = await login(args);
-    if (!res.success) setError(res.message);
-    else await set({
-      isAuthenticated: true,
+    if (!res.success) {
+      setLoading(false)
+      return setError(res.message);
+    }
+    socket.emit('join room', res.user?.id);
+    await set({
       user: new User(res.user!),
       token: res.token,
       isExtensionOn: true,
     });
+    await set({ isAuthenticated: true })
     setUsername('');
     setPassword('');
     setLoading(false);

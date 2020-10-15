@@ -4,7 +4,7 @@ import { get1 } from '../utils/chrome/storage';
 
 const BACKEND_URL = ENV === 'production' ? PROD_BACKEND_URL : DEV_BACKEND_URL;
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: BACKEND_URL,
   timeout: 2000,
   headers: { 'Content-Type': 'application/json' },
@@ -52,5 +52,3 @@ export type BaseRes = {
 export interface BaseParams {
   [key: string]: string;
 }
-
-export default api;

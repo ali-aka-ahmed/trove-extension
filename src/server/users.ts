@@ -1,4 +1,4 @@
-import api, { AxiosRes, BaseParams, BaseRes } from '.';
+import { api, AxiosRes, BaseParams, BaseRes } from '.';
 import IUser from '../models/IUser';
 import { get } from '../utils/chrome/storage';
 
