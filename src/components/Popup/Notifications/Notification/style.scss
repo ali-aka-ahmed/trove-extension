@@ -55,6 +55,9 @@
 }
 
 .TbdNotificationWrapper__Content {
-  margin-top: 5px;
   @include TbdFont;
+  margin-top: 5px;
+  word-break: break-word;
+  max-height: 70px;
+  overflow: hidden;
 }
