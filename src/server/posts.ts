@@ -1,4 +1,4 @@
-import api, { AxiosRes, BaseParams, BaseRes } from '.';
+import { api, AxiosRes, BaseParams, BaseRes } from '.';
 import IPost from '../entities/Post';
 
 export type IPostsRes = PostsRes & AxiosRes;
