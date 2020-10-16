@@ -35,12 +35,11 @@ export default function NewPost(props: NewPostProps) {
   const [suggestedUsersIdx, setSuggestedUsersIdx] = useState(0);
   const [tagBounds, setTagBounds] = useState({ start: 0, end: 0 });
   const [loading, setLoading] = useState(false);
-  const [requestErrorMessage, setRequestErrorMessage] = useState('');
+  const [submitErrorMessage, setSubmitErrorMessage] = useState('');
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
-    const cantSubmit = !post.highlight 
-      || !post.content 
+    const cantSubmit = !post.content 
       || post.content.length === 0
       || post.content.length > MAX_POST_LENGTH;
     return !cantSubmit;
@@ -51,18 +50,16 @@ export default function NewPost(props: NewPostProps) {
       return "Post can't be empty.";
     } else if (post.content.length > MAX_POST_LENGTH) {
       return `Post can't exceed ${MAX_POST_LENGTH} characters.`;
-    } else if (!post.highlight) {
-      return 'Must link post to a highlight.';
-    } else if (requestErrorMessage) {
-      return requestErrorMessage
+    } else if (submitErrorMessage) {
+      // Probably don't want to show full error to user
+      console.error(`Error submitting post. Error: ${submitErrorMessage}`);
+      return 'Error submitting post. Please try again later.'
     }
 
     return null;
   }, [post]);
 
   const submit = useCallback(async () => {
-    // TODO: compute tagged users (this should prob happen in an onChange fn)
-    // TODO: make sure anchor was done on this url
     if (!canSubmit()) return;
     setLoading(true);
     const args = { ...post, url: window.location.href }
@@ -72,7 +69,7 @@ export default function NewPost(props: NewPostProps) {
         props.setPosts(newPosts);
         props.setIsComposing(false);
       } else {
-        setRequestErrorMessage(res.message);
+        setSubmitErrorMessage(res.message);
       }
 
       setLoading(false);
@@ -472,7 +469,7 @@ export default function NewPost(props: NewPostProps) {
           </div>
         </div>
       </div>
-      {((!canSubmit() && isHoveringSubmit) || requestErrorMessage) && (
+      {((!canSubmit() && isHoveringSubmit) || submitErrorMessage) && (
         <div className="TbdNewPost__SubmitWarning">
           {getSubmitWarning()}
         </div>
