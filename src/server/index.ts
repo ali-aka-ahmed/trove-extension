@@ -1,8 +1,6 @@
 import axios from 'axios';
-import { DEV_BACKEND_URL, ENV, PROD_BACKEND_URL } from '../config';
+import { BACKEND_URL } from '../config';
 import { get1 } from '../utils/chrome/storage';
-
-const BACKEND_URL = ENV === 'production' ? PROD_BACKEND_URL : DEV_BACKEND_URL;
 
 export const api = axios.create({
   baseURL: BACKEND_URL,
