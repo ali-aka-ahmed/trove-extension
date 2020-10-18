@@ -399,6 +399,7 @@ export default function NewPost(props: NewPostProps) {
   const highlightActiveClass = isAnchoring ? 'TbdNewPost__Buttons__AddHighlight--active' : '';
   const highlightButtonClass = `TbdNewPost__Buttons__AddHighlight ${highlightActiveClass}`;
   const submitButtonDisabledClass = canSubmit() ? '' : 'TbdNewPost__Button--disabled';
+  const submitButtonClass = `TbdNewPost__Buttons__Submit ${submitButtonDisabledClass}`;
 
   return (
     <div className="TbdNewPost">
@@ -455,7 +456,7 @@ export default function NewPost(props: NewPostProps) {
             <div className="TbdNewPost__Buttons__Right">
               {!loading ? (
                 <button 
-                  className={`TbdNewPost__Button ${submitButtonDisabledClass}`}
+                  className={`TbdNewPost__Button ${submitButtonClass}`}
                   onClick={onClickSubmit}
                   onMouseEnter={onMouseEnterSubmit}
                   onMouseLeave={onMouseLeaveSubmit}

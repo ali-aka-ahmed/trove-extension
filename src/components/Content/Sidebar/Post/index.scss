@@ -59,3 +59,43 @@
   margin: 0px;
   color: #aaa;
 }
+
+.TbdPost__Buttons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.TbdPost__Button {
+  background-color: #eee;
+  cursor: pointer;
+  border: none;
+  color: #545454;
+  padding: 5px 12.5px;
+  border-radius: 25px;
+  height: 30px;
+}
+
+.TbdPost__Button:hover {
+  background-color: #eff7fe;
+}
+
+.TbdPost__Button:focus {
+  outline: none;
+}
+
+.TbdPost__Buttons__Reply {
+  background-image: url('../../../../../public/images/reply.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  height: 30px;
+  width: 30px;
+  background-color: transparent;
+  margin-left: -4px;
+}
+
+.TbdPost__Buttons__Reply:hover {
+  background-image: url('../../../../../public/images/reply-blue.svg');
+  background-color: #eff7fe;
+}

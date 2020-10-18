@@ -33,6 +33,10 @@ export default function Post(props: PostProps) {
     }
   }
 
+  const onClickReplyButton = () => {
+
+  }
+
   const getContent = () => {
     // TODO: color tagged handles appropriately
     // see notification i already have this
@@ -74,7 +78,10 @@ export default function Post(props: PostProps) {
           </div>
           {getContent()}
           <div className="TbdPost__Buttons">
-            {/* only comment button for now */}
+            <button 
+              className="TbdPost__Button TbdPost__Buttons__Reply"
+              onClick={onClickReplyButton}
+            />
           </div>
         </div>
       </div>
