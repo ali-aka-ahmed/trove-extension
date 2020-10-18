@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import { DEV_BACKEND_URL, ENV, PROD_BACKEND_URL } from '../config';
+import { BACKEND_URL } from '../config';
 import { createPost, getPosts } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
 import { get, get1, remove, set } from '../utils/chrome/storage';
@@ -10,7 +10,6 @@ get(null).then(items => {
   console.log(items);
 });
 
-const BACKEND_URL = ENV === 'production' ? PROD_BACKEND_URL : DEV_BACKEND_URL;
 export const socket = io.connect(BACKEND_URL);
 
 socket.on('notifications', async (notifications: Notification[]) => {

@@ -1,4 +1,4 @@
-import { ENV } from "../config";
+import { ENV, Environments } from "../config";
 
 /**
  * Wrap input in array if it isn't already an array.
@@ -9,8 +9,12 @@ export function toArray<T>(input: T | T[]): T[] {
   return (input instanceof Array) ? input : [input];
 }
 
+/**
+ * Log args when not in production.
+ * @param args
+ */
 export function log(...args: any[]): void {
-  if (ENV === 'dev') console.info.apply(console, args);  
+  if (ENV !== Environments.PRODUCTION) console.info.apply(console, args);  
 }
 
 /**
