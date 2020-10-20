@@ -14,7 +14,7 @@ export default class Post implements IPost {
   public taggedUsers: User[]; // must contain values for parent post
   public numComments: number;
   public numLikes: number;
-  public comments: Post[];
+  public comments?: Post[];
   public parentPostId?: string;
   public highlight?: Highlight;
   public references?: Post[]; // posts in which other people referenced this post

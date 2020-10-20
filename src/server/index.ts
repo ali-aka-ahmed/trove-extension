@@ -19,7 +19,7 @@ api.interceptors.response.use((response) => {
   response.data.success = true;
   return response.data;
 }, (error) => {
-  // outside of (200-299) 
+  // outside of (200-299)
   error.response.data.success = false;
   const errorMessage = error.response.data.message
   if (!errorMessage) error.response.data.message = error.message;

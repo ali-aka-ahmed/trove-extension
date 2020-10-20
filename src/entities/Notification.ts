@@ -14,6 +14,7 @@ export default class Notification implements INotification {
 
   public constructor(n: INotification) {
     this.id = n.id;
+    this.action = n.action;
     this.content = n.content;
     this.creationDatetime = n.creationDatetime;
     this.sender = new User(n.sender);
