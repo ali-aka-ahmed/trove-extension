@@ -5,7 +5,7 @@ import { createPost, getPosts } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
 import { Message as EMessage, MessageType as EMessageType } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
-import { Message } from '../utils/chrome/tabs';
+import { Message, MessageType } from '../utils/chrome/tabs';
 
 get(null).then(items => console.log(items));
 
@@ -28,28 +28,28 @@ chrome.runtime.onMessage.addListener(async (
   sendResponse: (response: any) => void
 ) => {
   switch (message.type) {
-  case 'createPost': {
+  case MessageType.CreatePost: {
     if (!message.post) break;
     const res = await createPost(message.post);
     sendResponse(res);
     break;
   }
-  case 'getPosts': {
+  case MessageType.GetPosts: {
     if (!message.url) break;
     const res = await getPosts(message.url);
     sendResponse(res);
     break;
   }
-  case 'getTabId':
+  case MessageType.GetTabId:
     sendResponse(sender.tab?.id);
     break;
-  case 'handleUsernameSearch': {
+  case MessageType.HandleUsernameSearch: {
     if (!message.name) return;
     const res = await handleUsernameSearch(message.name);
     sendResponse(res.users);
     break;
   }
-  case 'sync':
+  case MessageType.Sync:
     break;
   }
 
