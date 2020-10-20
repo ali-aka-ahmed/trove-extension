@@ -7,28 +7,31 @@ import { login } from '../../../server/auth';
 import { set } from '../../../utils/chrome/storage';
 import { createLoginArgs } from '../helpers/auth';
 import '../style.scss';
+import ForgotPassword from './ForgotPassword';
 import './style.scss';
 
-interface AuthViewProps {}
+interface LoginProps {}
 
-export default function AuthView({}: AuthViewProps) {
+export default function Login({}: LoginProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleUsernameInput = (e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
   const handlePasswordInput = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
 
   const handleLogin = async () => {
-    if (username === '') return setError('Enter your phone number, email or username');
-    if (password === '') return setError('Enter your password');
+    if (username === '') return setErrorMessage('Enter your phone number, email or username');
+    if (password === '') return setErrorMessage('Enter your password');
     setLoading(true);
     const args = createLoginArgs(username, password);
     const res = await login(args);
     if (!res.success) {
-      setLoading(false)
-      return setError(res.message);
+      setLoading(false);
+      return setErrorMessage(res.message);
     }
     socket.emit('join room', res.user?.id);
     await set({
@@ -36,26 +39,28 @@ export default function AuthView({}: AuthViewProps) {
       token: res.token,
       isExtensionOn: true,
     });
-    await set({ isAuthenticated: true })
+    await set({ isAuthenticated: true });
     setUsername('');
     setPassword('');
     setLoading(false);
   }
 
-  return (
-    <div className='TbdAuthView'>
-      <div className='TbdAuthView__Header'>
-        <div className='TbdAuthView__Header__Title'>
+  if (showForgotPassword) {
+    return <ForgotPassword goToLogin={() => setShowForgotPassword(false)} />
+  } else return (
+    <div className='TbdAuth'>
+      <div className='TbdAuth__Header'>
+        <div className='TbdAuth__Header__Title--login'>
           Login
         </div>
       </div>
-      <div className='TbdAuthView__FieldWrapper'>
-        <div className='TbdAuthView__Label'>
+      <div className='TbdAuth__FieldWrapper'>
+        <div className='TbdAuth__Label'>
           Phone, email or username
         </div>
-        <div className='TbdAuthView__InputWrapper'>
+        <div className='TbdAuth__InputWrapper'>
           <input
-            className='TbdAuthView__Input'
+            className='TbdAuth__Input'
             type='text'
             autoFocus={true}
             value={username}
@@ -63,36 +68,39 @@ export default function AuthView({}: AuthViewProps) {
           />
         </div>
       </div>
-      <div className='TbdAuthView__FieldWrapper'>
-        <div className='TbdAuthView__Label'>
+      <div className='TbdAuth__FieldWrapper'>
+        <div className='TbdAuth__Label'>
           Password
         </div>
-        <div className='TbdAuthView__InputWrapper'>
+        <div className='TbdAuth__InputWrapper'>
           <input
             onChange={handlePasswordInput}
             type='password'
             value={password}
-            className='TbdAuthView__Input'
+            className='TbdAuth__Input'
           />
         </div>
+        <div className='TbdLogin__ForgotPassword' onClick={() => setShowForgotPassword(true)}>
+          Forgot password?
+        </div>
       </div>
-      <div className='TbdAuthView__ButtonWrapper'>
+      <div className='TbdAuth__ButtonWrapper'>
         {!loading ? (
           <button
-            className='TbdAuthView__Button'
+            className='TbdAuth__Button'
             onClick={handleLogin}
           >
             login
           </button>
         ) : (
-          <div className='TbdAuthView__Loading'><LoadingOutlined /></div>
+          <div className='TbdAuth__Loading'><LoadingOutlined /></div>
         )}
       </div>
-      <div className={`TbdAuthView__Error ${error 
-          ? 'TbdAuthView__Error--show' 
-          : 'TbdAuthView__Error--hide'}`}
+      <div className={`TbdAutu__Error ${errorMessage 
+          ? 'TbdAuth__Error--show' 
+          : 'TbdAuth__Error--hide'}`}
       >
-        <Alert showIcon message={error} type='error' className='TbdAuthView__Alert' />
+        <Alert showIcon message={errorMessage} type='error' className='TbdAuth__Alert' />
       </div>
     </div>
   );
