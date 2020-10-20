@@ -5,20 +5,20 @@ type IAuthRes = AuthRes & AxiosRes;
 type IUsernameRes = UsernameRes & AxiosRes;
 
 export const signup = async (args: SignupReqBody): Promise<IAuthRes> => {
-  return await api.post(`/auth/signup`, args);
+  return await api.post('/auth/signup', args);
 };
 
 export const login = async (args: LoginReqBody): Promise<IAuthRes> => {
-  return await api.post(`/auth/login`, args);
+  return await api.post('/auth/login', args);
 }
 
-export const forgotPassword = async (args: ForgotReqBody): Promise<IAuthRes> => {
-  return await api.post(`/auth/forgot`, args)
+export const forgotPassword = async (args: ForgotReqBody): Promise<AxiosRes> => {
+  return await api.post('/auth/forgot', args)
 }
 
 export const checkValidUsername = async (username: string): Promise<IUsernameRes> => {
   const args: UsernameReqBody = { username }
-  return await api.post(`/auth/username`, args);
+  return await api.post('/auth/username', args);
 }
 
 /**
@@ -27,11 +27,10 @@ export const checkValidUsername = async (username: string): Promise<IUsernameRes
 interface SignupReqBody {
   color: string;
   displayName: string;
-  nominatorId: string;
   password: string;
   username: string;
   email?: string; // either email or phoneNumber
-  phoneNumber?: number; // include country code ex. 13017872508
+  phoneNumber?: string; // include country code ex. 13017872508
 }
 
 /**
@@ -47,9 +46,9 @@ export interface LoginReqBody {
 /**
  * POST /auth/forgot
  */
-interface ForgotReqBody {
+export interface ForgotReqBody {
   email?: string; // email or phoneNumber
-  phoneNumber?: number; // include country code ex. 13017872508
+  phoneNumber?: string; // include country code ex. 13017872508
 }
 
 /**
@@ -76,7 +75,6 @@ interface UsernameReqBody {
 /**
  * POST /auth/signup
  * POST /auth/login
- * POST /auth/forgot
  * POST /auth/reset/:token
  */
 type AuthRes = {
