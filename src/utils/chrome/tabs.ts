@@ -2,10 +2,18 @@ import { toArray } from "..";
 import { CreatePostReqBody } from "../../server/posts";
 
 export interface Message {
-  type: string;
+  type: MessageType;
   name?: string;
   url?: string;
   post?: CreatePostReqBody;
+}
+
+export enum MessageType {
+  CreatePost,
+  GetPosts,
+  GetTabId,
+  HandleUsernameSearch,
+  Sync,
 }
 
 export interface Response {
@@ -74,6 +82,6 @@ export const getAllTabs = (): Promise<chrome.tabs.Tab[]> => {
 }
 
 export const getTabId = (): Promise<string> => {
-  return sendMessageToExtension({ type: 'getTabId' })
+  return sendMessageToExtension({ type: MessageType.GetTabId })
     .then((id) => id as string);
 }

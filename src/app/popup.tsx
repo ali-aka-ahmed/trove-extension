@@ -11,7 +11,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tab) => {
 //   sender: chrome.runtime.MessageSender, 
 //   sendResponse: (response: any) => void
 // ) => {
-//   if (message.type === 'getTabId') {
+//   if (message.type === MessageType.GetTabId) {
 //     sendResponse(sender.tab?.id);
 //   }
 
