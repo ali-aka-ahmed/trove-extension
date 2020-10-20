@@ -7,7 +7,7 @@ import Notification from '../../entities/Notification';
 import User from '../../entities/User';
 import INotification from '../../models/INotification';
 import { get, remove, set } from '../../utils/chrome/storage';
-import AuthView from './AuthView';
+import Login from './Login';
 import Notifications from './Notifications';
 import Profile from './Profile';
 import './style.scss';
@@ -92,12 +92,12 @@ export default function Popup() {
           </Tabs.TabPane>
         </Tabs>
       ) : (
-        <AuthView />
+        <Login />
       )}
       <div className="TbdPopupContainer__BottomWrapper">
         <div className="TbdPopupContainer__OnOffWrapper">
           <div className="TbdPopupContainer__OnOffTextWrapper">
-            <div>Turn Accord</div>
+            <div>Turn Whisper</div>
             <div className="TbdPopupContainer__OnOff">{isExtensionOn ? 'OFF' : 'ON'}</div>
           </div>
           <Switch onClick={(checked) => { handleOnOff(checked); }} checked={isExtensionOn} />
