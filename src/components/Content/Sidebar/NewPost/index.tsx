@@ -9,7 +9,7 @@ import IUser from '../../../../models/IUser';
 import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { log } from '../../../../utils';
 import { get } from '../../../../utils/chrome/storage';
-import { sendMessageToExtension } from '../../../../utils/chrome/tabs';
+import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import Highlighter from '../../helpers/Highlighter';
 
 const MAX_USERNAME_LENGTH = 20;
@@ -66,7 +66,7 @@ export default function NewPost(props: NewPostProps) {
     if (!canSubmit()) return;
     setLoading(true);
     const args = { ...post, url: window.location.href }
-    sendMessageToExtension({ type: 'createPost', post: args }).then((res: IPostRes) => {
+    sendMessageToExtension({ type: MessageType.CreatePost, post: args }).then((res: IPostRes) => {
       if (res.success) {
         const newPosts = ([new Post(res.post!)]).concat(props.posts);
         props.setPosts(newPosts);
@@ -163,7 +163,7 @@ export default function NewPost(props: NewPostProps) {
       try {
         // Get users with usernames starting with this prefix
         users = await sendMessageToExtension({
-          type: 'handleUsernameSearch', 
+          type: MessageType.HandleUsernameSearch, 
           name: prefix 
         }) as IUser[];
         setTagBounds({ start: startIdx, end: startIdx + match[0].length });
