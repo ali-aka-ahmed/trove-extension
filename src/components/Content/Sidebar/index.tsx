@@ -31,6 +31,7 @@ export default function Sidebar() {
   const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [replyingToPost, setReplyingToPost] = useState<Post | null>(null);
   const [offset, setOffset] = useState(new Point(0, 0));
   const [position, setPosition] = useState(DEFAULT_POSITION);
   const [posts, setPosts] = useState([] as Post[]);
@@ -166,6 +167,7 @@ export default function Sidebar() {
       }
     }
 
+    setReplyingToPost(null);
     setIsComposing(!isComposing);
   }, [isComposing]);
 
@@ -309,7 +311,15 @@ export default function Sidebar() {
    * Render list of posts.
    */
   const renderPosts = useCallback(() => {
-    return posts.map(post => <PostComponent key={post.id} highlighter={highlighter} post={post} />);
+    return posts.map(post => (
+      <PostComponent 
+        key={post.id} 
+        highlighter={highlighter} 
+        post={post} 
+        setIsComposing={setIsComposing}
+        setReplyingToPost={setReplyingToPost} 
+      />
+    ));
   }, [posts]);
 
   // Classes
@@ -356,11 +366,12 @@ export default function Sidebar() {
               <div className="TbdSidebar__MainContent__Wrapper">
                 {isComposing && user && (
                   <NewPost
-                    posts={posts}
-                    setPosts={setPosts}
-                    setIsComposing={setIsComposing} 
-                    user={user} 
                     highlighter={highlighter} 
+                    posts={posts}
+                    replyingToPost={replyingToPost}
+                    setIsComposing={setIsComposing} 
+                    setPosts={setPosts}
+                    user={user} 
                   />
                 )}
                 {(posts.length === 0) && (

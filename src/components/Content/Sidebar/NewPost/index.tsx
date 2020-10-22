@@ -18,9 +18,10 @@ const { TextArea } = Input;
 
 interface NewPostProps {
   posts: Post[];
-  setPosts: (posts: Post[]) => void;
   highlighter: Highlighter;
+  replyingToPost: Post | null;
   setIsComposing: React.Dispatch<React.SetStateAction<boolean>>;
+  setPosts: (posts: Post[]) => void;
   user: User;
 }
 
@@ -402,79 +403,92 @@ export default function NewPost(props: NewPostProps) {
   const submitButtonClass = `TbdNewPost__Buttons__Submit ${submitButtonDisabledClass}`;
 
   return (
-    <div className="TbdNewPost">
-      <div className="TbdNewPost__MainReference">
-        {/* <p className="TbdNewPost__MainReference__AddText">Add reference</p> */}
-      </div>
-      <div className="TbdPost__Wrapper">
-        <div className="TbdPost__Left">
-          <div 
-            className="TbdPost__UserBubble" 
-            style={{ backgroundColor: props.user.color }}
-          >
-            {props.user.username[0]}
-          </div>
-        </div>
-        <div className="TbdPost__Right">  
-          <div className="TbdPost__Header">
-            <p className="TbdPost__Header__DisplayName">
-              {props.user.displayName}
-            </p>
-            <p 
-              className="TbdPost__Header__Username"
-              style={{ color: props.user.color }}
-            >
-              {`@${props.user.username}`}
-            </p>
-          </div>
-          <TextArea 
-            className="TbdNewPost__Content"
-            placeholder="The pen is mightier than the sword."
-            autoSize={{ minRows: 2 }}
-            onBlur={onBlurContent}
-            onChange={onChangeContent}
-            onClick={onClickContent}
-            onKeyDown={onKeyDownContent}
-            value={content}
-            ref={contentRef}
-          />
-          {suggestedUsers.length > 0 && (
-            <div className="TbdNewPost__SuggestedUsers">
-              {renderSuggestedUsers()}
-            </div>
-          )}
-          <div className="TbdNewPost__Buttons">
-            <div className="TbdNewPost__Buttons__Left">
-              <button 
-                className={`TbdNewPost__Button ${highlightButtonClass}`}
-                onClick={onClickHighlightButton}
-              />
-              <button 
-                className={`TbdNewPost__Button TbdNewPost__Buttons__AddReference`}
-              />
-            </div>
-            <div className="TbdNewPost__Buttons__Right">
-              {!loading ? (
-                <button 
-                  className={`TbdNewPost__Button ${submitButtonClass}`}
-                  onClick={onClickSubmit}
-                  onMouseEnter={onMouseEnterSubmit}
-                  onMouseLeave={onMouseLeaveSubmit}
-                >
-                  Post
-                </button>
-              ) : (
-                <div className='TbdNewPost__Loading'><LoadingOutlined /></div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      {((!canSubmit() && isHoveringSubmit) || submitErrorMessage) && (
-        <div className="TbdNewPost__SubmitWarning">
-          {getSubmitWarning()}
+    <>
+      {props.replyingToPost?.creator && (
+        <div>
+          <p className="TbdNewPost__ReplyMessage">
+            Replying to 
+            <span style={{ color: props.replyingToPost.creator.color }}>
+              {` @${props.replyingToPost.creator.username}`}
+            </span>
+            :
+          </p>
         </div>
       )}
-    </div>
+      <div className="TbdNewPost">
+        <div className="TbdNewPost__MainReference">
+          {/* <p className="TbdNewPost__MainReference__AddText">Add reference</p> */}
+        </div>
+        <div className="TbdPost__Wrapper">
+          <div className="TbdPost__Left">
+            <div 
+              className="TbdPost__UserBubble" 
+              style={{ backgroundColor: props.user.color }}
+            >
+              {props.user.username[0]}
+            </div>
+          </div>
+          <div className="TbdPost__Right">  
+            <div className="TbdPost__Header">
+              <p className="TbdPost__Header__DisplayName">
+                {props.user.displayName}
+              </p>
+              <p 
+                className="TbdPost__Header__Username"
+                style={{ color: props.user.color }}
+              >
+                {`@${props.user.username}`}
+              </p>
+            </div>
+            <TextArea 
+              className="TbdNewPost__Content"
+              placeholder="The pen is mightier than the sword."
+              autoSize={{ minRows: 2 }}
+              onBlur={onBlurContent}
+              onChange={onChangeContent}
+              onClick={onClickContent}
+              onKeyDown={onKeyDownContent}
+              value={content}
+              ref={contentRef}
+            />
+            {suggestedUsers.length > 0 && (
+              <div className="TbdNewPost__SuggestedUsers">
+                {renderSuggestedUsers()}
+              </div>
+            )}
+            <div className="TbdNewPost__Buttons">
+              <div className="TbdNewPost__Buttons__Left">
+                <button 
+                  className={`TbdNewPost__Button ${highlightButtonClass}`}
+                  onClick={onClickHighlightButton}
+                />
+                <button 
+                  className={`TbdNewPost__Button TbdNewPost__Buttons__AddReference`}
+                />
+              </div>
+              <div className="TbdNewPost__Buttons__Right">
+                {!loading ? (
+                  <button 
+                    className={`TbdNewPost__Button ${submitButtonClass}`}
+                    onClick={onClickSubmit}
+                    onMouseEnter={onMouseEnterSubmit}
+                    onMouseLeave={onMouseLeaveSubmit}
+                  >
+                    Post
+                  </button>
+                ) : (
+                  <div className='TbdNewPost__Loading'><LoadingOutlined /></div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        {((!canSubmit() && isHoveringSubmit) || submitErrorMessage) && (
+          <div className="TbdNewPost__SubmitWarning">
+            {getSubmitWarning()}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

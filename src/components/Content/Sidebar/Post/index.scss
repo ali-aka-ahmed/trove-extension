@@ -2,6 +2,7 @@
   padding: 15px;
   cursor: pointer;
   word-break: break-word;
+  border-bottom: 1px solid #f2f2f2;
 }
 
 .TbdPost:hover {
@@ -61,7 +62,8 @@
 }
 
 .TbdPost__Buttons {
-  margin-top: 10px;
+  margin-top: 5px;
+  margin-bottom: -6px;
   display: flex;
   justify-content: space-between;
 }
@@ -97,5 +99,5 @@
 
 .TbdPost__Buttons__Reply:hover {
   background-image: url('../../../../../public/images/reply-blue.svg');
-  background-color: #eff7fe;
+  background-color: #DAEAFB;
 }
