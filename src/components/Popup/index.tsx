@@ -6,6 +6,7 @@ import { socket } from '../../app/background';
 import Notification from '../../entities/Notification';
 import User from '../../entities/User';
 import INotification from '../../models/INotification';
+import { MessageType, sendMessageToWebsite } from '../../utils/chrome/external';
 import { get, remove, set } from '../../utils/chrome/storage';
 import Login from './Login';
 import Notifications from './Notifications';
@@ -31,6 +32,7 @@ export default function Popup() {
       notifications: [],
     }).then((items) => {
       setIsAuthenticated(items.isAuthenticated);
+      console.log('items', items);
       if (items.isAuthenticated) {
         setNotifications(items.notifications.map((n: INotification) => new Notification(n)));
         setIsExtensionOn(items.isExtensionOn);
@@ -64,6 +66,7 @@ export default function Popup() {
     socket.emit('leave room', items.user.id);
     await remove(Object.keys(items))
     await set({ isAuthenticated: false })
+    sendMessageToWebsite({ type: MessageType.Logout })
     setLogoutLoading(false)
   }
 
