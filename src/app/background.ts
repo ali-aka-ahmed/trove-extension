@@ -1,4 +1,4 @@
-import { createPost, getPosts } from '../server/posts';
+import { createPost, createReply, getPosts } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import { Message } from '../utils/chrome/tabs';
@@ -18,6 +18,12 @@ chrome.runtime.onMessage.addListener(async (
     case 'createPost': {
       if (!message.post) break;
       const res = await createPost(message.post);
+      sendResponse(res);
+      break;
+    }
+    case 'createReply': {
+      if (!message.id || !message.post) break;
+      const res = await createReply(message.id, message.post);
       sendResponse(res);
       break;
     }

@@ -3,9 +3,10 @@ import { CreatePostReqBody } from "../../server/posts";
 
 export interface Message {
   type: string;
+  id?: string;
   name?: string;
-  url?: string;
   post?: CreatePostReqBody;
+  url?: string;
 }
 
 export interface Response {
