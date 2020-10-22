@@ -63,8 +63,22 @@ export default function NewPost(props: NewPostProps) {
   const submit = useCallback(async () => {
     if (!canSubmit()) return;
     setLoading(true);
-    const args = { ...post, url: window.location.href }
-    sendMessageToExtension({ type: 'createPost', post: args }).then((res: IPostRes) => {
+
+    // Create post or reply accordingly
+    let promise: Promise<unknown>;
+    const newPost = { ...post, url: window.location.href };
+    if (props.replyingToPost) {
+      promise = sendMessageToExtension({
+        type: 'createReply', 
+        post: newPost, 
+        id: props.replyingToPost.id 
+      });
+    } else {
+      promise = sendMessageToExtension({ type: 'createPost', post: newPost });
+    }
+
+    // Indicate post creation success/failure
+    promise.then((res: IPostRes) => {
       if (res.success) {
         const newPosts = ([new Post(res.post!)]).concat(props.posts);
         props.setPosts(newPosts);

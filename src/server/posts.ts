@@ -18,7 +18,7 @@ export const createPost = async (args: CreatePostReqBody): Promise<IPostRes> => 
   return await api.post('/posts/create', args);
 }
 
-export const createComment = async (parentPostId: string, args: CreateCommentReqBody): Promise<IPostRes> => {
+export const createReply = async (parentPostId: string, args: CreateReplyReqBody): Promise<IPostRes> => {
   const params: PostReqParams = { id: parentPostId };
   return await api.post(`/posts/${params.id}/comment/create`, args);
 }
@@ -70,7 +70,7 @@ export interface CreatePostReqBody {
 /**
  * POST /posts/:id/comment/create
  */
-export interface CreateCommentReqBody {
+export interface CreateReplyReqBody {
   content: string;
   url: string;
   highlight?: HighlightParam;
