@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { socket } from '../../../app/background';
 import User from '../../../entities/User';
 import { login } from '../../../server/auth';
+import { MessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { set } from '../../../utils/chrome/storage';
 import { createLoginArgs } from '../helpers/auth';
 import '../style.scss';
@@ -40,6 +41,7 @@ export default function Login({}: LoginProps) {
       isExtensionOn: true,
     });
     await set({ isAuthenticated: true });
+    await sendMessageToWebsite({ type: MessageType.Login, user: res.user, token: res.token })
     setUsername('');
     setPassword('');
     setLoading(false);
@@ -49,14 +51,9 @@ export default function Login({}: LoginProps) {
     return <ForgotPassword goToLogin={() => setShowForgotPassword(false)} />
   } else return (
     <div className='TbdAuth'>
-      <div className='TbdAuth__Header'>
-        <div className='TbdAuth__Header__Title--login'>
-          Login
-        </div>
-      </div>
       <div className='TbdAuth__FieldWrapper'>
         <div className='TbdAuth__Label'>
-          Phone, email or username
+          Email or username
         </div>
         <div className='TbdAuth__InputWrapper'>
           <input
@@ -90,13 +87,13 @@ export default function Login({}: LoginProps) {
             className='TbdAuth__Button'
             onClick={handleLogin}
           >
-            login
+            Login
           </button>
         ) : (
           <div className='TbdAuth__Loading'><LoadingOutlined /></div>
         )}
       </div>
-      <div className={`TbdAutu__Error ${errorMessage 
+      <div className={`TbdAuth__Error ${errorMessage 
           ? 'TbdAuth__Error--show' 
           : 'TbdAuth__Error--hide'}`}
       >

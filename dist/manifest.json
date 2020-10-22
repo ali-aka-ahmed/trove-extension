@@ -24,6 +24,8 @@
   },
   "permissions": [
     "storage", 
+    "activeTab",
+    "tabs",
     "http://localhost:5000/*",
     "https://api.whisper.so/*",
     "https://dev.whisper.so/*"

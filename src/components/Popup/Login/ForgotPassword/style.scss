@@ -10,10 +10,6 @@
   justify-content: flex-start;
 }
 
-.TbdForgot__BackButton {
-  @include TbdBackArrow;
-}
-
 .TbdAuth__ButtonWrapper--success {
   margin-top: 10px;
   display: flex;

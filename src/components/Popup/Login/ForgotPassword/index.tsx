@@ -49,7 +49,7 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
             className='TbdAuth__Button'
             onClick={goToLogin}
           >
-            back
+            Back
           </button>
         </div>
       </div>
@@ -59,7 +59,7 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
     <div className='TbdAuth'>
       <div className='TbdAuth__Header'>
         <div className='TbdAuth__Header__Title--forgot'>
-          Enter your phone number or email
+          Enter your email
         </div>
       </div>
       <div className='TbdAuth__FieldWrapper'>
@@ -79,7 +79,7 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
             className='TbdAuth__Button'
             onClick={handleForgotPasswordSubmit}
           >
-            submit
+            Submit
           </button>
         ) : (
           <div className='TbdAuth__Loading'><LoadingOutlined /></div>
@@ -88,7 +88,7 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
           className='TbdAuth__Button--cancel'
           onClick={goToLogin}
         >
-          cancel
+          Cancel
         </button>
       </div>
       <div className={`TbdAuth__Error ${errorMessage 
