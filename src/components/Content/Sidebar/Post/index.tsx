@@ -1,13 +1,15 @@
 import { deserializeRange } from '@rangy/serializer';
 import hexToRgba from 'hex-to-rgba';
 import React from 'react';
-import PostObject from '../../../../entities/Post';
+import { default as IPost, default as PostObject } from '../../../../entities/Post';
 import IHighlight from '../../../../models/IHighlight';
 import Highlighter, { HighlightClass } from '../../helpers/Highlighter';
 
 interface PostProps {
   highlighter: Highlighter;
   post: PostObject;
+  setIsComposing: React.Dispatch<React.SetStateAction<boolean>>; 
+  setReplyingToPost: React.Dispatch<React.SetStateAction<IPost | null>>;
   highlight?: IHighlight;
 }
 
@@ -34,7 +36,8 @@ export default function Post(props: PostProps) {
   }
 
   const onClickReplyButton = () => {
-
+    props.setReplyingToPost(props.post);
+    props.setIsComposing(true);
   }
 
   const getContent = () => {
