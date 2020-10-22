@@ -120,6 +120,15 @@ chrome.runtime.onMessageExternal.addListener(async (
       sendResponse(true);
       break;
     }
+    case EMessageType.isAuthenticated: {
+      const res = await get({
+        isAuthenticated: false,
+        token: '',
+        user: null,
+      })
+      sendResponse(res);
+      break;
+    }
   }
   return true;
 });
