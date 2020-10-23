@@ -2,7 +2,6 @@ import { deserializeRange } from '@rangy/serializer';
 import hexToRgba from 'hex-to-rgba';
 import React from 'react';
 import { default as IPost, default as PostObject } from '../../../../entities/Post';
-import IHighlight from '../../../../models/IHighlight';
 import Highlighter, { HighlightClass } from '../../helpers/Highlighter';
 
 interface PostProps {
@@ -10,14 +9,14 @@ interface PostProps {
   post: PostObject;
   setIsComposing: React.Dispatch<React.SetStateAction<boolean>>; 
   setReplyingToPost: React.Dispatch<React.SetStateAction<IPost | null>>;
-  highlight?: IHighlight;
 }
 
 export default function Post(props: PostProps) {
   const onMouseEnterPost = (e: React.MouseEvent) => {
     console.log('mouseenterpost')
-    if (props.highlight?.range) {
-      const range = deserializeRange(props.highlight.range);
+    // console.log(props)
+    if (props.post.highlight?.range) {
+      const range = deserializeRange(props.post.highlight.range);
       const color = hexToRgba(props.post.creator.color, 0.1);
       props.highlighter.addHighlight(range, HighlightClass.HoverPost, color);
     }
@@ -28,8 +27,8 @@ export default function Post(props: PostProps) {
   }
 
   const onClickPost = (e: React.MouseEvent) => {
-    if (props.highlight?.range) {
-      const range = deserializeRange(props.highlight.range);
+    if (props.post.highlight?.range) {
+      const range = deserializeRange(props.post.highlight.range);
       const color = hexToRgba(props.post.creator.color, 0.25);
       props.highlighter.addHighlight(range, HighlightClass.Post, color);
     }

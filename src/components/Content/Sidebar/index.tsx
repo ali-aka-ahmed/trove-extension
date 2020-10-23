@@ -40,6 +40,7 @@ export default function Sidebar() {
   const [user, setUser] = useState<User | null>(null);
   const [wasDragged, setWasDragged] = useState(false);
   const bubbleRef = useRef(null);
+  const scrollRef = useRef(null);
   
   const getSidebarHeight = useCallback(() => {
     return isOpen ? BUBBLE_HEIGHT + BUBBLE_MARGIN + CONTENT_HEIGHT : BUBBLE_HEIGHT;
@@ -165,6 +166,8 @@ export default function Sidebar() {
         highlighter.addNewPostHighlight(range);
         selection.removeAllRanges();
       }
+
+      if (scrollRef.current) (scrollRef.current! as HTMLDivElement).scrollTop = 0;
     }
 
     setReplyingToPost(null);
@@ -311,7 +314,7 @@ export default function Sidebar() {
    * Render list of posts.
    */
   const renderPosts = useCallback(() => {
-    return posts.map(post => (
+    const postList = posts.map(post => (
       <PostComponent 
         key={post.id} 
         highlighter={highlighter} 
@@ -320,6 +323,11 @@ export default function Sidebar() {
         setReplyingToPost={setReplyingToPost} 
       />
     ));
+    return (
+      <div className="TbdSidebar__MainContent__PostList">
+        {postList}
+      </div>
+    );
   }, [posts]);
 
   // Classes
@@ -363,7 +371,7 @@ export default function Sidebar() {
               className={`TbdSidebar__MainContent ${contentPositionClass}`}
               style={contentStyles}
             >
-              <div className="TbdSidebar__MainContent__Wrapper">
+              <div className="TbdSidebar__MainContent__Wrapper" ref={scrollRef}>
                 {isComposing && user && (
                   <NewPost
                     highlighter={highlighter} 
