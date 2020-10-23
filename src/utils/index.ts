@@ -1,4 +1,4 @@
-import { ENV, Environments } from "../config";
+import { LOGGING } from "../config";
 
 /**
  * Wrap input in array if it isn't already an array.
@@ -14,7 +14,7 @@ export function toArray<T>(input: T | T[]): T[] {
  * @param args
  */
 export function log(...args: any[]): void {
-  if (ENV !== Environments.PRODUCTION) console.info.apply(console, args);  
+  if (LOGGING) console.info.apply(console, args);  
 }
 
 /**
