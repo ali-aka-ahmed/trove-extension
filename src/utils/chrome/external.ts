@@ -1,4 +1,4 @@
-import { DOMAIN, ORIGIN } from '../../config';
+import { ORIGIN, VALID_DOMAINS } from '../../config';
 import IUser from '../../models/IUser';
 import { getAllTabs } from './tabs';
 
@@ -26,7 +26,7 @@ export const sendMessageToWebsite = async (message: Message) => {
   tabs.forEach((tab) => {
     const domain = new URL(tab.url!).hostname
     const tabId = tab.id!
-    if (domain === DOMAIN) {
+    if (VALID_DOMAINS.includes(domain)) {
       chrome.tabs.executeScript(tabId, {
         code: '(' + ((args: { message: Message; origin: string; }) => {
           const message = args.message;
