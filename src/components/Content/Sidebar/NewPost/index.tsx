@@ -1,8 +1,7 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import { getSelection } from '@rangy/core';
-import { serializeRange } from '@rangy/serializer';
 import { Input } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { v4 as uuid } from 'uuid';
 import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
 import IUser from '../../../../models/IUser';
@@ -10,15 +9,16 @@ import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { log } from '../../../../utils';
 import { get } from '../../../../utils/chrome/storage';
 import { sendMessageToExtension } from '../../../../utils/chrome/tabs';
-import Highlighter from '../../helpers/Highlighter';
+import Highlighter, { HighlightType } from '../../helpers/Highlighter';
+import { getXRangeFromRange } from '../../helpers/utils';
 
 const MAX_USERNAME_LENGTH = 20;
 const MAX_POST_LENGTH = 180;
 const { TextArea } = Input;
 
 interface NewPostProps {
-  posts: Post[];
   highlighter: Highlighter;
+  posts: Post[];
   replyingToPost: Post | null;
   setIsComposing: React.Dispatch<React.SetStateAction<boolean>>;
   setPosts: (posts: Post[]) => void;
@@ -37,6 +37,7 @@ export default function NewPost(props: NewPostProps) {
   const [tagBounds, setTagBounds] = useState({ start: 0, end: 0 });
   const [loading, setLoading] = useState(false);
   const [submitErrorMessage, setSubmitErrorMessage] = useState('');
+  const [tempId, setTempId] = useState('');
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
@@ -265,14 +266,14 @@ export default function NewPost(props: NewPostProps) {
    */
   const getNewSelection = useCallback(() => {
     const selection = getSelection();
-    if (selection.toString()) {
+    if (selection && selection.toString()) {
       const range = selection.getRangeAt(0);
-      props.highlighter.addNewPostHighlight(range);
+      props.highlighter.addHighlight(range, tempId, props.user.color, HighlightType.Default);
       setPost({
         ...post, 
         highlight: {
           context: selection.toString(),
-          range: serializeRange(range),
+          range: getXRangeFromRange(range),
           text: selection.toString(),
           url: window.location.href
         }
@@ -293,7 +294,17 @@ export default function NewPost(props: NewPostProps) {
   }, [isAnchoring, getNewSelection]);
 
   useEffect(() => {
-    // if (contentRef.current) contentRef.current.focus();
+    // Use temp id since ids are set in the backend
+    const id = uuid();
+    setTempId(id);
+
+    // Attach anchor if text is already selected when new post button is clicked
+    const selection = getSelection();
+    if (selection && selection.toString()) {
+      const range = selection.getRangeAt(0);
+      props.highlighter.addHighlight(range, id, props.user.color, HighlightType.Active);
+      selection.removeAllRanges();
+    }
 
     // Get user to populate Post props
     // TODO: Get User in Sidebar and pass it in as a prop
@@ -304,6 +315,8 @@ export default function NewPost(props: NewPostProps) {
         taggedUserIds: []
       });
     });
+
+    return () => props.highlighter.removeHighlight(id);
   }, []);
 
   /**

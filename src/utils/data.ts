@@ -63,7 +63,12 @@ export const posts: IPost[] = [
       context: '',
       creationDatetime: 1601178997080,
       text: '',
-      range: '',
+      range: {
+        startContainerPath: '',
+        endContainerPath: '',
+        startOffset: 0,
+        endOffset: 0
+      },
       domain: 'akshath.me',
       url: 'https://akshath.me/',
     }
