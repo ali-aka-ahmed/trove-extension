@@ -8,7 +8,7 @@ import IUser from '../../../../models/IUser';
 import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { log } from '../../../../utils';
 import { get } from '../../../../utils/chrome/storage';
-import { sendMessageToExtension } from '../../../../utils/chrome/tabs';
+import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import Highlighter, { HighlightType } from '../../helpers/Highlighter';
 import { getXRangeFromRange } from '../../helpers/utils';
 
@@ -70,12 +70,12 @@ export default function NewPost(props: NewPostProps) {
     const newPost = { ...post, url: window.location.href };
     if (props.replyingToPost) {
       promise = sendMessageToExtension({
-        type: 'createReply', 
+        type: MessageType.CreateReply, 
         post: newPost, 
         id: props.replyingToPost.id 
       });
     } else {
-      promise = sendMessageToExtension({ type: 'createPost', post: newPost });
+      promise = sendMessageToExtension({ type: MessageType.CreatePost, post: newPost });
     }
 
     // Indicate post creation success/failure
@@ -176,7 +176,7 @@ export default function NewPost(props: NewPostProps) {
       try {
         // Get users with usernames starting with this prefix
         users = await sendMessageToExtension({
-          type: 'handleUsernameSearch', 
+          type: MessageType.HandleUsernameSearch, 
           name: prefix 
         }) as IUser[];
         setTagBounds({ start: startIdx, end: startIdx + match[0].length });

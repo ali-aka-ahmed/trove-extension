@@ -3,7 +3,7 @@ import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import { IPostsRes } from '../../../server/posts';
 import { get, key, set } from '../../../utils/chrome/storage';
-import { getTabId, Message, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import { getTabId, Message, MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from '../helpers/Edge';
 import Highlighter from '../helpers/Highlighter';
 import Point from '../helpers/Point';
@@ -247,7 +247,7 @@ export default function Sidebar() {
     sendResponse: (response: any) => void
   ) => {
     switch (message.type) {
-      case 'sync':
+      case MessageType.Sync:
         break; 
     }
 
@@ -282,8 +282,14 @@ export default function Sidebar() {
     
     // Listener to update extension-wide settings
     chrome.storage.onChanged.addListener((change) => {
-      if (change.isExtensionOn !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
-      if (change.user !== undefined) setUser(new User(change.user.newValue));
+      if (change.isExtensionOn !== undefined) {
+        if (change.user.newValue) setIsExtensionOn(change.isExtensionOn.newValue);
+        else setIsExtensionOn(false);
+      }
+      if (change.user !== undefined) {
+        if (change.user.newValue) setUser(new User(change.user.newValue));
+        else setUser(null)
+      }
     });
   }, []);
 
@@ -291,7 +297,7 @@ export default function Sidebar() {
     // Get posts for current page
     if (isExtensionOn && isOpen) {
       const url = window.location.href;
-      sendMessageToExtension({ type: 'getPosts', url }).then((res: IPostsRes) => {
+      sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
         if (res.success) {
           const posts = res.posts!.map((p) => new Post(p));
           setPosts(posts);

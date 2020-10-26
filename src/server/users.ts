@@ -1,4 +1,4 @@
-import api, { AxiosRes, BaseParams, BaseRes } from '.';
+import { api, AxiosRes, BaseParams, BaseRes } from '.';
 import IUser from '../models/IUser';
 import { get } from '../utils/chrome/storage';
 
@@ -10,7 +10,7 @@ export const handleUsernameSearch = async (searchText: string): Promise<IUsersRe
   return await api.post(`/users`, args);
 }
 
-export const getUser = async (id: string): Promise<UserRes> => {
+export const getUser = async (id: string): Promise<IUserRes> => {
   const params: UserReqParams = { id }
   return await api.get(`/users/${params.id}`);
 }
@@ -39,7 +39,7 @@ export const updateEmail = async (email: string): Promise<IUserRes> => {
   return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updatePhoneNumber = async (phoneNumber: number): Promise<IUserRes> => {
+export const updatePhoneNumber = async (phoneNumber: string): Promise<IUserRes> => {
   const params: UserReqParams = { id: (await get('user')).user.id };
   const args: UpdateUserReqBody = { phoneNumber }
   return await api.post(`/users/${params.id}/update`, args);
@@ -59,7 +59,7 @@ interface UpdateUserReqBody {
   color?: string; // Hex code
   displayName?: string;
   email?: string; // either email, or phoneNumber
-  phoneNumber?: number;
+  phoneNumber?: string;
   username?: string; // alphanum and underscores, 3 < username < 20 characters
 }
 

@@ -1,7 +1,7 @@
 @import '../style.scss';
 @import '../../../styles/general.scss';
 
-.TbdAuthView {
+.TbdAuth {
   margin-bottom: $footer-height;
   height: fit-content;
   width: 100%;
@@ -9,26 +9,29 @@
   line-height: $line-height;
 }
 
-.TbdAuthView__Header {
-  @include TbdFont--large;
+.TbdAuth__Header {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.TbdAuthView__Header__Emoji {
+.TbdAuth__Header__Title--login {
+  @include TbdFont--large;
+}
+
+.TbdAuth__Header__Emoji {
   margin-left: 5px;
 }
 
-.TbdAuthView__FieldWrapper {
+.TbdAuth__FieldWrapper {
   margin-top: 10px;
 }
 
-.TbdAuthView__Label {
+.TbdAuth__Label {
  @include TbdFont--small;
 }
 
-.TbdAuthView__InputWrapper {
+.TbdAuth__InputWrapper {
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -40,18 +43,18 @@
   padding-right: 10px;
 }
 
-.TbdAuthView__InputWrapper:hover {
+.TbdAuth__InputWrapper:hover {
   border: 2px solid rgba(13, 119, 226, 0.5); // #0d77e2 with 0.5 opacity
   transition: 150ms;
 }
 
-.TbdAuthView__InputWrapper:focus-within {
+.TbdAuth__InputWrapper:focus-within {
   border: 2px solid #0d77e2; // #0d77e2 with 0.5 opacity
   transition: 150ms;
   box-shadow: 0 0 3px 3px rgba(13, 119, 226, 0.2);
 }
 
-.TbdAuthView__Input {
+.TbdAuth__Input {
   @include TbdFont;
   width: 100%;
   height: 100%;
@@ -62,31 +65,55 @@
   padding-left: 10px;
   padding-top: 5px;
   padding-bottom: 5px;
-  font-size: 14px;
 }
 
-.TbdAuthView__Button {
+.TbdAuth__ButtonWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.TbdAuth__Button {
   @include TbdFont;
   cursor: pointer;
-  margin-top: 15px;
   transition: 150ms;
 }
 
-.TbdAuthView__Error {
+.TbdAuth__Button--cancel {
+  @include TbdFont;
+  cursor: pointer;
+  transition: 150ms;
+  margin-left: 5px;
+}
+
+.TbdAuth__Error {
   margin-top: 10px;
 }
 
-.TbdAuthView__Error--hide {
+.TbdAuth__Error--hide {
   display: none;
 }
 
-.TbdAuthView__Alert {
+.TbdAuth__Alert {
   @include TbdFont;
 }
 
-.TbdAuthView__Loading {
-  margin-top: 10px;
-  margin-left: 5px;
+.TbdAuth__Loading {
+  margin-left: 10px;
+  margin-right: 10px;
   font-size: 18px;
   color: #0d77e2;
+}
+
+.TbdLogin__ForgotPassword {
+  font-size: 10px;
+  margin-top: 3px;
+  cursor: pointer;
+  width: fit-content;
+  height: fit-content;
+}
+
+.TbdLogin__ForgotPassword:hover {
+  text-decoration: underline;
 }

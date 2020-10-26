@@ -63,7 +63,7 @@ export default function Post(props: PostProps) {
             className="TbdPost__UserBubble" 
             style={{ backgroundColor: props.post.creator.color }}
           >
-            {props.post.creator.username[0]}
+            {props.post.creator.displayName[0]}
           </div>
         </div>
         <div className="TbdPost__Right">

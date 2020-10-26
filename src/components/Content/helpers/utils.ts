@@ -3,6 +3,7 @@ export interface XRange {
   endContainerPath: string;
   startOffset: number;
   endOffset: number;
+  isCollapsed?: boolean;
 }
 
 /**
