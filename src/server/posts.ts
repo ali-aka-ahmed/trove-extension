@@ -1,8 +1,9 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
-import IPost from '../entities/Post';
+import IPost, { ITag } from '../models/IPost';
 
 export type IPostsRes = PostsRes & AxiosRes;
 export type IPostRes = PostRes & AxiosRes;
+export type ITagsRes = TagsRes & AxiosRes;
 
 export const getPosts = async (url: string): Promise<IPostsRes> => {
   const args: GetPostsReqBody = { url }
@@ -12,6 +13,11 @@ export const getPosts = async (url: string): Promise<IPostsRes> => {
 export const getPost = async (postId: string): Promise<IPostRes> => {
   const params: PostReqParams = { id: postId };
   return await api.get(`/posts/${params.id}`);
+}
+
+export const handleTagSearch = async (tag?: string): Promise<ITagsRes> => {
+  const args: GetTagsReqBody = { ...(tag && { tag })}
+  return await api.post('/posts/tags', args);
 }
 
 export const createPost = async (args: CreatePostReqBody): Promise<IPostRes> => {
@@ -58,6 +64,13 @@ export interface GetPostsReqBody {
 }
 
 /**
+ * POST /posts/tags
+ */
+interface GetTagsReqBody {
+  tag?: string;
+}
+
+/**
  * POST /posts/create
  */
 export interface CreatePostReqBody {
@@ -65,6 +78,7 @@ export interface CreatePostReqBody {
   url: string;
   taggedUserIds?: string[];
   highlight?: HighlightParam;
+  tags?: ITag[];
 }
 
 /**
@@ -75,6 +89,7 @@ export interface CreateCommentReqBody {
   url: string;
   highlight?: HighlightParam;
   taggedUserIds?: string[]; // if you tag someone, they can see this post and everything in the thread
+  tags?: ITag[];
 }
 
 /**
@@ -84,6 +99,7 @@ export interface CreateCommentReqBody {
 //   newContent?: string;
 //   newTaggedUserIds?: string[];
 //   highlight?: HighlightParam;
+//   tags?: ITag[];
 // }
 
 /**
@@ -112,4 +128,11 @@ type PostsRes = {
 type PostRes = {
   thread?: IPost[]; // first index is parent ([parent, child, child of child, ...])
   post?: IPost; // includes comments
+} & BaseRes;
+
+/**
+ * POST /posts/tags
+ */
+type TagsRes = {
+  tags?: string[];
 } & BaseRes;
