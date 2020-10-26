@@ -1,3 +1,4 @@
+import { XRange } from '../components/Content/helpers/utils';
 import IHighlight from '../models/IHighlight';
 
 export default class Highlight implements IHighlight {
@@ -5,7 +6,7 @@ export default class Highlight implements IHighlight {
   public context: string; // Highlighted text + surrounding words for context
   public creationDatetime: number;
   public text: string;
-  public range: string; // Serialized Range object
+  public range: XRange; // Serialized Range object
   public domain: string;
   public url: string;
 

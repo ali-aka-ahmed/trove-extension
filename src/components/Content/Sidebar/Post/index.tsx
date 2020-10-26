@@ -1,8 +1,8 @@
-import { deserializeRange } from '@rangy/serializer';
 import hexToRgba from 'hex-to-rgba';
 import React from 'react';
 import { default as IPost, default as PostObject } from '../../../../entities/Post';
-import Highlighter, { HighlightClass } from '../../helpers/Highlighter';
+import Highlighter, { HighlightType } from '../../helpers/Highlighter';
+import { getRangeFromXRange } from '../../helpers/utils';
 
 interface PostProps {
   highlighter: Highlighter;
@@ -13,24 +13,26 @@ interface PostProps {
 
 export default function Post(props: PostProps) {
   const onMouseEnterPost = (e: React.MouseEvent) => {
-    console.log('mouseenterpost')
-    // console.log(props)
+    console.info('mouseenterpost');
+
     if (props.post.highlight?.range) {
-      const range = deserializeRange(props.post.highlight.range);
+      const range = getRangeFromXRange(props.post.highlight.range);
       const color = hexToRgba(props.post.creator.color, 0.1);
-      props.highlighter.addHighlight(range, HighlightClass.HoverPost, color);
+      if (range) props.highlighter.addHighlight(range, props.post.id, color, HighlightType.Active);
     }
   }
 
   const onMouseLeavePost = (e: React.MouseEvent) => {
-    props.highlighter.removeHighlight(HighlightClass.HoverPost);
+    props.highlighter.removeHighlight(props.post.id);
   }
 
   const onClickPost = (e: React.MouseEvent) => {
     if (props.post.highlight?.range) {
-      const range = deserializeRange(props.post.highlight.range);
+      const range = getRangeFromXRange(props.post.highlight.range);
       const color = hexToRgba(props.post.creator.color, 0.25);
-      props.highlighter.addHighlight(range, HighlightClass.Post, color);
+      if (range) {
+        props.highlighter.addHighlight(range, props.post.id, color, HighlightType.Active);
+      }
     }
   }
 
@@ -41,7 +43,6 @@ export default function Post(props: PostProps) {
 
   const getContent = () => {
     // TODO: color tagged handles appropriately
-    // see notification i already have this
     return (
       <div className="TbdPost__Content">
         {props.post.content}

@@ -1,4 +1,5 @@
 import api, { AxiosRes, BaseParams, BaseRes } from '.';
+import { XRange } from '../components/Content/helpers/utils';
 import IPost from '../entities/Post';
 
 export type IPostsRes = PostsRes & AxiosRes;
@@ -46,7 +47,7 @@ export const unlikePost = async (postId: string): Promise<AxiosRes> => {
 export type HighlightParam = {
   context: string; // Highlighted text + surrounding words for context
   text: string;
-  range: string; // Serialized Range object
+  range: XRange; // Serialized Range object
   url: string;
 };
 

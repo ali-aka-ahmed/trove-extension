@@ -1,4 +1,3 @@
-import { getSelection } from '@rangy/core';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
@@ -156,17 +155,8 @@ export default function Sidebar() {
   }, [bubbleRef]);
 
   const onClickNewPostButton = useCallback((e: React.MouseEvent) => {
-    if (isComposing) {
-      highlighter.removeNewPostHighlight();
-    } else {
-      // Attach anchor if text is already selected when new post button is clicked
-      const selection = getSelection();
-      if (selection.toString()) {
-        const range = selection.getRangeAt(0);
-        highlighter.addNewPostHighlight(range);
-        selection.removeAllRanges();
-      }
-
+    if (!isComposing) {
+      // Reset scroll on list of posts
       if (scrollRef.current) (scrollRef.current! as HTMLDivElement).scrollTop = 0;
     }
 
