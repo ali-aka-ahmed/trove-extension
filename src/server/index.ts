@@ -1,10 +1,8 @@
 import axios from 'axios';
-import { DEV_BACKEND_URL, ENV, PROD_BACKEND_URL } from '../config';
+import { BACKEND_URL } from '../config';
 import { get1 } from '../utils/chrome/storage';
 
-const BACKEND_URL = ENV === 'production' ? PROD_BACKEND_URL : DEV_BACKEND_URL;
-
-const api = axios.create({
+export const api = axios.create({
   baseURL: BACKEND_URL,
   timeout: 2000,
   headers: { 'Content-Type': 'application/json' },
@@ -21,7 +19,7 @@ api.interceptors.response.use((response) => {
   response.data.success = true;
   return response.data;
 }, (error) => {
-  // outside of (200-299) 
+  // outside of (200-299)
   error.response.data.success = false;
   const errorMessage = error.response.data.message
   if (!errorMessage) error.response.data.message = error.message;
@@ -52,5 +50,3 @@ export type BaseRes = {
 export interface BaseParams {
   [key: string]: string;
 }
-
-export default api;

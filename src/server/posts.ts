@@ -1,4 +1,4 @@
-import api, { AxiosRes, BaseParams, BaseRes } from '.';
+import { api, AxiosRes, BaseParams, BaseRes } from '.';
 import { XRange } from '../components/Content/helpers/utils';
 import IPost from '../entities/Post';
 
@@ -49,7 +49,7 @@ export type HighlightParam = {
   text: string;
   range: XRange; // Serialized Range object
   url: string;
-};
+}
 
 /**
  * POST /posts/

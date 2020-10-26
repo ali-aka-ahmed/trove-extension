@@ -8,6 +8,7 @@
 //   isExtensionOn: boolean;
 //   token: string;
 //   user: IUser;
+//   notifications: INotification[]
 // }
 
 // export interface TabSettings {

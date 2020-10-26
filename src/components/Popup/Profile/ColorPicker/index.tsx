@@ -6,7 +6,7 @@ interface ColorPickerProps {
   onSelect: ( (hex: string) => Promise<void> | void );
 }
 
-const ColorPicker = ({ onSelect }: ColorPickerProps) => {
+export default function ColorPicker({ onSelect }: ColorPickerProps) {
 	return (
     <div className="TbdColorPicker">
       <div 
@@ -52,5 +52,3 @@ const ColorPicker = ({ onSelect }: ColorPickerProps) => {
     </div>
 	)
 };
-
-export default ColorPicker;
