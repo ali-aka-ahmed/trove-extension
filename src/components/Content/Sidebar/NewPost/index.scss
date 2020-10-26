@@ -56,7 +56,28 @@ $accent-color: #0d77e2;
   cursor: pointer;
 }
 
+.TbdTags__Tag {
+  height: fit-content;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+  border: none;
+  border-top: 1px solid #ebebeb;
+  background-color: #fff;
+  text-align: left;
+  cursor: pointer;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .TbdSuggestedUsers__SuggestedUser:first-child {
+  border-top: none;
+}
+
+.TbdTags__Tag:first-child {
   border-top: none;
 }
 
@@ -64,12 +85,29 @@ $accent-color: #0d77e2;
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+.TbdTags__Tag:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 .TbdSuggestedUsers__SuggestedUser:focus {
+  outline: none;
+}
+
+.TbdTags__Tag:focus {
   outline: none;
 }
 
 .TbdSuggestedUsers__SuggestedUser--selected {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdTags__Tag--selected {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdTags__FirstTag {
+  @include TbdFont--small;
+  margin-right: 5px;
 }
 
 .TbdSuggestedUser__Right {

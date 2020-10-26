@@ -73,6 +73,17 @@ export default function Post(props: PostProps) {
             <p className="TbdPost__Header__Datetime">{props.post.timeAgo}</p>
           </div>
           {getContent()}
+          <div className="TbdPost__Tags">
+            {props.post.tags.map((tag) => (
+              <div
+                className="TbdPost__TagWrapper"
+                key={tag.text}
+                style={{ backgroundColor: tag.color }}
+              >
+                <div className="TbdPost__Tag">{tag.text}</div>
+              </div>
+            ))}
+          </div>
           <div className="TbdPost__Buttons">
             {/* only comment button for now */}
           </div>

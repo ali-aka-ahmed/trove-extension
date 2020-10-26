@@ -1,6 +1,11 @@
 // Fonts
 $line-height: 22px;
 
+@mixin TbdFont--xsmall {
+  font-size: 10px;
+  font-weight: 500;
+}
+
 @mixin TbdFont--small {
   font-size: 12px;
   font-weight: 400;

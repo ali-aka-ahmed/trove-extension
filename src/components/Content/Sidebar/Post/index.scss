@@ -1,3 +1,5 @@
+@import '../../../../styles/general.scss';
+
 .TbdPost {
   padding: 15px;
   cursor: pointer;
@@ -58,4 +60,28 @@
 .TbdPost__Header__Datetime {
   margin: 0px;
   color: #aaa;
+}
+
+.TbdPost__Tags {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.TbdPost__TagWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    min-width: fit-content;
+    height: fit-content;
+    margin-right: 5px;
+    padding: 5px 10px;
+}
+
+.TbdPost__Tag {
+  @include TbdFont--xsmall;
+  min-width: fit-content;
+  width: fit-content;
 }
