@@ -49,7 +49,7 @@ export type HighlightParam = {
   text: string;
   range: XRange; // Serialized Range object
   url: string;
-}
+};
 
 /**
  * POST /posts/

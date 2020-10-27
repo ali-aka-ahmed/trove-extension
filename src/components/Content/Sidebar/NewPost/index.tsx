@@ -41,17 +41,17 @@ export default function NewPost(props: NewPostProps) {
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
-    const cantSubmit = !post.content 
-      || post.content.length === 0
-      || post.content.length > MAX_POST_LENGTH;
+    const cantSubmit = !post.highlight
+      || !post.content 
+      || post.content.length === 0;
     return !cantSubmit;
   }, [post]);
 
   const getSubmitWarning = useCallback(() => {
-    if (!post.content || post.content.length === 0) {
+    if (!post.highlight) {
+      return "Must link post to highlight."
+    } else if (!post.content || post.content.length === 0) {
       return "Post can't be empty.";
-    } else if (post.content.length > MAX_POST_LENGTH) {
-      return `Post can't exceed ${MAX_POST_LENGTH} characters.`;
     } else if (submitErrorMessage) {
       // Probably don't want to show full error to user
       console.error(`Error submitting post. Error: ${submitErrorMessage}`);
@@ -75,6 +75,7 @@ export default function NewPost(props: NewPostProps) {
         id: props.replyingToPost.id 
       });
     } else {
+      console.log(newPost)
       promise = sendMessageToExtension({ type: MessageType.CreatePost, post: newPost });
     }
 
