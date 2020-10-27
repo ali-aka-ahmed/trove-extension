@@ -1,5 +1,5 @@
 import hexToRgba from "hex-to-rgba";
-import { addHighlight, modifyHighlight, removeHighlight } from "./highlight";
+import { addHighlight, modifyHighlight, removeHighlight } from "./highlightUtils";
 
 export default class Highlighter {
   highlights: Map<string, HighlightType>; // id -> highlight type
