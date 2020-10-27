@@ -5,7 +5,7 @@ import { IPostsRes } from '../../../server/posts';
 import { get, key, set } from '../../../utils/chrome/storage';
 import { getTabId, Message, MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from '../helpers/Edge';
-import Highlighter from '../helpers/Highlighter';
+import Highlighter from '../helpers/highlight/Highlighter';
 import Point from '../helpers/Point';
 import NewPost from './NewPost';
 import PostComponent from './Post';
