@@ -27,8 +27,6 @@ export default class Post implements IPost {
     this.creator = new User(p.creator);
     this.domain = p.domain;
     this.url = p.url;
-    console.log(p.id);
-    console.log(p.tags);
     this.tags = p.tags;
     this.taggedUsers = p.taggedUsers.map((u) => new User(u));
     this.numComments = p.numComments;
