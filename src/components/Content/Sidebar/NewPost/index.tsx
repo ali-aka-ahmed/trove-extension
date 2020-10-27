@@ -9,8 +9,8 @@ import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { log } from '../../../../utils';
 import { get } from '../../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
-import Highlighter, { HighlightType } from '../../helpers/Highlighter';
-import { getXRangeFromRange } from '../../helpers/utils';
+import Highlighter, { HighlightType } from '../../helpers/highlight/Highlighter';
+import { getXRangeFromRange } from '../../helpers/highlight/range';
 
 const MAX_USERNAME_LENGTH = 20;
 const MAX_POST_LENGTH = 180;

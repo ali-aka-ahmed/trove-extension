@@ -1,4 +1,4 @@
-import { XRange } from '../components/Content/helpers/utils';
+import { XRange } from '../components/Content/helpers/highlight/range';
 import IHighlight from '../models/IHighlight';
 
 export default class Highlight implements IHighlight {

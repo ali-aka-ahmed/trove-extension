@@ -1,8 +1,8 @@
 import hexToRgba from 'hex-to-rgba';
 import React from 'react';
 import { default as IPost, default as PostObject } from '../../../../entities/Post';
-import Highlighter, { HighlightType } from '../../helpers/Highlighter';
-import { getRangeFromXRange } from '../../helpers/utils';
+import Highlighter, { HighlightType } from '../../helpers/highlight/Highlighter';
+import { getRangeFromXRange } from '../../helpers/highlight/range';
 
 interface PostProps {
   highlighter: Highlighter;
