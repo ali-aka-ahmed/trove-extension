@@ -75,8 +75,8 @@ chrome.runtime.onStartup.addListener(async () => {
     remove(['token', 'user'])
   ]);
   } else {
-  const user = await get1('user')
-  socket.emit('join room', user.id);
+    const user = await get1('user')
+    socket.emit('join room', user.id);
   }
 });
 
@@ -89,8 +89,8 @@ chrome.runtime.onInstalled.addListener(async () => {
     remove(['token', 'user'])
   ]);
   } else {
-  const user = await get1('user')
-  socket.emit('join room', user.id);
+    const user = await get1('user')
+    socket.emit('join room', user.id);
   }
 });
 
@@ -122,7 +122,7 @@ chrome.runtime.onMessageExternal.addListener(async (
         token: message.token,
         isExtensionOn: true,
       });
-      await set({ isAuthenticated: true })
+      await set({ isAuthenticated: true });
       sendResponse(true);
       break;
     }
@@ -131,7 +131,7 @@ chrome.runtime.onMessageExternal.addListener(async (
         isAuthenticated: false,
         token: '',
         user: null,
-      })
+      });
       sendResponse(res);
       break;
     }
