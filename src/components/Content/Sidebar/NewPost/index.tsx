@@ -1,8 +1,7 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import { getSelection } from '@rangy/core';
-import { serializeRange } from '@rangy/serializer';
 import { Input } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { v4 as uuid } from 'uuid';
 import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
 import { ITag } from '../../../../models/IPost';
@@ -11,17 +10,19 @@ import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { log } from '../../../../utils';
 import { get } from '../../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
-import Highlighter from '../../helpers/Highlighter';
+import Highlighter, { HighlightType } from '../../helpers/Highlighter';
+import { getXRangeFromRange } from '../../helpers/utils';
 
 const MAX_USERNAME_LENGTH = 20;
 const MAX_POST_LENGTH = 99999999999999999999999999999;
 const { TextArea } = Input;
 
 interface NewPostProps {
-  posts: Post[];
-  setPosts: (posts: Post[]) => void;
   highlighter: Highlighter;
+  posts: Post[];
+  replyingToPost: Post | null;
   setIsComposing: React.Dispatch<React.SetStateAction<boolean>>;
+  setPosts: (posts: Post[]) => void;
   user: User;
 }
 
@@ -40,12 +41,12 @@ export default function NewPost(props: NewPostProps) {
   const [suggestedUsersIdx, setSuggestedUsersIdx] = useState(0);
   const [tagBounds, setTagBounds] = useState({ start: 0, end: 0 });
   const [loading, setLoading] = useState(false);
-  const [requestErrorMessage, setRequestErrorMessage] = useState('');
+  const [submitErrorMessage, setSubmitErrorMessage] = useState('');
+  const [tempId, setTempId] = useState('');
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
-    const cantSubmit = !post.highlight 
-      || !post.content 
+    const cantSubmit = !post.content 
       || post.content.length === 0
       || post.content.length > MAX_POST_LENGTH;
     return !cantSubmit;
@@ -56,28 +57,40 @@ export default function NewPost(props: NewPostProps) {
       return "Post can't be empty.";
     } else if (post.content.length > MAX_POST_LENGTH) {
       return `Post can't exceed ${MAX_POST_LENGTH} characters.`;
-    } else if (!post.highlight) {
-      return 'Must link post to a highlight.';
-    } else if (requestErrorMessage) {
-      return requestErrorMessage
+    } else if (submitErrorMessage) {
+      // Probably don't want to show full error to user
+      console.error(`Error submitting post. Error: ${submitErrorMessage}`);
+      return 'Error submitting post. Please try again later.'
     }
 
     return null;
   }, [post]);
 
   const submit = useCallback(async () => {
-    // TODO: compute tagged users (this should prob happen in an onChange fn)
-    // TODO: make sure anchor was done on this url
     if (!canSubmit()) return;
     setLoading(true);
-    const args = { ...post, url: window.location.href }
-    sendMessageToExtension({ type: MessageType.CreatePost, post: args }).then((res: IPostRes) => {
+
+    // Create post or reply accordingly
+    let promise: Promise<unknown>;
+    const newPost = { ...post, url: window.location.href };
+    if (props.replyingToPost) {
+      promise = sendMessageToExtension({
+        type: MessageType.CreateReply, 
+        post: newPost, 
+        id: props.replyingToPost.id 
+      });
+    } else {
+      promise = sendMessageToExtension({ type: MessageType.CreatePost, post: newPost });
+    }
+
+    // Indicate post creation success/failure
+    promise.then((res: IPostRes) => {
       if (res.success) {
         const newPosts = ([new Post(res.post!)]).concat(props.posts);
         props.setPosts(newPosts);
         props.setIsComposing(false);
       } else {
-        setRequestErrorMessage(res.message);
+        setSubmitErrorMessage(res.message);
       }
 
       setLoading(false);
@@ -329,14 +342,14 @@ export default function NewPost(props: NewPostProps) {
    */
   const getNewSelection = useCallback(() => {
     const selection = getSelection();
-    if (selection.toString()) {
+    if (selection && selection.toString()) {
       const range = selection.getRangeAt(0);
-      props.highlighter.addNewPostHighlight(range);
+      props.highlighter.addHighlight(range, tempId, props.user.color, HighlightType.Default);
       setPost({
         ...post, 
         highlight: {
           context: selection.toString(),
-          range: serializeRange(range),
+          range: getXRangeFromRange(range),
           text: selection.toString(),
           url: window.location.href
         }
@@ -357,7 +370,17 @@ export default function NewPost(props: NewPostProps) {
   }, [isAnchoring, getNewSelection]);
 
   useEffect(() => {
-    // if (contentRef.current) contentRef.current.focus();
+    // Use temp id since ids are set in the backend
+    const id = uuid();
+    setTempId(id);
+
+    // Attach anchor if text is already selected when new post button is clicked
+    const selection = getSelection();
+    if (selection && selection.toString()) {
+      const range = selection.getRangeAt(0);
+      props.highlighter.addHighlight(range, id, props.user.color, HighlightType.Active);
+      selection.removeAllRanges();
+    }
 
     // Get user to populate Post props
     // TODO: Get User in Sidebar and pass it in as a prop
@@ -369,6 +392,8 @@ export default function NewPost(props: NewPostProps) {
         tags: []
       });
     });
+
+    return () => props.highlighter.removeHighlight(id);
   }, []);
 
   /**
@@ -564,97 +589,111 @@ export default function NewPost(props: NewPostProps) {
   const highlightActiveClass = isAnchoring ? 'TbdNewPost__Buttons__AddHighlight--active' : '';
   const highlightButtonClass = `TbdNewPost__Buttons__AddHighlight ${highlightActiveClass}`;
   const submitButtonDisabledClass = canSubmit() ? '' : 'TbdNewPost__Button--disabled';
+  const submitButtonClass = `TbdNewPost__Buttons__Submit ${submitButtonDisabledClass}`;
 
   return (
-    <div className="TbdNewPost">
-      <div className="TbdNewPost__MainReference">
-        {/* <p className="TbdNewPost__MainReference__AddText">Add reference</p> */}
-      </div>
-      <div className="TbdPost__Wrapper">
-        <div className="TbdPost__Left">
-          <div 
-            className="TbdPost__UserBubble" 
-            style={{ backgroundColor: props.user.color }}
-          >
-            {props.user.username[0]}
-          </div>
-        </div>
-        <div className="TbdPost__Right">  
-          <div className="TbdPost__Header">
-            <p className="TbdPost__Header__DisplayName">
-              {props.user.displayName}
-            </p>
-            <p 
-              className="TbdPost__Header__Username"
-              style={{ color: props.user.color }}
-            >
-              {`@${props.user.username}`}
-            </p>
-          </div>
-          <TextArea 
-            className="TbdNewPost__Content"
-            placeholder="The pen is mightier than the sword."
-            autoSize={{ minRows: 2 }}
-            onBlur={onBlurContent}
-            onChange={onChangeContent}
-            onClick={onClickContent}
-            onKeyDown={onKeyDownContent}
-            value={content}
-            ref={contentRef}
-          />
-          {suggestedTags.length > 0 && (
-            <div className="TbdNewPost__Suggested TbdNewPost__Suggested--tags">
-              {renderSuggestedTags()}
-            </div>
-          )}
-          {suggestedUsers.length > 0 && (
-            <div className="TbdNewPost__SuggestedUsers">
-              {renderSuggestedUsers()}
-            </div>
-          )}
-          <div className="TbdPost__Tags">
-            {post.tags?.map((tag) => (
-              <div
-                className="TbdPost__TagWrapper"
-                key={tag.text}
-                style={{ backgroundColor: tag.color }}
-              >
-                <div className="TbdPost__Tag">{tag.text}</div>
-              </div>
-            ))}
-          </div>
-          <div className="TbdNewPost__Buttons">
-            <div className="TbdNewPost__Buttons__Left">
-              <button 
-                className={`TbdNewPost__Button ${highlightButtonClass}`}
-                onClick={onClickHighlightButton}
-              />
-              <button 
-                className={`TbdNewPost__Button TbdNewPost__Buttons__AddReference`}
-              />
-            </div>
-            <div className="TbdNewPost__Buttons__Right">
-              {!loading ? (
-                <button 
-                  className={`TbdNewPost__Button ${submitButtonDisabledClass}`}
-                  onClick={onClickSubmit}
-                  onMouseEnter={onMouseEnterSubmit}
-                  onMouseLeave={onMouseLeaveSubmit}
-                >
-                  Post
-                </button>
-              ) : (
-                <div className='TbdNewPost__Loading'><LoadingOutlined /></div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      {((!canSubmit() && isHoveringSubmit) || requestErrorMessage) && (
-        <div className="TbdNewPost__SubmitWarning">
-          {getSubmitWarning()}
+    <>
+      {props.replyingToPost?.creator && (
+        <div>
+          <p className="TbdNewPost__ReplyMessage">
+            Replying to 
+            <span style={{ color: props.replyingToPost.creator.color }}>
+              {` @${props.replyingToPost.creator.username}`}
+            </span>
+            :
+          </p>
         </div>
       )}
-    </div>
+      <div className="TbdNewPost">
+        <div className="TbdNewPost__MainReference">
+          {/* <p className="TbdNewPost__MainReference__AddText">Add reference</p> */}
+        </div>
+        <div className="TbdPost__Wrapper">
+          <div className="TbdPost__Left">
+            <div 
+              className="TbdPost__UserBubble" 
+              style={{ backgroundColor: props.user.color }}
+            >
+              {props.user.username[0]}
+            </div>
+          </div>
+          <div className="TbdPost__Right">  
+            <div className="TbdPost__Header">
+              <p className="TbdPost__Header__DisplayName">
+                {props.user.displayName}
+              </p>
+              <p 
+                className="TbdPost__Header__Username"
+                style={{ color: props.user.color }}
+              >
+                {`@${props.user.username}`}
+              </p>
+            </div>
+            <TextArea 
+              className="TbdNewPost__Content"
+              placeholder="The pen is mightier than the sword."
+              autoSize={{ minRows: 2 }}
+              onBlur={onBlurContent}
+              onChange={onChangeContent}
+              onClick={onClickContent}
+              onKeyDown={onKeyDownContent}
+              value={content}
+              ref={contentRef}
+            />
+            {suggestedTags.length > 0 && (
+              <div className="TbdNewPost__Suggested TbdNewPost__Suggested--tags">
+                {renderSuggestedTags()}
+              </div>
+            )}
+            {suggestedUsers.length > 0 && (
+              <div className="TbdNewPost__SuggestedUsers">
+                {renderSuggestedUsers()}
+              </div>
+            )}
+            <div className="TbdPost__Tags">
+              {post.tags?.map((tag) => (
+                <div
+                  className="TbdPost__TagWrapper"
+                  key={tag.text}
+                  style={{ backgroundColor: tag.color }}
+                >
+                  <div className="TbdPost__Tag">{tag.text}</div>
+                </div>
+              ))}
+            </div>
+            <div className="TbdNewPost__Buttons">
+              <div className="TbdNewPost__Buttons__Left">
+                <button 
+                  className={`TbdNewPost__Button ${highlightButtonClass}`}
+                  onClick={onClickHighlightButton}
+                />
+                <button 
+                  className={`TbdNewPost__Button TbdNewPost__Buttons__AddReference`}
+                />
+              </div>
+              <div className="TbdNewPost__Buttons__Right">
+                {!loading ? (
+                  <button 
+                    className={`TbdNewPost__Button ${submitButtonClass}`}
+                    onClick={onClickSubmit}
+                    onMouseEnter={onMouseEnterSubmit}
+                    onMouseLeave={onMouseLeaveSubmit}
+                  >
+                    Post
+                  </button>
+                ) : (
+                  <div className='TbdNewPost__Loading'><LoadingOutlined /></div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        {((!canSubmit() && isHoveringSubmit) || submitErrorMessage) && (
+          <div className="TbdNewPost__SubmitWarning">
+            {getSubmitWarning()}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

@@ -2,10 +2,12 @@
 
 $background-color: #fff;
 $accent-color: #0d77e2;
+$content-width: 400px;
+$content-padding: 15px;
 
 .TbdNewPost {
-  padding: 15px;
-  border-bottom: 1px solid #ebebeb;
+  padding: $content-padding;
+  border-bottom: 1px solid #f2f2f2;
 }
 
 .TbdNewPost__MainReference {
@@ -14,11 +16,19 @@ $accent-color: #0d77e2;
   align-items: center; 
 }
 
+.TbdNewPost__ReplyMessage {
+  color: #545454;
+  margin: 10px 15px -5px 15px;
+  overflow: hidden;
+  max-width: $content-width - 2 * $content-padding;
+  white-space: nowrap;
+  text-overflow: ellipsis;  
+}
+
 .TbdNewPost__Content {
   font-size: 14px !important;
   line-height: 20px !important;
   padding: 0px;
-  margin-top: 2px;
   border: none;
   background-color: $background-color;
   resize: none;
@@ -27,7 +37,7 @@ $accent-color: #0d77e2;
 
 .TbdNewPost__Content:focus {
   box-shadow: none;
-}
+} 
 
 .TbdNewPost__Content::-webkit-resizer {
   display: none;
@@ -50,7 +60,7 @@ $accent-color: #0d77e2;
   flex-direction: row;
   padding: 10px;
   border: none;
-  border-top: 1px solid #ebebeb;
+  border-top: 1px solid #f2f2f2;
   background-color: #fff;
   text-align: left;
   cursor: pointer;
@@ -163,23 +173,11 @@ $accent-color: #0d77e2;
 }
 
 .TbdNewPost__Button:hover {
-  color: #0d77e2;
   background-color: #eff7fe;
 }
 
 .TbdNewPost__Button:focus {
   outline: none;
-}
-
-.TbdNewPost__Button--disabled {
-  cursor: default;
-  opacity: 0.5;
-  pointer-events: all;
-}
-
-.TbdNewPost__Button--disabled:hover {
-  background-color: #eee;
-  color: #545454;
 }
 
 .TbdNewPost__Buttons__AddHighlight {
@@ -216,6 +214,21 @@ $accent-color: #0d77e2;
 .TbdNewPost__Buttons__AddReference:hover {
   background-image: url('../../../../../public/images/reference-green.svg');
   background-color: #e5f5ed;  
+}
+
+.TbdNewPost__Buttons__Submit:hover {
+  color:#0d77e2;
+}
+
+.TbdNewPost__Button--disabled {
+  cursor: default;
+  opacity: 0.5;
+  pointer-events: all;
+}
+
+.TbdNewPost__Button--disabled:hover {
+  background-color: #eee;
+  color: #545454;
 }
 
 .TbdNewPost__SubmitWarning {

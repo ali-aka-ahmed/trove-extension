@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import { BACKEND_URL } from '../config';
 import User from '../entities/User';
-import { createPost, getPosts, handleTagSearch } from '../server/posts';
+import { createPost, createReply, getPosts, handleTagSearch } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
 import { Message as EMessage, MessageType as EMessageType } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
@@ -28,35 +28,41 @@ chrome.runtime.onMessage.addListener(async (
   sendResponse: (response: any) => void
 ) => {
   switch (message.type) {
-  case MessageType.CreatePost: {
-    if (!message.post) break;
-    const res = await createPost(message.post);
-    sendResponse(res);
-    break;
-  }
-  case MessageType.GetPosts: {
-    if (!message.url) break;
-    const res = await getPosts(message.url);
-    sendResponse(res);
-    break;
-  }
-  case MessageType.GetTabId:
-    sendResponse(sender.tab?.id);
-    break;
-  case MessageType.HandleUsernameSearch: {
-    if (!message.name) return;
-    const res = await handleUsernameSearch(message.name);
-    sendResponse(res.users);
-    break;
-  }
-  case MessageType.HandleTagSearch: {
-    if (!message.tag) return;
-    const res = await handleTagSearch(message.tag);
-    sendResponse(res.tags);
-    break;
-  }
-  case MessageType.Sync:
-    break;
+    case MessageType.CreatePost: {
+      if (!message.post) break;
+      const res = await createPost(message.post);
+      sendResponse(res);
+      break;
+    }
+    case MessageType.CreateReply: {
+      if (!message.id || !message.post) break;
+      const res = await createReply(message.id, message.post);
+      sendResponse(res);
+      break;
+    }
+    case MessageType.GetPosts: {
+      if (!message.url) break;
+      const res = await getPosts(message.url);
+      sendResponse(res);
+      break;
+    }
+    case MessageType.GetTabId:
+      sendResponse(sender.tab?.id);
+      break;
+    case MessageType.HandleUsernameSearch: {
+      if (!message.name) return;
+      const res = await handleUsernameSearch(message.name);
+      sendResponse(res.users);
+      break;
+    }
+    case MessageType.HandleTagSearch: {
+      if (!message.tag) return;
+      const res = await handleTagSearch(message.tag);
+      sendResponse(res.tags);
+      break;
+    }
+    case MessageType.Sync:
+      break;
   }
 
   return true;

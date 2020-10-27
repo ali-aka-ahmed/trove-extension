@@ -1,4 +1,5 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
+import { XRange } from '../components/Content/helpers/utils';
 import IPost, { ITag } from '../models/IPost';
 
 export type IPostsRes = PostsRes & AxiosRes;
@@ -24,7 +25,7 @@ export const createPost = async (args: CreatePostReqBody): Promise<IPostRes> => 
   return await api.post('/posts/create', args);
 }
 
-export const createComment = async (parentPostId: string, args: CreateCommentReqBody): Promise<IPostRes> => {
+export const createReply = async (parentPostId: string, args: CreateReplyReqBody): Promise<IPostRes> => {
   const params: PostReqParams = { id: parentPostId };
   return await api.post(`/posts/${params.id}/comment/create`, args);
 }
@@ -52,9 +53,9 @@ export const unlikePost = async (postId: string): Promise<AxiosRes> => {
 export type HighlightParam = {
   context: string; // Highlighted text + surrounding words for context
   text: string;
-  range: string; // Serialized Range object
+  range: XRange; // Serialized Range object
   url: string;
-};
+}
 
 /**
  * POST /posts/
@@ -84,7 +85,7 @@ export interface CreatePostReqBody {
 /**
  * POST /posts/:id/comment/create
  */
-export interface CreateCommentReqBody {
+export interface CreateReplyReqBody {
   content: string;
   url: string;
   highlight?: HighlightParam;

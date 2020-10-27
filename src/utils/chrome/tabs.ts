@@ -3,14 +3,16 @@ import { CreatePostReqBody } from "../../server/posts";
 
 export interface Message {
   type: MessageType;
+  id?: string;
   name?: string;
-  url?: string;
   post?: CreatePostReqBody;
   tag?: string;
+  url?: string;
 }
 
 export enum MessageType {
   CreatePost,
+  CreateReply,
   GetPosts,
   GetTabId,
   HandleUsernameSearch,
