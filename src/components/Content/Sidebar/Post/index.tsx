@@ -1,8 +1,9 @@
 import hexToRgba from 'hex-to-rgba';
-import React from 'react';
+import React, { useState } from 'react';
 import { default as IPost, default as PostObject } from '../../../../entities/Post';
-import Highlighter, { HighlightType } from '../../helpers/Highlighter';
-import { getRangeFromXRange } from '../../helpers/utils';
+import { log } from '../../../../utils';
+import Highlighter, { HighlightType } from '../../helpers/highlight/Highlighter';
+import { getRangeFromXRange } from '../../helpers/highlight/rangeUtils';
 
 interface PostProps {
   highlighter: Highlighter;
@@ -12,25 +13,37 @@ interface PostProps {
 }
 
 export default function Post(props: PostProps) {
-  const onMouseEnterPost = (e: React.MouseEvent) => {
-    console.info('mouseenterpost');
+  const [isHovering, setIsHovering] = useState(false);
 
-    if (props.post.highlight?.range) {
-      const range = getRangeFromXRange(props.post.highlight.range);
-      const color = hexToRgba(props.post.creator.color, 0.1);
-      if (range) props.highlighter.addHighlight(range, props.post.id, color, HighlightType.Active);
+  const onMouseOverPost = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isHovering) {
+      console.info('mouseover post');
+      if (props.post.highlight?.range) {
+        const range = getRangeFromXRange(props.post.highlight.range);
+        if (range) {
+          const color = hexToRgba(props.post.creator.color, 0.1);
+          props.highlighter.addHighlight(range, props.post.id, color, HighlightType.Active);
+        }
+      }
+
+      setIsHovering(true);
     }
   }
 
   const onMouseLeavePost = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    log('mouseleave post');
+    
     props.highlighter.removeHighlight(props.post.id);
+    setIsHovering(false);
   }
 
   const onClickPost = (e: React.MouseEvent) => {
     if (props.post.highlight?.range) {
       const range = getRangeFromXRange(props.post.highlight.range);
-      const color = hexToRgba(props.post.creator.color, 0.25);
       if (range) {
+        const color = hexToRgba(props.post.creator.color, 0.25);
         props.highlighter.addHighlight(range, props.post.id, color, HighlightType.Active);
       }
     }
@@ -54,7 +67,7 @@ export default function Post(props: PostProps) {
     <div 
       className="TbdPost" 
       onClick={onClickPost}
-      onMouseEnter={onMouseEnterPost}
+      onMouseOver={onMouseOverPost}
       onMouseLeave={onMouseLeavePost}
     >
       <div className="TbdPost__Wrapper">
@@ -92,10 +105,10 @@ export default function Post(props: PostProps) {
             ))}
           </div>
           <div className="TbdPost__Buttons">
-            <button 
+            {/* <button 
               className="TbdPost__Button TbdPost__Buttons__Reply"
               onClick={onClickReplyButton}
-            />
+            /> */}
           </div>
         </div>
       </div>

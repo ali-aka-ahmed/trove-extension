@@ -1,4 +1,4 @@
-import { XRange } from "../components/Content/helpers/utils";
+import { XRange } from "../components/Content/helpers/highlight/rangeUtils";
 
 export default interface IHighlight {
   id: string;
