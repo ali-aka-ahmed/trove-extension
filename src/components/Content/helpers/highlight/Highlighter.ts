@@ -1,29 +1,50 @@
 import hexToRgba from "hex-to-rgba";
 import { addHighlight, modifyHighlight, removeHighlight } from "./highlightUtils";
+import { areRangesEqual } from "./rangeUtils";
+
+interface HighlightData {
+  color: string;
+  range: Range;
+  type: HighlightType;
+}
+
+export enum HighlightType {
+  Default,
+  Active // Click, hover, new post
+}
+
 
 export default class Highlighter {
-  highlights: Map<string, HighlightType>; // id -> highlight type
+  highlights: Map<string, HighlightData>; // id -> highlight data
 
   constructor() {
-    this.highlights = new Map<string, HighlightType>();
+    this.highlights = new Map<string, HighlightData>();
   }
 
   addHighlight = (range: Range, rootId: string, color: string='yellow', type: HighlightType) => {
-    const prevType = this.highlights.get(rootId);
-    if (prevType) {
-      if (prevType !== type) {
+    const hd = this.highlights.get(rootId);
+    if (!hd) {
+      // Add new highlight
+      addHighlight(range, rootId, color);
+    } else {
+      if (!areRangesEqual(range, hd.range)) {
+        // If range is different, remove previous highlight and add new one
+        removeHighlight(rootId);
+        addHighlight(range, rootId, color);
+      } else if (type !== hd.type || color !== hd.color) {
+        // Range is same, but type of highlight is different, so just modify existing one
         modifyHighlight(rootId, 'backgroundColor', this.getColor(color, type));
       }
-    } else {
-      addHighlight(range, rootId, color);
     }
 
-    this.highlights.set(rootId, type);
+    this.highlights.set(rootId, { color, range, type });
   }
 
   removeHighlight = (rootId: string) => {
-    removeHighlight(rootId);
-    this.highlights.delete(rootId);
+    if (this.highlights.get(rootId)) {
+      removeHighlight(rootId);
+      this.highlights.delete(rootId);
+    }
   }
 
   removeAllHighlights = () => {
@@ -36,9 +57,4 @@ export default class Highlighter {
     if (type === HighlightType.Default) return hexToRgba(color, 0.1);
     return hexToRgba(color, 0.25);
   }
-}
-
-export enum HighlightType {
-  Default,
-  Active // Click, hover, new post
 }

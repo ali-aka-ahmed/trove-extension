@@ -153,7 +153,7 @@ const isTable = (node: Node) => {
     HTMLTableColElement, 
     HTMLTableSectionElement
   ];
-  return types.some(type => node.parentNode instanceof type);
+  return types.some(type => node && node.parentNode instanceof type);
 }
 
 const isTerminal = (node: Node) => {
@@ -162,7 +162,7 @@ const isTerminal = (node: Node) => {
     HTMLStyleElement,
     HTMLSelectElement
   ];
-  return types.some(type => node.parentNode instanceof type);
+  return types.some(type => node instanceof type);
 }
 
 const mergeTextNodes = (node: Node) => {
