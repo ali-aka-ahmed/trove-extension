@@ -599,9 +599,6 @@ export default function NewPost(props: NewPostProps) {
         </div>
       )}
       <div className="TbdNewPost">
-        <div className="TbdNewPost__MainReference">
-          {/* <p className="TbdNewPost__MainReference__AddText">Add reference</p> */}
-        </div>
         <div className="TbdPost__Wrapper">
           <div className="TbdPost__Left">
             <div 
