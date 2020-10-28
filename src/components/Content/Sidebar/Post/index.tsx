@@ -94,7 +94,7 @@ export default function Post(props: PostProps) {
           </div>
           {getContent()}
           <div className="TbdPost__Tags">
-            {props.post.tags.map((tag) => (
+            {props.post?.tags?.map((tag) => (
               <div
                 className="TbdPost__TagWrapper"
                 key={tag.text}
