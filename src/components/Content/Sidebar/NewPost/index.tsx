@@ -10,8 +10,8 @@ import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { log } from '../../../../utils';
 import { get } from '../../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
-import Highlighter, { HighlightType } from '../../helpers/Highlighter';
-import { getXRangeFromRange } from '../../helpers/utils';
+import Highlighter, { HighlightType } from '../../helpers/highlight/Highlighter';
+import { getXRangeFromRange } from '../../helpers/highlight/rangeUtils';
 
 const MAX_USERNAME_LENGTH = 20;
 const MAX_POST_LENGTH = 99999999999999999999999999999;
@@ -46,17 +46,17 @@ export default function NewPost(props: NewPostProps) {
   const contentRef = useRef<any>(null);
 
   const canSubmit = useCallback(() => {
-    const cantSubmit = !post.content 
-      || post.content.length === 0
-      || post.content.length > MAX_POST_LENGTH;
+    const cantSubmit = !post.highlight
+      || !post.content 
+      || post.content.length === 0;
     return !cantSubmit;
   }, [post]);
 
   const getSubmitWarning = useCallback(() => {
-    if (!post.content || post.content.length === 0) {
+    if (!post.highlight) {
+      return "Must link post to highlight."
+    } else if (!post.content || post.content.length === 0) {
       return "Post can't be empty.";
-    } else if (post.content.length > MAX_POST_LENGTH) {
-      return `Post can't exceed ${MAX_POST_LENGTH} characters.`;
     } else if (submitErrorMessage) {
       // Probably don't want to show full error to user
       console.error(`Error submitting post. Error: ${submitErrorMessage}`);
@@ -80,6 +80,7 @@ export default function NewPost(props: NewPostProps) {
         id: props.replyingToPost.id 
       });
     } else {
+      console.log(newPost)
       promise = sendMessageToExtension({ type: MessageType.CreatePost, post: newPost });
     }
 
@@ -124,12 +125,13 @@ export default function NewPost(props: NewPostProps) {
   const onClickHighlightButton = useCallback((e) => {
     if (!isAnchoring) {
       setIsAnchored(false);
+      props.highlighter.removeHighlight(tempId);
     } else {
       // Do nothing for now
     }
 
     setIsAnchoring(!isAnchoring);
-  }, [isAnchoring]);
+  }, [isAnchoring, tempId]);
 
   useEffect(() => {
     if (isAnchoring) getNewSelection();
@@ -357,7 +359,7 @@ export default function NewPost(props: NewPostProps) {
       selection.removeAllRanges();
       setIsAnchoring(false);
     }
-  }, [post]);
+  }, [post, tempId]);
 
   useEffect(() => {
     if (isAnchoring) {
@@ -374,14 +376,6 @@ export default function NewPost(props: NewPostProps) {
     const id = uuid();
     setTempId(id);
 
-    // Attach anchor if text is already selected when new post button is clicked
-    const selection = getSelection();
-    if (selection && selection.toString()) {
-      const range = selection.getRangeAt(0);
-      props.highlighter.addHighlight(range, id, props.user.color, HighlightType.Active);
-      selection.removeAllRanges();
-    }
-
     // Get user to populate Post props
     // TODO: Get User in Sidebar and pass it in as a prop
     get('user').then((items) => {
@@ -391,11 +385,16 @@ export default function NewPost(props: NewPostProps) {
         taggedUserIds: [],
         tags: []
       });
+
+      // Highlight any selected text or, if none, put user in highighting mode
+      setIsAnchoring(true);
     });
 
     return () => props.highlighter.removeHighlight(id);
   }, []);
-
+useEffect(() => {
+  console.log(post)
+}, [post])
   /**
    * Autocomplete current user handle and add user to taggedUserIds.
    * @param user 
