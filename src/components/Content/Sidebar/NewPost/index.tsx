@@ -126,7 +126,7 @@ export default function NewPost(props: NewPostProps) {
     }
 
     setIsAnchoring(!isAnchoring);
-  }, [isAnchoring]);
+  }, [isAnchoring, tempId]);
 
   useEffect(() => {
     if (isAnchoring) getNewSelection();
