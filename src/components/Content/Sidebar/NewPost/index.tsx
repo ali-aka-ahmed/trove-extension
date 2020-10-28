@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
+import { ITag } from '../../../../models/IPost';
 import IUser from '../../../../models/IUser';
 import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { log } from '../../../../utils';
@@ -12,8 +13,6 @@ import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/ta
 import Highlighter, { HighlightType } from '../../helpers/highlight/Highlighter';
 import { getXRangeFromRange } from '../../helpers/highlight/rangeUtils';
 
-const MAX_USERNAME_LENGTH = 20;
-const MAX_POST_LENGTH = 180;
 const { TextArea } = Input;
 
 interface NewPostProps {
@@ -30,8 +29,12 @@ export default function NewPost(props: NewPostProps) {
   const [isAnchoring, setIsAnchoring] = useState(false);
   const [isAnchored, setIsAnchored] = useState(false);
   const [isHoveringSubmit, setIsHoveringSubmit] = useState(false);
+  const [isMouseDownSuggestedTag, setIsMouseDownSuggestedTag] = useState(false);
   const [isMouseDownSuggestedUser, setIsMouseDownSuggestedUser] = useState(false);
   const [post, setPost] = useState({} as CreatePostReqBody);
+  const [showCreateTag, setShowCreateTag] = useState(false);
+  const [suggestedTags, setSuggestedTags] = useState([] as ITag[]);
+  const [suggestedTagsIdx, setSuggestedTagsIdx] = useState(0);
   const [suggestedUsers, setSuggestedUsers] = useState([] as IUser[]);
   const [suggestedUsersIdx, setSuggestedUsersIdx] = useState(0);
   const [tagBounds, setTagBounds] = useState({ start: 0, end: 0 });
@@ -138,6 +141,10 @@ export default function NewPost(props: NewPostProps) {
       setSuggestedUsers([]);
       setSuggestedUsersIdx(0);
     }
+    if (!isMouseDownSuggestedTag) {
+      setSuggestedTags([]);
+      setSuggestedTagsIdx(0);
+    }
   }
 
   /**
@@ -191,15 +198,70 @@ export default function NewPost(props: NewPostProps) {
     }
   }
 
+  const getSuggestedTags = async (ta: HTMLTextAreaElement) => {
+    if (ta.selectionStart !== ta.selectionEnd) return null;
+
+    // Find start
+    let startIdx = Math.max(Math.min(ta.selectionStart - 1, ta.value.length - 1), 0);
+    while (startIdx > 0) {
+      if (ta.value[startIdx].match(/\s/)) {
+        startIdx++;
+        break;
+      }
+
+      startIdx--;
+    }
+    
+    // Find end
+    let endIdx = Math.max(ta.selectionStart, 0);
+    while (endIdx < ta.value.length) {
+      if (ta.value[endIdx].match(/\s/)) break;
+      endIdx++;
+    }
+
+    // Get word text cursor is in
+    const text = ta.value.slice(startIdx, endIdx);
+
+    // Determine if it is a tag (activated by / character)
+    const match = text.match(/\#(\w+)/);
+    let existingTags: ITag[];
+    if (match) {
+      const prefix = match[0].slice(1);
+      try {
+        // Get users with usernames starting with this prefix
+        existingTags = await sendMessageToExtension({
+          type: MessageType.HandleTagSearch, 
+          tag: prefix
+        }) as ITag[];
+        setTagBounds({ start: startIdx, end: startIdx + match[0].length });
+      } catch (err) {
+        existingTags = [];
+      }
+      const newTag = {text: text.slice(1), color: '#dddddd'}
+      let tags: ITag[];
+      if (existingTags.map((tag) => tag.text).includes(newTag.text)) {
+        setShowCreateTag(false)
+        tags = existingTags;
+      } else {
+        setShowCreateTag(true)
+        tags = [newTag].concat(existingTags);
+      }
+      setSuggestedTags(tags);
+    } else {
+      setSuggestedTags([]);
+    }
+  }
+
   /**
    * Update textarea and hide/show suggested users dropdown appropriately.
    * @param e 
    */
   const onChangeContent = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const target = e.target;
-    setPost({...post, content: target.value});
+    const { target } = e;
+    setPost({ ...post, content: target.value });
     setContent(target.value);
-    await getSuggestedUsers(target);      
+    await getSuggestedUsers(target);
+    await getSuggestedTags(target);
   }
 
   /**
@@ -212,6 +274,7 @@ export default function NewPost(props: NewPostProps) {
     log('onclick content');
 
     await getSuggestedUsers(e.target as HTMLTextAreaElement);
+    await getSuggestedTags(e.target as HTMLTextAreaElement);
   }
 
   /**
@@ -221,13 +284,16 @@ export default function NewPost(props: NewPostProps) {
   const onKeyDownContent = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
     const showSuggestedUsers = suggestedUsers.length > 0;
+    const showSuggestedTags = suggestedTags.length > 0;
     switch (e.key) {
       case 'ArrowUp': {
         if (showSuggestedUsers) {
           e.preventDefault();
           setSuggestedUsersIdx(Math.max(0, suggestedUsersIdx - 1));
+        } else if (showSuggestedTags) {
+          e.preventDefault();
+          setSuggestedTagsIdx(Math.max(0, suggestedTagsIdx - 1));
         }
-
         break;
       }
       case 'ArrowDown': {
@@ -235,6 +301,9 @@ export default function NewPost(props: NewPostProps) {
           e.preventDefault();
           const newIdx = Math.min(suggestedUsers.length - 1, suggestedUsersIdx + 1);
           setSuggestedUsersIdx(newIdx);
+        } else if (showSuggestedTags) {
+          const newIdx = Math.min(suggestedTags.length - 1, suggestedTagsIdx + 1);
+          setSuggestedTagsIdx(newIdx);
         }
 
         break;
@@ -244,6 +313,9 @@ export default function NewPost(props: NewPostProps) {
         if (showSuggestedUsers) {
           e.preventDefault();
           tagUser(suggestedUsers[suggestedUsersIdx]);
+        } else if (showSuggestedTags) {
+          e.preventDefault();
+          setTag(suggestedTags[suggestedTagsIdx])
         }
 
         break;
@@ -253,6 +325,8 @@ export default function NewPost(props: NewPostProps) {
           e.preventDefault();
           setSuggestedUsers([]);
           setSuggestedUsersIdx(0);
+          setSuggestedTags([]);
+          setSuggestedTagsIdx(0);
         }
 
         break;
@@ -305,7 +379,8 @@ export default function NewPost(props: NewPostProps) {
       setPost({ 
         ...post,
         content: '',
-        taggedUserIds: []
+        taggedUserIds: [],
+        tags: []
       });
 
       // Highlight any selected text or, if none, put user in highighting mode
@@ -348,6 +423,27 @@ export default function NewPost(props: NewPostProps) {
     setSuggestedUsersIdx(0);
   }
 
+  /**
+   * Autocomplete the tag and add it to tags.
+   * @param tag 
+   */
+  const setTag = (tag: ITag) => {
+    // Autocomplete the tag
+    const newContent = content.slice(0, tagBounds.start) 
+    setContent(newContent);
+
+    if (!post.tags!.some(t => t.text === tag.text)) {
+      const tagsCopy = post.tags!.slice(0);
+      tagsCopy.push(tag);
+      setPost({ ...post, content: newContent, tags: tagsCopy });
+    }
+
+    // Reset state
+    setTagBounds({ start: 0, end: 0 });
+    setSuggestedTags([]);
+    setSuggestedTagsIdx(0);
+  }
+
   const onClickSuggestedUser = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, user: User) => {
     e.preventDefault();
     e.stopPropagation();
@@ -357,6 +453,15 @@ export default function NewPost(props: NewPostProps) {
     tagUser(user);
   }
 
+  const onClickSuggestedTag = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, tag: ITag) => {
+    e.preventDefault();
+    e.stopPropagation();
+    log('onclick tag');
+
+    setIsMouseDownSuggestedTag(false);
+    setTag(tag)
+  }
+
   const onMouseDownSuggestedUser = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     log('onmousedown suggesteduser');
@@ -364,6 +469,15 @@ export default function NewPost(props: NewPostProps) {
     // Becase mousedown fires before onblur, we can use this to subvert content onblur when 
     // user clicks on suggest users dropdown
     setIsMouseDownSuggestedUser(true);
+  }
+
+  const onMouseDownSuggestedTag = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    log('onmousedown suggestedtag');
+
+    // Becase mousedown fires before onblur, we can use this to subvert content onblur when 
+    // user clicks on suggest users dropdown
+    setIsMouseDownSuggestedTag(true);
   }
 
   const onMouseLeaveSuggestedUser = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -376,6 +490,19 @@ export default function NewPost(props: NewPostProps) {
     if (isMouseDownSuggestedUser) {
       contentRef.current.focus();
       setIsMouseDownSuggestedUser(false);
+    }
+  }
+
+  const onMouseLeaveSuggestedTag = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    log('onmouseleave suggestedtag');
+
+    // If user drags off of a suggested user after mousedown, the dropdown can't be closed by 
+    // clicking outside of content because content is no longer focused and onblur is no longer
+    // triggered. Therefore, we must focus content if the cursor leaves the suggested user entry.
+    if (isMouseDownSuggestedTag) {
+      contentRef.current.focus();
+      setIsMouseDownSuggestedTag(false);
     }
   }
 
@@ -418,6 +545,39 @@ export default function NewPost(props: NewPostProps) {
       );
     });
   }
+
+  /**
+   * Render suggested users dropdown.
+   */
+  const renderSuggestedTags = () => {
+    return suggestedTags.map((tag, idx) => {
+      const suggestedTagSelectedClass = (idx === suggestedTagsIdx)
+        ? 'TbdTags__Tag--selected' 
+        : '';
+      return (
+        <button
+          className={`TbdTags__Tag ${suggestedTagSelectedClass}`}
+          key={tag.text}
+          onClick={(e) => onClickSuggestedTag(e, tag)}
+          onMouseDown={onMouseDownSuggestedTag}
+          onMouseLeave={onMouseLeaveSuggestedTag}
+        >
+          {idx === 0 && showCreateTag && ( 
+            <div className="TbdTags__FirstTag">
+              Create:
+            </div>
+          )}
+          <div
+            className="TbdPost__TagWrapper"
+            key={tag.text}
+            style={{ backgroundColor: tag.color }}
+          >
+            <div className="TbdPost__Tag">{tag.text}</div>
+          </div>
+        </button>
+      );
+    });
+  };
 
   // Classes
   const highlightActiveClass = isAnchoring ? 'TbdNewPost__Buttons__AddHighlight--active' : '';
@@ -474,11 +634,27 @@ export default function NewPost(props: NewPostProps) {
               value={content}
               ref={contentRef}
             />
+            {suggestedTags.length > 0 && (
+              <div className="TbdNewPost__Suggested TbdNewPost__Suggested--tags">
+                {renderSuggestedTags()}
+              </div>
+            )}
             {suggestedUsers.length > 0 && (
               <div className="TbdNewPost__SuggestedUsers">
                 {renderSuggestedUsers()}
               </div>
             )}
+            <div className="TbdPost__Tags">
+              {post.tags?.map((tag) => (
+                <div
+                  className="TbdPost__TagWrapper"
+                  key={tag.text}
+                  style={{ backgroundColor: tag.color }}
+                >
+                  <div className="TbdPost__Tag">{tag.text}</div>
+                </div>
+              ))}
+            </div>
             <div className="TbdNewPost__Buttons">
               <div className="TbdNewPost__Buttons__Left">
                 <button 
