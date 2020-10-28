@@ -30,10 +30,11 @@ export default function Sidebar() {
   const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [replyingToPost, setReplyingToPost] = useState<Post | null>(null);
   const [offset, setOffset] = useState(new Point(0, 0));
   const [position, setPosition] = useState(DEFAULT_POSITION);
   const [posts, setPosts] = useState([] as Post[]);
+  const [replyingToPost, setReplyingToPost] = useState<Post | null>(null);
+  const [runOnceInitialAnchor, setRunOnceInitialAnchor] = useState(false);
   const [shouldHide, setShouldHide] = useState(false);
   const [tabId, setTabId] = useState('');
   const [user, setUser] = useState<User | null>(null);
@@ -276,7 +277,8 @@ export default function Sidebar() {
         setIsExtensionOn(items.isAuthenticated && items.isExtensionOn);
         setIsOpen(items[key(tabId, 'isOpen')]);
         setPosition(Point.fromJSON(items[key(tabId, 'position')]));
-        setUser(items.user);        
+        setUser(items.user);
+        setRunOnceInitialAnchor(true);
       });
     });
     
@@ -292,6 +294,13 @@ export default function Sidebar() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (runOnceInitialAnchor) {
+      anchorSidebar();
+      setRunOnceInitialAnchor(false);
+    }
+  }, [runOnceInitialAnchor, anchorSidebar]);
 
   useEffect(() => {
     // Get posts for current page
