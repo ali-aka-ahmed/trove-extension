@@ -13,8 +13,6 @@ import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/ta
 import Highlighter, { HighlightType } from '../../helpers/highlight/Highlighter';
 import { getXRangeFromRange } from '../../helpers/highlight/rangeUtils';
 
-const MAX_USERNAME_LENGTH = 20;
-const MAX_POST_LENGTH = 99999999999999999999999999999;
 const { TextArea } = Input;
 
 interface NewPostProps {
