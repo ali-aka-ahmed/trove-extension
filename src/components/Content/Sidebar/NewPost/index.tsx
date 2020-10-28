@@ -226,7 +226,7 @@ export default function NewPost(props: NewPostProps) {
     const text = ta.value.slice(startIdx, endIdx);
 
     // Determine if it is a tag (activated by / character)
-    const match = text.match(/\/(\w+)/);
+    const match = text.match(/\#(\w+)/);
     let existingTags: ITag[];
     if (match) {
       const prefix = match[0].slice(1);
