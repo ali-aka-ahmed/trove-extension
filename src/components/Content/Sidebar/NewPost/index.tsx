@@ -75,7 +75,6 @@ export default function NewPost(props: NewPostProps) {
         id: props.replyingToPost.id 
       });
     } else {
-      console.log(newPost)
       promise = sendMessageToExtension({ type: MessageType.CreatePost, post: newPost });
     }
 
@@ -315,9 +314,7 @@ export default function NewPost(props: NewPostProps) {
 
     return () => props.highlighter.removeHighlight(id);
   }, []);
-useEffect(() => {
-  console.log(post)
-}, [post])
+
   /**
    * Autocomplete current user handle and add user to taggedUserIds.
    * @param user 
