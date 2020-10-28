@@ -283,7 +283,7 @@ export default function NewPost(props: NewPostProps) {
       selection.removeAllRanges();
       setIsAnchoring(false);
     }
-  }, [post]);
+  }, [post, tempId]);
 
   useEffect(() => {
     if (isAnchoring) {
@@ -300,14 +300,6 @@ export default function NewPost(props: NewPostProps) {
     const id = uuid();
     setTempId(id);
 
-    // Attach anchor if text is already selected when new post button is clicked
-    const selection = getSelection();
-    if (selection && selection.toString()) {
-      const range = selection.getRangeAt(0);
-      props.highlighter.addHighlight(range, id, props.user.color, HighlightType.Active);
-      selection.removeAllRanges();
-    }
-
     // Get user to populate Post props
     // TODO: Get User in Sidebar and pass it in as a prop
     get('user').then((items) => {
@@ -316,11 +308,16 @@ export default function NewPost(props: NewPostProps) {
         content: '',
         taggedUserIds: []
       });
+
+      // Highlight any selected text or, if none, put user in highighting mode
+      setIsAnchoring(true);
     });
 
     return () => props.highlighter.removeHighlight(id);
   }, []);
-
+useEffect(() => {
+  console.log(post)
+}, [post])
   /**
    * Autocomplete current user handle and add user to taggedUserIds.
    * @param user 
