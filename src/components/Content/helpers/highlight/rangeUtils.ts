@@ -35,6 +35,11 @@ export const getRangeFromXRange = (xRange: XRange): Range | null => {
   return range;
 }
 
+export const areRangesEqual = (r1: Range, r2: Range): boolean => {
+  return r1.compareBoundaryPoints(Range.START_TO_START, r2) === 0
+      && r1.compareBoundaryPoints(Range.END_TO_END, r2) === 0;
+}
+
 /**
  * Get XPath for given node.
  * @param node

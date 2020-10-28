@@ -120,6 +120,7 @@ export default function NewPost(props: NewPostProps) {
   const onClickHighlightButton = useCallback((e) => {
     if (!isAnchoring) {
       setIsAnchored(false);
+      props.highlighter.removeHighlight(tempId);
     } else {
       // Do nothing for now
     }
