@@ -141,6 +141,7 @@ export default function NewPost(props: NewPostProps) {
       setSuggestedUsers([]);
       setSuggestedUsersIdx(0);
     }
+    
     if (!isMouseDownSuggestedTag) {
       setSuggestedTags([]);
       setSuggestedTagsIdx(0);
@@ -273,8 +274,11 @@ export default function NewPost(props: NewPostProps) {
     e.stopPropagation();
     log('onclick content');
 
-    await getSuggestedUsers(e.target as HTMLTextAreaElement);
-    await getSuggestedTags(e.target as HTMLTextAreaElement);
+    const target = e.target as HTMLTextAreaElement;
+    await Promise.all([ 
+      getSuggestedUsers(target), 
+      getSuggestedTags(target) 
+    ]);
   }
 
   /**
