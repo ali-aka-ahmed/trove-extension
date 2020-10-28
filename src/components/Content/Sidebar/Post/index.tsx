@@ -94,10 +94,10 @@ export default function Post(props: PostProps) {
           </div>
           {getContent()}
           <div className="TbdPost__Buttons">
-            <button 
+            {/* <button 
               className="TbdPost__Button TbdPost__Buttons__Reply"
               onClick={onClickReplyButton}
-            />
+            /> */}
           </div>
         </div>
       </div>
