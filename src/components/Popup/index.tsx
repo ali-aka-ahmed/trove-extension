@@ -9,7 +9,6 @@ import INotification from '../../models/INotification';
 import { MessageType, sendMessageToWebsite } from '../../utils/chrome/external';
 import { get, remove, set } from '../../utils/chrome/storage';
 import Login from './Login';
-import Notifications from './Notifications';
 import Profile from './Profile';
 import './style.scss';
 
@@ -82,12 +81,12 @@ export default function Popup() {
   return (
     <div className="TbdPopupContainer">
       {isAuthenticated ? (
-        <Tabs defaultActiveKey="1">
-          <Tabs.TabPane tab="notifications" key="1">
+        <Tabs defaultActiveKey="2">
+          {/* <Tabs.TabPane tab="notifications" key="1" CHANGE DEFAULT ACTIVE KEY BACK TO 1>
             <div className="TbdPopupContainer__TabWrapper">
               {notifications && <Notifications notifications={notifications} />}
             </div>
-          </Tabs.TabPane>
+          </Tabs.TabPane> */}
           <Tabs.TabPane tab="profile" key="2">
             <div className="TbdPopupContainer__TabWrapper">
               {user && <Profile user={user} />}
@@ -100,7 +99,7 @@ export default function Popup() {
       <div className="TbdPopupContainer__BottomWrapper">
         <div className="TbdPopupContainer__OnOffWrapper">
           <div className="TbdPopupContainer__OnOffTextWrapper">
-            <div>Turn Whisper</div>
+            <div>Turn Trove</div>
             <div className="TbdPopupContainer__OnOff">{isExtensionOn ? 'OFF' : 'ON'}</div>
           </div>
           <Switch onClick={(checked) => { handleOnOff(checked); }} checked={isExtensionOn} />
