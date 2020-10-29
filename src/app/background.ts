@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import { BACKEND_URL } from '../config';
 import User from '../entities/User';
-import { createPost, createReply, getPosts, handleTagSearch } from '../server/posts';
+import { createPost, createReply, getPosts, handleTagSearch as handleTopicSearch } from '../server/posts';
 import { handleUsernameSearch } from '../server/users';
 import { Message as EMessage, MessageType as EMessageType } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
@@ -55,9 +55,9 @@ chrome.runtime.onMessage.addListener(async (
       sendResponse(res.users);
       break;
     }
-    case MessageType.HandleTagSearch: {
-      if (!message.tag) return;
-      const res = await handleTagSearch(message.tag);
+    case MessageType.HandleTopicSearch: {
+      if (!message.topic) return;
+      const res = await handleTopicSearch(message.topic);
       sendResponse(res.tags);
       break;
     }

@@ -1,6 +1,6 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
 import { XRange } from '../components/Content/helpers/highlight/rangeUtils';
-import IPost, { ITag } from '../models/IPost';
+import IPost, { ITopic } from '../models/IPost';
 
 export type IPostsRes = PostsRes & AxiosRes;
 export type IPostRes = PostRes & AxiosRes;
@@ -79,7 +79,7 @@ export interface CreatePostReqBody {
   url: string;
   taggedUserIds?: string[];
   highlight?: HighlightParam;
-  tags?: ITag[];
+  tags?: ITopic[];
 }
 
 /**
@@ -90,7 +90,7 @@ export interface CreateReplyReqBody {
   url: string;
   highlight?: HighlightParam;
   taggedUserIds?: string[]; // if you tag someone, they can see this post and everything in the thread
-  tags?: ITag[];
+  tags?: ITopic[];
 }
 
 /**
