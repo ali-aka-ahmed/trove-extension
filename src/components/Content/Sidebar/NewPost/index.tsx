@@ -322,12 +322,15 @@ export default function NewPost(props: NewPostProps) {
     const selection = getSelection();
     if (selection && selection.toString()) {
       const range = selection.getRangeAt(0);
+
+      // Serialize range here because adding highlight changes endContainer
+      const xrange = getXRangeFromRange(range);
       props.highlighter.addHighlight(range, tempId, props.user.color, HighlightType.Default);
       setPost({
         ...post, 
         highlight: {
           context: selection.toString(),
-          range: getXRangeFromRange(range),
+          range: xrange,
           text: selection.toString(),
           url: window.location.href
         }

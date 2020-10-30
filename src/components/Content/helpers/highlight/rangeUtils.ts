@@ -22,6 +22,7 @@ export const getXRangeFromRange = (range: Range): XRange => ({
  * @param xRange 
  */
 export const getRangeFromXRange = (xRange: XRange): Range | null => {
+  console.log(xRange)
   const startContainer = getNodeFromXPath(xRange.startContainerPath);
   const endContainer = getNodeFromXPath(xRange.endContainerPath);
   if (!startContainer || !endContainer) {
@@ -79,7 +80,7 @@ const getXPathFromNode = (node: Node): string => {
     paths.push(`/${tagName}[${idx}]`);
   }
 
-  paths.reverse();
+  paths.reverse();  console.log(node, paths)
   return paths.length > 0 ? `/${paths.join('/')}` : '';
 }
 
