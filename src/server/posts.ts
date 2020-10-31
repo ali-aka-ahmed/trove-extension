@@ -1,5 +1,5 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
-import { XRange } from '../components/Content/helpers/highlight/rangeUtils';
+import { XRange } from '../components/SidebarWrapper/helpers/highlight/rangeUtils';
 import IPost, { ITopic } from '../models/IPost';
 
 export type IPostsRes = PostsRes & AxiosRes;

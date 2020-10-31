@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 export default function Tooltip() {
-  console.log('hi')
   const [isVisible, setIsVisible] = useState(false);
 
   const onSelectionChange = useCallback(() => {
-    console.log('selectionchange')
     const selection = getSelection();
     if (selection?.toString()) {
       setIsVisible(true);
@@ -22,7 +20,7 @@ export default function Tooltip() {
   return (
     <>
       {isVisible && (
-        <div className="TbdTooltip"></div>
+        <div className="TbdTooltip" style={{ transform: 'translate3d(0px, 0px, 0px)' }}></div>
       )}
     </>
   );
