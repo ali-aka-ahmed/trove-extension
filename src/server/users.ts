@@ -33,18 +33,6 @@ export const updateColor = async (color: string): Promise<IUserRes> => {
   return await api.post(`/users/${params.id}/update`, args);
 }
 
-export const updateEmail = async (email: string): Promise<IUserRes> => {
-  const params: UserReqParams = { id: (await get('user')).user.id };
-  const args: UpdateUserReqBody = { email }
-  return await api.post(`/users/${params.id}/update`, args);
-}
-
-export const updatePhoneNumber = async (phoneNumber: string): Promise<IUserRes> => {
-  const params: UserReqParams = { id: (await get('user')).user.id };
-  const args: UpdateUserReqBody = { phoneNumber }
-  return await api.post(`/users/${params.id}/update`, args);
-}
-
 /**
  * POST /users/
  */

@@ -1,10 +1,4 @@
-export interface XRange {
-  startContainerPath: string;
-  endContainerPath: string;
-  startOffset: number;
-  endOffset: number;
-  isCollapsed?: boolean;
-}
+import { XRange } from '../../../../models/IHighlight';
 
 /**
  * Convert Range to XRange. Useful for serialization.

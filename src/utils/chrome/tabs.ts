@@ -6,7 +6,7 @@ export interface Message {
   id?: string;
   name?: string;
   post?: CreatePostReqBody;
-  tag?: string;
+  topic?: string;
   url?: string;
 }
 
@@ -16,7 +16,7 @@ export enum MessageType {
   GetPosts,
   GetTabId,
   HandleUsernameSearch,
-  HandleTagSearch,
+  HandleTopicSearch,
   Sync,
 }
 

@@ -58,7 +58,7 @@ export const posts: IPost[] = [
     ],
     numComments: 0,
     numLikes: 0,
-    tags: [{text:'Misc', color:'#ffffff'},{text:'Misc', color:'#ffffff'}],
+    topics: [],
     highlight: {
       id: '21a8a9d3-2d41-454e-ab5d-1e1ebb6abd93',
       context: '',

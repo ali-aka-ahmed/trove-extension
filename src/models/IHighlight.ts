@@ -1,4 +1,10 @@
-import { XRange } from "../components/Content/helpers/highlight/rangeUtils";
+export interface XRange {
+  startContainerPath: string;
+  endContainerPath: string;
+  startOffset: number;
+  endOffset: number;
+  isCollapsed?: boolean;
+}
 
 export default interface IHighlight {
   id: string;

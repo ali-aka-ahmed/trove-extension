@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
-import { ITag } from '../../../../models/IPost';
+import ITopic from '../../../../models/ITopic';
 import IUser from '../../../../models/IUser';
 import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { log } from '../../../../utils';
@@ -33,7 +33,7 @@ export default function NewPost(props: NewPostProps) {
   const [isMouseDownSuggestedUser, setIsMouseDownSuggestedUser] = useState(false);
   const [post, setPost] = useState({} as CreatePostReqBody);
   const [showCreateTag, setShowCreateTag] = useState(false);
-  const [suggestedTags, setSuggestedTags] = useState([] as ITag[]);
+  const [suggestedTags, setSuggestedTags] = useState([] as ITopic[]);
   const [suggestedTagsIdx, setSuggestedTagsIdx] = useState(0);
   const [suggestedUsers, setSuggestedUsers] = useState([] as IUser[]);
   const [suggestedUsersIdx, setSuggestedUsersIdx] = useState(0);
@@ -224,29 +224,29 @@ export default function NewPost(props: NewPostProps) {
 
     // Determine if it is a tag (activated by / character)
     const match = text.match(/\#(\w+)/);
-    let existingTags: ITag[];
+    let existingTags: ITopic[];
     if (match) {
       const prefix = match[0].slice(1);
       try {
         // Get users with usernames starting with this prefix
         existingTags = await sendMessageToExtension({
-          type: MessageType.HandleTagSearch, 
-          tag: prefix
-        }) as ITag[];
+          type: MessageType.HandleTopicSearch, 
+          topic: prefix
+        }) as ITopic[];
         setTagBounds({ start: startIdx, end: startIdx + match[0].length });
       } catch (err) {
         existingTags = [];
       }
-      const newTag = {text: text.slice(1), color: '#dddddd'}
-      let tags: ITag[];
-      if (existingTags.map((tag) => tag.text).includes(newTag.text)) {
+      const newTopic: ITopic = { text: text.slice(1), color: '#dddddd', id: uuid(), creationDatetime: Date.now() }
+      let topics: ITopic[];
+      if (existingTags.map((tag) => tag.text).includes(newTopic.text)) {
         setShowCreateTag(false)
-        tags = existingTags;
+        topics = existingTags;
       } else {
         setShowCreateTag(true)
-        tags = [newTag].concat(existingTags);
+        topics = [newTopic].concat(existingTags);
       }
-      setSuggestedTags(tags);
+      setSuggestedTags(topics);
     } else {
       setSuggestedTags([]);
     }
@@ -261,7 +261,7 @@ export default function NewPost(props: NewPostProps) {
     setPost({ ...post, content: target.value });
     setContent(target.value);
     await getSuggestedUsers(target);
-    await getSuggestedTags(target);
+    // await getSuggestedTags(target);
   }
 
   /**
@@ -274,7 +274,7 @@ export default function NewPost(props: NewPostProps) {
     log('onclick content');
 
     await getSuggestedUsers(e.target as HTMLTextAreaElement);
-    await getSuggestedTags(e.target as HTMLTextAreaElement);
+    // await getSuggestedTags(e.target as HTMLTextAreaElement);
   }
 
   /**
@@ -380,7 +380,7 @@ export default function NewPost(props: NewPostProps) {
         ...post,
         content: '',
         taggedUserIds: [],
-        tags: []
+        topics: []
       });
 
       // Highlight any selected text or, if none, put user in highighting mode
@@ -427,15 +427,15 @@ export default function NewPost(props: NewPostProps) {
    * Autocomplete the tag and add it to tags.
    * @param tag 
    */
-  const setTag = (tag: ITag) => {
+  const setTag = (tag: ITopic) => {
     // Autocomplete the tag
     const newContent = content.slice(0, tagBounds.start) 
     setContent(newContent);
 
-    if (!post.tags!.some(t => t.text === tag.text)) {
-      const tagsCopy = post.tags!.slice(0);
+    if (!post.topics!.some(t => t.text === tag.text)) {
+      const tagsCopy = post.topics!.slice(0);
       tagsCopy.push(tag);
-      setPost({ ...post, content: newContent, tags: tagsCopy });
+      setPost({ ...post, content: newContent, topics: tagsCopy });
     }
 
     // Reset state
@@ -453,7 +453,7 @@ export default function NewPost(props: NewPostProps) {
     tagUser(user);
   }
 
-  const onClickSuggestedTag = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, tag: ITag) => {
+  const onClickSuggestedTag = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, tag: ITopic) => {
     e.preventDefault();
     e.stopPropagation();
     log('onclick tag');
@@ -645,7 +645,7 @@ export default function NewPost(props: NewPostProps) {
               </div>
             )}
             <div className="TbdPost__Tags">
-              {post.tags?.map((tag) => (
+              {post.topics?.map((tag) => (
                 <div
                   className="TbdPost__TagWrapper"
                   key={tag.text}

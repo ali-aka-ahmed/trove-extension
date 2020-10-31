@@ -94,13 +94,13 @@ export default function Post(props: PostProps) {
           </div>
           {getContent()}
           <div className="TbdPost__Tags">
-            {props.post?.tags?.map((tag) => (
+            {props.post?.topics?.map((topic) => (
               <div
                 className="TbdPost__TagWrapper"
-                key={tag.text}
-                style={{ backgroundColor: tag.color }}
+                key={topic.text}
+                style={{ backgroundColor: topic.color }}
               >
-                <div className="TbdPost__Tag">{tag.text}</div>
+                <div className="TbdPost__Tag">{topic.text}</div>
               </div>
             ))}
           </div>

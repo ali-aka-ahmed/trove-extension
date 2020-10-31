@@ -1,10 +1,10 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
-import { XRange } from '../components/Content/helpers/highlight/rangeUtils';
-import IPost, { ITag } from '../models/IPost';
+import Post from '../entities/Post';
+import { XRange } from '../models/IHighlight';
+import ITopic from '../models/ITopic';
 
 export type IPostsRes = PostsRes & AxiosRes;
 export type IPostRes = PostRes & AxiosRes;
-export type ITagsRes = TagsRes & AxiosRes;
 
 export const getPosts = async (url: string): Promise<IPostsRes> => {
   const args: GetPostsReqBody = { url }
@@ -12,63 +12,45 @@ export const getPosts = async (url: string): Promise<IPostsRes> => {
 }
 
 export const getPost = async (postId: string): Promise<IPostRes> => {
-  const params: PostReqParams = { id: postId };
+  const params: BaseParams = { id: postId };
   return await api.get(`/posts/${params.id}`);
-}
-
-export const handleTagSearch = async (tag?: string): Promise<ITagsRes> => {
-  const args: GetTagsReqBody = { ...(tag && { tag })}
-  return await api.post('/posts/tags', args);
 }
 
 export const createPost = async (args: CreatePostReqBody): Promise<IPostRes> => {
   return await api.post('/posts/create', args);
 }
 
-export const createReply = async (parentPostId: string, args: CreateReplyReqBody): Promise<IPostRes> => {
-  const params: PostReqParams = { id: parentPostId };
+export const createReply = async (parentPostId: string, args: CreateCommentReqBody): Promise<IPostRes> => {
+  const params: BaseParams = { id: parentPostId };
   return await api.post(`/posts/${params.id}/comment/create`, args);
 }
 
 export const deletePostAndChildren = async (postId: string): Promise<AxiosRes> => {
-  const params: PostReqParams = { id: postId };
-  return await api.get(`/posts/${params.id}/comment/delete`);
+  const params: BaseParams = { id: postId };
+  return await api.get(`/posts/${params.id}/delete`);
 }
 
-// export const editPost = async (postId: string, args: EditPostReqBody): Promise<AxiosRes> => {
-//   const params: PostReqParams = { id: postId };
-//   return await api.post(`/posts/${params.id}/update`, args);
-// }
+export const editPost = async (postId: string, args: EditPostReqBody): Promise<AxiosRes> => {
+  const params: BaseParams = { id: postId };
+  return await api.post(`/posts/${params.id}/update`, args);
+}
 
 export const likePost = async (postId: string): Promise<AxiosRes> => {
-  const params: PostReqParams = { id: postId };
+  const params: BaseParams = { id: postId };
   return await api.get(`/posts/${params.id}/like/create`);
 }
 
 export const unlikePost = async (postId: string): Promise<AxiosRes> => {
-  const params: PostReqParams = { id: postId };
+  const params: BaseParams = { id: postId };
   return await api.get(`/posts/${params.id}/like/delete`);
 }
-
-export type HighlightParam = {
-  context: string; // Highlighted text + surrounding words for context
-  text: string;
-  range: XRange; // Serialized Range object
-  url: string;
-};
 
 /**
  * POST /posts/
  */
 export interface GetPostsReqBody {
-  url: string;
-}
-
-/**
- * POST /posts/tags
- */
-interface GetTagsReqBody {
-  tag?: string;
+  paginationStart?: number;
+  url?: string;
 }
 
 /**
@@ -79,46 +61,45 @@ export interface CreatePostReqBody {
   url: string;
   taggedUserIds?: string[];
   highlight?: HighlightParam;
-  tags?: ITag[];
+  topics?: ITopic[];
 }
+
+type HighlightParam = {
+  context: string; // Highlighted text + surrounding words for context
+  text: string;
+  range: XRange; // Serialized Range object
+  url: string;
+};
 
 /**
  * POST /posts/:id/comment/create
  */
-export interface CreateReplyReqBody {
+export interface CreateCommentReqBody {
   content: string;
   url: string;
+  taggedUserIds?: string[]; // if you tag someone, they can see this post and tag others
   highlight?: HighlightParam;
-  taggedUserIds?: string[]; // if you tag someone, they can see this post and everything in the thread
-  tags?: ITag[];
+  topics?: ITopic[];
 }
 
 /**
  * POST /posts/:id/update
  */
-// export interface EditPostReqBody {
-//   newContent?: string;
-//   newTaggedUserIds?: string[];
-//   highlight?: HighlightParam;
-//   tags?: ITag[];
-// }
-
-/**
- * GET /posts/:id
- * GET /posts/:id/delete
- * POST /posts/:id/comment/create
- * POST /posts/:id/like/create
- * GET /posts/:id/like/delete
- */
-export interface PostReqParams extends BaseParams {
-  id: string;
+interface EditPostReqBody {
+  content?: string;
+  taggedUserIds?: string[];
+  topics?: ITopic[];
 }
+
+/** ************************* */
+/** ********** RES ********** */
+/** ************************* */
 
 /**
  * POST /posts/
  */
 type PostsRes = {
-  posts?: IPost[]; // does not include comments for each post
+  posts?: Post[]; // does not include comments for each post
 } & BaseRes;
 
 /**
@@ -127,13 +108,6 @@ type PostsRes = {
  * POST /posts/:id/comment/create
  */
 type PostRes = {
-  thread?: IPost[]; // first index is parent ([parent, child, child of child, ...])
-  post?: IPost; // includes comments
-} & BaseRes;
-
-/**
- * POST /posts/tags
- */
-type TagsRes = {
-  tags?: string[];
+  thread?: Post[]; // first index is parent ([parent, child, child of child, ...])
+  post?: Post; // includes comments
 } & BaseRes;

@@ -29,7 +29,7 @@ export enum WebsiteOrigins {
 export const FRONTEND: Environments = Environments.LOCAL
 export const BACKEND: Environments = Environments.LOCAL
 
-export const LOGGING: boolean = true;
+export const LOGGING: boolean = false;
 
 export let BACKEND_URL: BackendURLs;
 export let ORIGIN: WebsiteOrigins;
