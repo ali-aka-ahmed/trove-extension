@@ -49,7 +49,7 @@ export default class Highlighter {
 
   removeAllHighlights = () => {
     for (const id of Object.keys(this.highlights)) {
-      removeHighlight(id);
+      this.removeHighlight(id);
     }
   }
 

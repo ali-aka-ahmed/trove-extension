@@ -1,9 +1,8 @@
 import hexToRgba from 'hex-to-rgba';
 import React, { useState } from 'react';
 import { default as IPost, default as PostObject } from '../../../../entities/Post';
-import { log } from '../../../../utils';
 import Highlighter, { HighlightType } from '../../helpers/highlight/Highlighter';
-import { getRangeFromXRange } from '../../helpers/highlight/rangeUtils';
+import { getRangeFromXRange, getXRangeFromRange, XRange } from '../../helpers/highlight/rangeUtils';
 
 interface PostProps {
   highlighter: Highlighter;
@@ -14,11 +13,32 @@ interface PostProps {
 
 export default function Post(props: PostProps) {
   const [isHovering, setIsHovering] = useState(false);
+  const [savedSelection, setSavedSelection] = useState<XRange | null>(null);
+
+  const saveSelection = () => {
+    const selection = getSelection()!;
+    if (selection.rangeCount > 0) {
+      const xrange = getXRangeFromRange(selection.getRangeAt(0));
+      setSavedSelection(xrange);
+      selection.removeAllRanges();
+    }
+  }
+
+  const restoreSelection = () => {
+    if (!savedSelection) return;
+    const selection = getSelection()!;
+    const range = getRangeFromXRange(savedSelection);
+    if (range) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+      setSavedSelection(null);
+    }
+  }
 
   const onMouseOverPost = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isHovering) {
-      console.info('mouseover post');
+      saveSelection();
       if (props.post.highlight?.range) {
         const range = getRangeFromXRange(props.post.highlight.range);
         if (range) {
@@ -32,10 +52,9 @@ export default function Post(props: PostProps) {
   }
 
   const onMouseLeavePost = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    log('mouseleave post');
-    
+    e.stopPropagation();    
     props.highlighter.removeHighlight(props.post.id);
+    restoreSelection();
     setIsHovering(false);
   }
 
