@@ -1,6 +1,8 @@
 enum Edge {
   Left,
-  Right
+  Right,
+  Bottom,
+  Top
 }
 
 export default Edge;

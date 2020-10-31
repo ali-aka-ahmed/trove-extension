@@ -39,6 +39,7 @@
     "@rangy/serializer": "^2.1.0",
     "antd": "^4.6.2",
     "axios": "^0.20.0",
+    "classnames": "^2.2.6",
     "hex-to-rgba": "^2.0.1",
     "javascript-time-ago": "^2.0.13",
     "jsonwebtoken": "^8.5.1",
