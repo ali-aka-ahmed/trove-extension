@@ -11,9 +11,17 @@ export default function Tooltip() {
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
 
+  /**
+   * Position and display tooltip according to change in selection.
+   */
   const onSelectionChange = useCallback(() => {
     const selection = getSelection();
-    if (selection && selection.rangeCount && selection.toString()) {
+    if (
+      selection 
+      && selection.rangeCount 
+      && !selection.isCollapsed 
+      && selection.toString()
+    ) {
       const selPos = selection.getRangeAt(0).getBoundingClientRect();
       if (selPos.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
         setPositionEdge(Edge.Top);
