@@ -25,10 +25,13 @@ export default function Tooltip() {
       const selPos = selection.getRangeAt(0).getBoundingClientRect();
       if (selPos.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
         setPositionEdge(Edge.Top);
-        setPosition(new Point(selPos.left, selPos.top - TOOLTIP_HEIGHT - TOOLTIP_MARGIN));
+        setPosition(new Point(
+          selPos.left + window.scrollX, 
+          selPos.top + window.scrollY - TOOLTIP_HEIGHT - TOOLTIP_MARGIN
+        ));
       } else {
         setPositionEdge(Edge.Bottom);
-        setPosition(new Point(selPos.left, selPos.bottom));
+        setPosition(new Point(selPos.left + window.scrollX, selPos.bottom + window.scrollY));
       }
       
       setIsVisible(true);
