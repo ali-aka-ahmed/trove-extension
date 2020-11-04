@@ -2,11 +2,14 @@ $pill-height: 24px;
 $pill-padding: 10px;
 
 .TbdPill {
+  display: flex;
+  flex-direction: row;
   padding: 0 $pill-padding;
   width: auto;
   height: $pill-height;
   margin-left: 10px;
   border-radius: $pill-height / 2;
+  transition: width .5s;
 }
 
 .TbdPill:first-child {
@@ -18,4 +21,20 @@ $pill-padding: 10px;
   text-transform: uppercase;
   letter-spacing: .5px;
   line-height: $pill-height;
+}
+
+.TbdPill__CloseButton {
+  height: 12px;
+  width: 12px;
+  border: none;
+  outline: none;
+  border-radius: 50%;
+  margin: auto;
+  margin-left: 5px;
+  background-color: #545454;
+  background-image: url('../../../../../public/images/new-post-icon.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 8px 8px;
+  cursor: pointer;
 }

@@ -12,7 +12,7 @@ export default function Tooltip() {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
-  const [topics, setTopics] = useState<ITopic[]>([]);
+  const [topics, setTopics] = useState<ITopic[]>([{ color: '#ebebeb', text: 'Politics' }]);
 
   /**
    * Position and display tooltip according to change in selection.
@@ -48,10 +48,19 @@ export default function Tooltip() {
     return () => document.removeEventListener('selectionchange', onSelectionChange);
   }, [onSelectionChange]);
 
-  const renderTopics = () => {
-    const topics = [{ color: '#ebebeb', text: 'Politics' }];
+  const onPillClose = useCallback((topic: ITopic) => {
+    console.log('hi')
+    setTopics(topics.slice().filter(t => t !== topic));
+  }, [topics]);
+
+  const renderTopics = useCallback(() => {
     const pills = topics.map(topic =>
-      <Pill key={topic.text} color={topic.color} text={topic.text} />
+      <Pill 
+        key={topic.text} 
+        color={topic.color} 
+        text={topic.text}
+        closeFn={() => { onPillClose(topic); }}
+      />
     );
 
     return (
@@ -59,7 +68,7 @@ export default function Tooltip() {
         {pills}
       </div>
     );
-  }
+  }, [topics, onPillClose]);
 
   return (
     <>
