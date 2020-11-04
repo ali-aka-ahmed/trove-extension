@@ -1,0 +1,21 @@
+$pill-height: 24px;
+$pill-padding: 10px;
+
+.TbdPill {
+  padding: 0 $pill-padding;
+  width: auto;
+  height: $pill-height;
+  margin-left: 10px;
+  border-radius: $pill-height / 2;
+}
+
+.TbdPill:first-child {
+  margin-left: 0px;
+}
+
+.TbdPill__Text {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  line-height: $pill-height;
+}

@@ -1,7 +1,9 @@
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
+import { ITopic } from '../../../models/IPost';
 import Edge from '../../SidebarWrapper/helpers/Edge';
 import Point from '../../SidebarWrapper/helpers/Point';
+import Pill from './Pill';
 
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 150;
@@ -10,6 +12,7 @@ export default function Tooltip() {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
+  const [topics, setTopics] = useState<ITopic[]>([]);
 
   /**
    * Position and display tooltip according to change in selection.
@@ -45,6 +48,19 @@ export default function Tooltip() {
     return () => document.removeEventListener('selectionchange', onSelectionChange);
   }, [onSelectionChange]);
 
+  const renderTopics = () => {
+    const topics = [{ color: '#ebebeb', text: 'Politics' }];
+    const pills = topics.map(topic =>
+      <Pill key={topic.text} color={topic.color} text={topic.text} />
+    );
+
+    return (
+      <div className="TbdTooltip__TopicList"> 
+        {pills}
+      </div>
+    );
+  }
+
   return (
     <>
       {isVisible && (
@@ -55,6 +71,8 @@ export default function Tooltip() {
           })}
           style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         >
+          {renderTopics()}
+          <div className="TbdTooltip__SubmitButton"></div>
         </div>
       )}
     </>
