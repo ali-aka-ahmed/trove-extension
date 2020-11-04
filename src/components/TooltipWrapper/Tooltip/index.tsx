@@ -48,18 +48,13 @@ export default function Tooltip() {
     return () => document.removeEventListener('selectionchange', onSelectionChange);
   }, [onSelectionChange]);
 
-  const onPillClose = useCallback((topic: ITopic) => {
-    console.log('hi')
-    setTopics(topics.slice().filter(t => t !== topic));
-  }, [topics]);
-
   const renderTopics = useCallback(() => {
     const pills = topics.map(topic =>
       <Pill 
         key={topic.text} 
         color={topic.color} 
         text={topic.text}
-        closeFn={() => { onPillClose(topic); }}
+        closeFn={() => { setTopics(topics.slice().filter(t => t !== topic)); }}
       />
     );
 
@@ -68,7 +63,7 @@ export default function Tooltip() {
         {pills}
       </div>
     );
-  }, [topics, onPillClose]);
+  }, [topics]);
 
   return (
     <>
