@@ -11,25 +11,25 @@ export enum Environments {
 }
 
 export enum BackendURLs {
-  PRODUCTION = 'https://api.whisper.so',
-  DEVELOPMENT = 'https://dev.whisper.so',
+  PRODUCTION = 'https://api.trove.so',
+  DEVELOPMENT = 'https://dev.trove.so',
   LOCAL = 'http://localhost:5000',
 }
 
 export enum WebsiteOrigins {
-  PRODUCTION = 'https://www.whisper.so',
-  DEVELOPMENT = 'https://development.whisper.so',
-  DEMO = 'https://demo.whisper.so',
+  PRODUCTION = 'https://www.trove.so',
+  DEVELOPMENT = 'https://development.trove.so',
+  DEMO = 'https://demo.trove.so',
   LOCAL = 'http://localhost:3000',
 }
 
 /**
  * SET THESE 👇
  */
-export const FRONTEND: Environments = Environments.LOCAL
-export const BACKEND: Environments = Environments.LOCAL
+export const FRONTEND: Environments = Environments.DEVELOPMENT
+export const BACKEND: Environments = Environments.DEVELOPMENT
 
-export const LOGGING: boolean = false;
+export const LOGGING: boolean = true;
 
 export let BACKEND_URL: BackendURLs;
 export let ORIGIN: WebsiteOrigins;
@@ -57,8 +57,8 @@ if (BACKEND === Environments.PRODUCTION) {
 }
 
 export const VALID_DOMAINS = [
-  'www.whisper.so',
-  'development.whisper.so',
-  'demo.whisper.so',
+  'www.trove.so',
+  'development.trove.so',
+  'demo.trove.so',
   'localhost',
 ]
