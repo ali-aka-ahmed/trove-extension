@@ -6,7 +6,7 @@ import User from '../../../entities/User';
 import { ITopic } from '../../../models/IPost';
 import IUser from '../../../models/IUser';
 import { createPost } from '../../../server/posts';
-import { get } from '../../../utils/chrome/storage';
+import { get1 } from '../../../utils/chrome/storage';
 import Edge from '../../SidebarWrapper/helpers/Edge';
 import { addHighlight } from '../../SidebarWrapper/helpers/highlight/highlightUtils';
 import { getXRangeFromRange } from '../../SidebarWrapper/helpers/highlight/rangeUtils';
@@ -26,7 +26,7 @@ export default function Tooltip() {
   // [{ color: '#ebebeb', text: 'Politics' }]
 
   useEffect(() => {
-    get('user').then((userData: IUser) => setUser(new User(userData)));
+    get1('user').then((userData: IUser) => setUser(new User(userData)));
   }, []);
 
   /**
@@ -98,7 +98,6 @@ export default function Tooltip() {
         },
         tags: []
       });
-
 
       const color = user ? hexToRgba(user.color, 0.25) : 'yellow';
       addHighlight(range, uuid(), color);
