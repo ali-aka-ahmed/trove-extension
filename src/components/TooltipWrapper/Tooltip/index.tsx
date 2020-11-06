@@ -2,14 +2,16 @@ import classNames from 'classnames';
 import hexToRgba from 'hex-to-rgba';
 import React, { useCallback, useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
+import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import { ITopic } from '../../../models/IPost';
 import IUser from '../../../models/IUser';
-import { createPost } from '../../../server/posts';
+import { createPost, IPostsRes } from '../../../server/posts';
 import { get1 } from '../../../utils/chrome/storage';
+import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from '../../SidebarWrapper/helpers/Edge';
 import { addHighlight } from '../../SidebarWrapper/helpers/highlight/highlightUtils';
-import { getXRangeFromRange } from '../../SidebarWrapper/helpers/highlight/rangeUtils';
+import { getRangeFromXRange, getXRangeFromRange } from '../../SidebarWrapper/helpers/highlight/rangeUtils';
 import Point from '../../SidebarWrapper/helpers/Point';
 import InputPill from './InputPill';
 import Pill from './Pill';
@@ -21,13 +23,38 @@ export default function Tooltip() {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [topics, setTopics] = useState<ITopic[]>([{ color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }]);
   const [user, setUser] = useState<User | null>(null);
-  // [{ color: '#ebebeb', text: 'Politics' }]
 
   useEffect(() => {
+    // Get sser object
     get1('user').then((userData: IUser) => setUser(new User(userData)));
+
+    // Get posts on current page
+    const url = window.location.href;
+    sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
+      if (res.success) {
+        const posts = res.posts!.map((p) => new Post(p));
+        setPosts(posts);
+      };
+    });
   }, []);
+
+  useEffect(() => {
+    if (posts) {
+      posts.forEach((post) => {
+        if (post.highlight) {
+          try {
+            const range = getRangeFromXRange(post.highlight.range);
+            if (range) addHighlight(range, post.highlight.id, post.creator.color);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      });
+    }
+  }, [posts]);
 
   /**
    * Position and display tooltip according to change in selection.
