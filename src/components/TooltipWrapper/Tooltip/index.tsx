@@ -1,8 +1,17 @@
 import classNames from 'classnames';
+import hexToRgba from 'hex-to-rgba';
 import React, { useCallback, useEffect, useState } from 'react';
+import { v4 as uuid } from 'uuid';
+import User from '../../../entities/User';
 import { ITopic } from '../../../models/IPost';
+import IUser from '../../../models/IUser';
+import { createPost } from '../../../server/posts';
+import { get } from '../../../utils/chrome/storage';
 import Edge from '../../SidebarWrapper/helpers/Edge';
+import { addHighlight } from '../../SidebarWrapper/helpers/highlight/highlightUtils';
+import { getXRangeFromRange } from '../../SidebarWrapper/helpers/highlight/rangeUtils';
 import Point from '../../SidebarWrapper/helpers/Point';
+import InputPill from './InputPill';
 import Pill from './Pill';
 
 const TOOLTIP_MARGIN = 10;
@@ -12,7 +21,13 @@ export default function Tooltip() {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
-  const [topics, setTopics] = useState<ITopic[]>([{ color: '#ebebeb', text: 'Politics' }]);
+  const [topics, setTopics] = useState<ITopic[]>([{ color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }]);
+  const [user, setUser] = useState<User | null>(null);
+  // [{ color: '#ebebeb', text: 'Politics' }]
+
+  useEffect(() => {
+    get('user').then((userData: IUser) => setUser(new User(userData)));
+  }, []);
 
   /**
    * Position and display tooltip according to change in selection.
@@ -54,16 +69,42 @@ export default function Tooltip() {
         key={topic.text} 
         color={topic.color} 
         text={topic.text}
-        closeFn={() => { setTopics(topics.slice().filter(t => t !== topic)); }}
+        onClose={() => { setTopics(topics.slice().filter(t => t !== topic)); }}
       />
     );
 
     return (
       <div className="TbdTooltip__TopicList"> 
         {pills}
+        <InputPill />
       </div>
     );
   }, [topics]);
+
+  const onClickSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const selection = getSelection();
+    if (selection && selection.toString()) {
+      const range = selection.getRangeAt(0);
+      const xrange = getXRangeFromRange(range);
+      createPost({
+        content: selection.toString(),
+        url: window.location.href,
+        taggedUserIds: [],
+        highlight: {
+          context: selection.toString(),
+          range: xrange,
+          text: selection.toString(),
+          url: window.location.href
+        },
+        tags: []
+      });
+
+
+      const color = user ? hexToRgba(user.color, 0.25) : 'yellow';
+      addHighlight(range, uuid(), color);
+      selection.removeAllRanges();
+    }
+  }
 
   return (
     <>
@@ -75,8 +116,8 @@ export default function Tooltip() {
           })}
           style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         >
-          {renderTopics()}
-          <div className="TbdTooltip__SubmitButton"></div>
+          {/* {renderTopics()} */}
+          <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
         </div>
       )}
     </>

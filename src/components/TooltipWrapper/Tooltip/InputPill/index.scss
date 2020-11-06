@@ -1,0 +1,34 @@
+$pill-height: 24px;
+$pill-padding: 10px;
+$tooltip-width: 250px;
+$tooltip-padding: 10px;
+
+.TbdInputPill {
+  padding: 0 $pill-padding;
+  width: auto;
+  height: $pill-height;
+  border-radius: $pill-height / 2;
+  background-color: transparent;
+  color: #545454;
+  outline: none;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  line-height: $pill-height;
+  margin-bottom: 10px;
+}
+
+.TbdInputPill--button {
+  border: 1px dashed #ccc;
+  cursor: pointer;
+}
+
+.TbdInputPill--button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdInputPill--input {
+  border: 1px solid #777;
+  width: 62.5px;
+  max-width: $tooltip-width - 2 * $tooltip-padding;
+}

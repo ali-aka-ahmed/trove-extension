@@ -3,7 +3,7 @@ import React, { useState } from "react";
 interface PillProps {
   color: string;
   text: string;
-  closeFn: () => void;
+  onClose: () => void;
 }
 
 export default function Pill(props: PillProps) {
@@ -26,7 +26,7 @@ export default function Pill(props: PillProps) {
     >
       <div className="TbdPill__Text">{props.text}</div>
       {isHovering && (
-        <button className="TbdPill__CloseButton" onClick={props.closeFn}></button>
+        <button className="TbdPill__CloseButton" onClick={props.onClose}></button>
       )}
     </div>
   );

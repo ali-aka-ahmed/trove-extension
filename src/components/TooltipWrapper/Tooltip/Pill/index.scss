@@ -8,12 +8,17 @@ $pill-padding: 10px;
   width: auto;
   height: $pill-height;
   margin-left: 10px;
+  margin-bottom: 10px;
   border-radius: $pill-height / 2;
   transition: width .5s;
 }
 
 .TbdPill:first-child {
   margin-left: 0px;
+}
+
+.TbdPill:nth-last-child(2) {
+  margin-right: 10px;
 }
 
 .TbdPill__Text {
