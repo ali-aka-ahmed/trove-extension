@@ -31,3 +31,6 @@ yarn-error.log*
 .env.local
 .idea/
 .vscode
+
+# custom
+src/config

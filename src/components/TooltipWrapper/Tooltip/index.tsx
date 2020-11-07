@@ -17,7 +17,7 @@ import InputPill from './InputPill';
 import Pill from './Pill';
 
 const TOOLTIP_MARGIN = 10;
-const TOOLTIP_HEIGHT = 150;
+const TOOLTIP_HEIGHT = 45;
 
 export default function Tooltip() {
   const [isVisible, setIsVisible] = useState(false);
@@ -28,7 +28,7 @@ export default function Tooltip() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Get sser object
+    // Get user object
     get1('user').then((userData: IUser) => setUser(new User(userData)));
 
     // Get posts on current page
