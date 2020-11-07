@@ -7,7 +7,7 @@ export type IPostsRes = PostsRes & AxiosRes;
 export type IPostRes = PostRes & AxiosRes;
 
 export const getPosts = async (url: string): Promise<IPostsRes> => {
-  const args: GetPostsReqBody = { url }
+  const args: GetPostsReqBody = { url, allUsers: true }
   return await api.post('/posts/', args);
 }
 
@@ -51,6 +51,7 @@ export const unlikePost = async (postId: string): Promise<AxiosRes> => {
 export interface GetPostsReqBody {
   paginationStart?: number;
   url?: string;
+  allUsers?: boolean;
 }
 
 /**
