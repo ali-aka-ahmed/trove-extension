@@ -43,7 +43,8 @@ export default function Tooltip() {
 
   useEffect(() => {
     if (posts) {
-      posts.forEach((post) => {
+      console.log(posts)
+      posts.reverse().forEach((post) => {
         if (post.highlight) {
           try {
             const range = getRangeFromXRange(post.highlight.range);
