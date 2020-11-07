@@ -1,6 +1,6 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
+import { XRange } from '../components/SidebarWrapper/helpers/highlight/rangeUtils';
 import Post from '../entities/Post';
-import { XRange } from '../models/IHighlight';
 import ITopic from '../models/ITopic';
 
 export type IPostsRes = PostsRes & AxiosRes;

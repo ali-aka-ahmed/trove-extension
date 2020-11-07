@@ -1,4 +1,4 @@
-.TbdExtension {
+.TbdTooltipWrapper {
   all: initial;
   * {
     all: unset;
@@ -9,6 +9,5 @@
   top: 0;
   left: 0;
   z-index: 696969420;
-  position: fixed;
-  pointer-events: none;
+  position: absolute;
 }

@@ -1,10 +1,4 @@
-export interface XRange {
-  startContainerPath: string;
-  endContainerPath: string;
-  startOffset: number;
-  endOffset: number;
-  isCollapsed?: boolean;
-}
+import { XRange } from '../components/SidebarWrapper/helpers/highlight/rangeUtils';
 
 export default interface IHighlight {
   id: string;

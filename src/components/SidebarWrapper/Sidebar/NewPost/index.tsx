@@ -29,15 +29,15 @@ export default function NewPost(props: NewPostProps) {
   const [isAnchoring, setIsAnchoring] = useState(false);
   const [isAnchored, setIsAnchored] = useState(false);
   const [isHoveringSubmit, setIsHoveringSubmit] = useState(false);
-  const [isMouseDownSuggestedTag, setIsMouseDownSuggestedTag] = useState(false);
+  const [isMouseDownSuggestedTopic, setIsMouseDownSuggestedTopic] = useState(false);
   const [isMouseDownSuggestedUser, setIsMouseDownSuggestedUser] = useState(false);
   const [post, setPost] = useState({} as CreatePostReqBody);
-  const [showCreateTag, setShowCreateTag] = useState(false);
-  const [suggestedTags, setSuggestedTags] = useState([] as ITopic[]);
-  const [suggestedTagsIdx, setSuggestedTagsIdx] = useState(0);
+  const [showCreateTopic, setShowCreateTopic] = useState(false);
+  const [suggestedTopics, setSuggestedTopics] = useState([] as ITopic[]);
+  const [suggestedTopicsIdx, setSuggestedTopicsIdx] = useState(0);
   const [suggestedUsers, setSuggestedUsers] = useState([] as IUser[]);
   const [suggestedUsersIdx, setSuggestedUsersIdx] = useState(0);
-  const [tagBounds, setTagBounds] = useState({ start: 0, end: 0 });
+  const [userTagBounds, setUserTagBounds] = useState({ start: 0, end: 0 });
   const [loading, setLoading] = useState(false);
   const [submitErrorMessage, setSubmitErrorMessage] = useState('');
   const [tempId, setTempId] = useState('');
@@ -141,9 +141,10 @@ export default function NewPost(props: NewPostProps) {
       setSuggestedUsers([]);
       setSuggestedUsersIdx(0);
     }
-    if (!isMouseDownSuggestedTag) {
-      setSuggestedTags([]);
-      setSuggestedTagsIdx(0);
+    
+    if (!isMouseDownSuggestedTopic) {
+      setSuggestedTopics([]);
+      setSuggestedTopicsIdx(0);
     }
   }
 
@@ -152,7 +153,7 @@ export default function NewPost(props: NewPostProps) {
    * word is a prefix for.
    * @param ta 
    */
-  const getSuggestedUsers = async (ta: HTMLTextAreaElement) => {
+  const suggestLinks = async (ta: HTMLTextAreaElement) => {
     if (ta.selectionStart !== ta.selectionEnd) return null;
 
     // Find start
@@ -174,21 +175,23 @@ export default function NewPost(props: NewPostProps) {
     }
 
     // Get word text cursor is in
-    const handle = ta.value.slice(startIdx, endIdx);
+    const currWord = ta.value.slice(startIdx, endIdx);
 
-    // Determine if it is a handle
-    const match = handle.match(/^@[a-zA-Z0-9_]{1,20}/);
+    // Determine if it's a handle (starts with @)
+    let match = currWord.match(/^@[a-zA-Z0-9_]{1,20}/);
     let users: IUser[];
     if (match) {
-      const prefix = match[0].slice(1);
+      // Create list of suggested users to tag
+      const handlePrefix = match[0].slice(1);
       try {
         // Get users with usernames starting with this prefix
         users = await sendMessageToExtension({
           type: MessageType.HandleUsernameSearch, 
-          name: prefix 
+          name: handlePrefix 
         }) as IUser[];
-        setTagBounds({ start: startIdx, end: startIdx + match[0].length });
+        setUserTagBounds({ start: startIdx, end: startIdx + match[0].length });
       } catch (err) {
+        console.error('Error occurred while getting list of suggested users. Error: ', err);
         users = [];
       }
       
@@ -196,59 +199,40 @@ export default function NewPost(props: NewPostProps) {
     } else {
       setSuggestedUsers([]);
     }
-  }
 
-  const getSuggestedTags = async (ta: HTMLTextAreaElement) => {
-    if (ta.selectionStart !== ta.selectionEnd) return null;
-
-    // Find start
-    let startIdx = Math.max(Math.min(ta.selectionStart - 1, ta.value.length - 1), 0);
-    while (startIdx > 0) {
-      if (ta.value[startIdx].match(/\s/)) {
-        startIdx++;
-        break;
-      }
-
-      startIdx--;
-    }
-    
-    // Find end
-    let endIdx = Math.max(ta.selectionStart, 0);
-    while (endIdx < ta.value.length) {
-      if (ta.value[endIdx].match(/\s/)) break;
-      endIdx++;
-    }
-
-    // Get word text cursor is in
-    const text = ta.value.slice(startIdx, endIdx);
-
-    // Determine if it is a tag (activated by / character)
-    const match = text.match(/\#(\w+)/);
-    let existingTags: ITopic[];
+    // Determine if it's a tag (starts with #)
+    match = currWord.match(/^\#/);
+    let topics: ITopic[];
     if (match) {
-      const prefix = match[0].slice(1);
+      const topicPrefix = match[0].slice(1);
       try {
         // Get users with usernames starting with this prefix
-        existingTags = await sendMessageToExtension({
+        topics = await sendMessageToExtension({
           type: MessageType.HandleTopicSearch, 
-          topic: prefix
+          topic: topicPrefix
         }) as ITopic[];
-        setTagBounds({ start: startIdx, end: startIdx + match[0].length });
+        setUserTagBounds({ start: startIdx, end: startIdx + match[0].length });
       } catch (err) {
-        existingTags = [];
+        console.error('Error occurred while getting list of suggested topics. Error: ', err);
+        topics = [];
       }
-      const newTopic: ITopic = { text: text.slice(1), color: '#dddddd', id: uuid(), creationDatetime: Date.now() }
-      let topics: ITopic[];
-      if (existingTags.map((tag) => tag.text).includes(newTopic.text)) {
-        setShowCreateTag(false)
-        topics = existingTags;
+
+      const newTopic: ITopic = { 
+        color: '#dddddd',
+        creationDatetime: Date.now(),
+        id: uuid(),
+        text: currWord.slice(1), 
+      };
+      if (topics.some(topic => topic.text === newTopic.text)) {
+        setShowCreateTopic(false);
       } else {
-        setShowCreateTag(true)
-        topics = [newTopic].concat(existingTags);
+        topics.unshift(newTopic);
+        setShowCreateTopic(true);
       }
-      setSuggestedTags(topics);
+
+      setSuggestedTopics(topics);
     } else {
-      setSuggestedTags([]);
+      setSuggestedTopics([]);
     }
   }
 
@@ -260,8 +244,7 @@ export default function NewPost(props: NewPostProps) {
     const { target } = e;
     setPost({ ...post, content: target.value });
     setContent(target.value);
-    await getSuggestedUsers(target);
-    // await getSuggestedTags(target);
+    await suggestLinks(target);
   }
 
   /**
@@ -273,8 +256,8 @@ export default function NewPost(props: NewPostProps) {
     e.stopPropagation();
     log('onclick content');
 
-    await getSuggestedUsers(e.target as HTMLTextAreaElement);
-    // await getSuggestedTags(e.target as HTMLTextAreaElement);
+    const target = e.target as HTMLTextAreaElement;
+    await suggestLinks(target);
   }
 
   /**
@@ -284,7 +267,7 @@ export default function NewPost(props: NewPostProps) {
   const onKeyDownContent = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
     const showSuggestedUsers = suggestedUsers.length > 0;
-    const showSuggestedTags = suggestedTags.length > 0;
+    const showSuggestedTags = suggestedTopics.length > 0;
     switch (e.key) {
       case 'ArrowUp': {
         if (showSuggestedUsers) {
@@ -292,7 +275,7 @@ export default function NewPost(props: NewPostProps) {
           setSuggestedUsersIdx(Math.max(0, suggestedUsersIdx - 1));
         } else if (showSuggestedTags) {
           e.preventDefault();
-          setSuggestedTagsIdx(Math.max(0, suggestedTagsIdx - 1));
+          setSuggestedTopicsIdx(Math.max(0, suggestedTopicsIdx - 1));
         }
         break;
       }
@@ -302,8 +285,9 @@ export default function NewPost(props: NewPostProps) {
           const newIdx = Math.min(suggestedUsers.length - 1, suggestedUsersIdx + 1);
           setSuggestedUsersIdx(newIdx);
         } else if (showSuggestedTags) {
-          const newIdx = Math.min(suggestedTags.length - 1, suggestedTagsIdx + 1);
-          setSuggestedTagsIdx(newIdx);
+          e.preventDefault();
+          const newIdx = Math.min(suggestedTopics.length - 1, suggestedTopicsIdx + 1);
+          setSuggestedTopicsIdx(newIdx);
         }
 
         break;
@@ -315,7 +299,7 @@ export default function NewPost(props: NewPostProps) {
           tagUser(suggestedUsers[suggestedUsersIdx]);
         } else if (showSuggestedTags) {
           e.preventDefault();
-          setTag(suggestedTags[suggestedTagsIdx])
+          addTopic(suggestedTopics[suggestedTopicsIdx])
         }
 
         break;
@@ -325,8 +309,8 @@ export default function NewPost(props: NewPostProps) {
           e.preventDefault();
           setSuggestedUsers([]);
           setSuggestedUsersIdx(0);
-          setSuggestedTags([]);
-          setSuggestedTagsIdx(0);
+          setSuggestedTopics([]);
+          setSuggestedTopicsIdx(0);
         }
 
         break;
@@ -343,12 +327,15 @@ export default function NewPost(props: NewPostProps) {
     const selection = getSelection();
     if (selection && selection.toString()) {
       const range = selection.getRangeAt(0);
+
+      // Serialize range here because adding highlight changes endContainer
+      const xrange = getXRangeFromRange(range);
       props.highlighter.addHighlight(range, tempId, props.user.color, HighlightType.Default);
       setPost({
         ...post, 
         highlight: {
           context: selection.toString(),
-          range: getXRangeFromRange(range),
+          range: xrange,
           text: selection.toString(),
           url: window.location.href
         }
@@ -396,9 +383,9 @@ export default function NewPost(props: NewPostProps) {
    */
   const tagUser = (user: IUser) => {
     // Autocomplete username
-    const newContent = content.slice(0, tagBounds.start) 
+    const newContent = content.slice(0, userTagBounds.start) 
       + `@${user.username} ` 
-      + content.slice(tagBounds.end);
+      + content.slice(userTagBounds.end);
     setContent(newContent);
 
     // Add user id to taggedUserIds and update post
@@ -418,30 +405,9 @@ export default function NewPost(props: NewPostProps) {
     // console.log(contentRef.current)
 
     // Reset state
-    setTagBounds({ start: 0, end: 0 });
+    setUserTagBounds({ start: 0, end: 0 });
     setSuggestedUsers([]);
     setSuggestedUsersIdx(0);
-  }
-
-  /**
-   * Autocomplete the tag and add it to tags.
-   * @param tag 
-   */
-  const setTag = (tag: ITopic) => {
-    // Autocomplete the tag
-    const newContent = content.slice(0, tagBounds.start) 
-    setContent(newContent);
-
-    if (!post.topics!.some(t => t.text === tag.text)) {
-      const tagsCopy = post.topics!.slice(0);
-      tagsCopy.push(tag);
-      setPost({ ...post, content: newContent, topics: tagsCopy });
-    }
-
-    // Reset state
-    setTagBounds({ start: 0, end: 0 });
-    setSuggestedTags([]);
-    setSuggestedTagsIdx(0);
   }
 
   const onClickSuggestedUser = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, user: User) => {
@@ -453,15 +419,6 @@ export default function NewPost(props: NewPostProps) {
     tagUser(user);
   }
 
-  const onClickSuggestedTag = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, tag: ITopic) => {
-    e.preventDefault();
-    e.stopPropagation();
-    log('onclick tag');
-
-    setIsMouseDownSuggestedTag(false);
-    setTag(tag)
-  }
-
   const onMouseDownSuggestedUser = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     log('onmousedown suggesteduser');
@@ -469,15 +426,6 @@ export default function NewPost(props: NewPostProps) {
     // Becase mousedown fires before onblur, we can use this to subvert content onblur when 
     // user clicks on suggest users dropdown
     setIsMouseDownSuggestedUser(true);
-  }
-
-  const onMouseDownSuggestedTag = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.stopPropagation();
-    log('onmousedown suggestedtag');
-
-    // Becase mousedown fires before onblur, we can use this to subvert content onblur when 
-    // user clicks on suggest users dropdown
-    setIsMouseDownSuggestedTag(true);
   }
 
   const onMouseLeaveSuggestedUser = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -493,16 +441,57 @@ export default function NewPost(props: NewPostProps) {
     }
   }
 
-  const onMouseLeaveSuggestedTag = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  /**
+   * Autocomplete the tag and add it to tags.
+   * @param tag 
+   */
+  const addTopic = (tag: ITopic) => {
+    // Autocomplete the tag
+    const newContent = content.slice(0, userTagBounds.start) 
+    setContent(newContent);
+
+    if (!post.topics!.some(t => t.text === tag.text)) {
+      const topicsCopy = post.topics!.slice(0);
+      topicsCopy.push(tag);
+      setPost({ ...post, content: newContent, topics: topicsCopy });
+    }
+
+    // Reset state
+    setSuggestedTopics([]);
+    setSuggestedTopicsIdx(0);
+  }
+
+  const onClickSuggestedTopic = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>, 
+    topic: ITopic
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    log('onclick tag');
+
+    setIsMouseDownSuggestedTopic(false);
+    addTopic(topic);
+  }
+
+  const onMouseDownSuggestedTopic = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    log('onmousedown suggestedtag');
+
+    // Becase mousedown fires before onblur, we can use this to subvert content onblur when 
+    // user clicks on suggest users dropdown
+    setIsMouseDownSuggestedTopic(true);
+  }
+
+  const onMouseLeaveSuggestedTopic = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     log('onmouseleave suggestedtag');
 
     // If user drags off of a suggested user after mousedown, the dropdown can't be closed by 
     // clicking outside of content because content is no longer focused and onblur is no longer
     // triggered. Therefore, we must focus content if the cursor leaves the suggested user entry.
-    if (isMouseDownSuggestedTag) {
+    if (isMouseDownSuggestedTopic) {
       contentRef.current.focus();
-      setIsMouseDownSuggestedTag(false);
+      setIsMouseDownSuggestedTopic(false);
     }
   }
 
@@ -512,11 +501,11 @@ export default function NewPost(props: NewPostProps) {
   const renderSuggestedUsers = () => {
     return suggestedUsers.map((user, idx) => {
       const suggestedUserSelectedClass = (idx === suggestedUsersIdx)
-        ? 'TbdSuggestedUsers__SuggestedUser--selected' 
+        ? 'TbdSuggestedUserList__SuggestedUser--selected' 
         : '';
       return (
         <button 
-          className={`TbdSuggestedUsers__SuggestedUser ${suggestedUserSelectedClass}`}
+          className={`TbdSuggestedUserList__SuggestedUser ${suggestedUserSelectedClass}`}
           key={user.id}
           onClick={(e) => onClickSuggestedUser(e, user)}
           onMouseDown={onMouseDownSuggestedUser}
@@ -549,30 +538,30 @@ export default function NewPost(props: NewPostProps) {
   /**
    * Render suggested users dropdown.
    */
-  const renderSuggestedTags = () => {
-    return suggestedTags.map((tag, idx) => {
-      const suggestedTagSelectedClass = (idx === suggestedTagsIdx)
-        ? 'TbdTags__Tag--selected' 
+  const renderSuggestedTopics = () => {
+    return suggestedTopics.map((tag, idx) => {
+      const suggestedTopicSelectedClass = (idx === suggestedTopicsIdx) 
+        ? 'TbdSuggestedTopicList__SuggestedTopic--selected' 
         : '';
       return (
         <button
-          className={`TbdTags__Tag ${suggestedTagSelectedClass}`}
+          className={`TbdSuggestedTopicList__SuggestedTopic ${suggestedTopicSelectedClass}`}
           key={tag.text}
-          onClick={(e) => onClickSuggestedTag(e, tag)}
-          onMouseDown={onMouseDownSuggestedTag}
-          onMouseLeave={onMouseLeaveSuggestedTag}
+          onClick={(e) => onClickSuggestedTopic(e, tag)}
+          onMouseDown={onMouseDownSuggestedTopic}
+          onMouseLeave={onMouseLeaveSuggestedTopic}
         >
-          {idx === 0 && showCreateTag && ( 
-            <div className="TbdTags__FirstTag">
+          {idx === 0 && showCreateTopic && ( 
+            <div className="TbdSuggestedTopicList__FirstTopic">
               Create:
             </div>
           )}
           <div
-            className="TbdPost__TagWrapper"
+            className="TbdNewPost__TopicList"
             key={tag.text}
             style={{ backgroundColor: tag.color }}
           >
-            <div className="TbdPost__Tag">{tag.text}</div>
+            <div className="TbdTopicList__Topic">{tag.text}</div>
           </div>
         </button>
       );
@@ -599,9 +588,6 @@ export default function NewPost(props: NewPostProps) {
         </div>
       )}
       <div className="TbdNewPost">
-        <div className="TbdNewPost__MainReference">
-          {/* <p className="TbdNewPost__MainReference__AddText">Add reference</p> */}
-        </div>
         <div className="TbdPost__Wrapper">
           <div className="TbdPost__Left">
             <div 
@@ -634,24 +620,24 @@ export default function NewPost(props: NewPostProps) {
               value={content}
               ref={contentRef}
             />
-            {suggestedTags.length > 0 && (
-              <div className="TbdNewPost__Suggested TbdNewPost__Suggested--tags">
-                {renderSuggestedTags()}
+            {suggestedTopics.length > 0 && (
+              <div className="TbdNewPost__SuggestedTopicList">
+                {renderSuggestedTopics()}
               </div>
             )}
             {suggestedUsers.length > 0 && (
-              <div className="TbdNewPost__SuggestedUsers">
+              <div className="TbdNewPost__SuggestedUserList">
                 {renderSuggestedUsers()}
               </div>
             )}
-            <div className="TbdPost__Tags">
+            <div className="TbdNewPost__TopicList">
               {post.topics?.map((tag) => (
                 <div
-                  className="TbdPost__TagWrapper"
+                  className="TbdTopicList__Topic"
                   key={tag.text}
                   style={{ backgroundColor: tag.color }}
                 >
-                  <div className="TbdPost__Tag">{tag.text}</div>
+                  {tag.text}
                 </div>
               ))}
             </div>

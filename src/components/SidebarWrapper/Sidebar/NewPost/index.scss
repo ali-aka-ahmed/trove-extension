@@ -10,12 +10,6 @@ $content-padding: 15px;
   border-bottom: 1px solid #f2f2f2;
 }
 
-.TbdNewPost__MainReference {
-  display: flex;
-  flex-direction: row;
-  align-items: center; 
-}
-
 .TbdNewPost__ReplyMessage {
   color: #545454;
   margin: 10px 15px -5px 15px;
@@ -43,7 +37,7 @@ $content-padding: 15px;
   display: none;
 }
 
-.TbdNewPost__SuggestedUsers {
+.TbdNewPost__SuggestedUserList {
   border-radius: 5px;
   background-color: #fff;
   position: absolute;
@@ -53,7 +47,7 @@ $content-padding: 15px;
   @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
 }
 
-.TbdSuggestedUsers__SuggestedUser {
+.TbdSuggestedUserList__SuggestedUser {
   height: 60px;
   width: 100%;
   display: flex;
@@ -66,58 +60,20 @@ $content-padding: 15px;
   cursor: pointer;
 }
 
-.TbdTags__Tag {
-  height: fit-content;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: flex;
-  flex-direction: row;
-  padding: 10px;
-  border: none;
-  border-top: 1px solid #ebebeb;
-  background-color: #fff;
-  text-align: left;
-  cursor: pointer;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.TbdSuggestedUsers__SuggestedUser:first-child {
+.TbdSuggestedUserList__SuggestedUser:first-child {
   border-top: none;
 }
 
-.TbdTags__Tag:first-child {
-  border-top: none;
-}
-
-.TbdSuggestedUsers__SuggestedUser:hover {
+.TbdSuggestedUserList__SuggestedUser:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.TbdTags__Tag:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.TbdSuggestedUsers__SuggestedUser:focus {
+.TbdSuggestedUserList__SuggestedUser:focus {
   outline: none;
 }
 
-.TbdTags__Tag:focus {
-  outline: none;
-}
-
-.TbdSuggestedUsers__SuggestedUser--selected {
+.TbdSuggestedUserList__SuggestedUser--selected {
   background-color: rgba(0, 0, 0, 0.05);
-}
-
-.TbdTags__Tag--selected {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.TbdTags__FirstTag {
-  @include TbdFont--small;
-  margin-right: 5px;
 }
 
 .TbdSuggestedUser__Right {
@@ -154,6 +110,44 @@ $content-padding: 15px;
   max-width: 127.5px;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.TbdSuggestedTopicList__SuggestedTopic {
+  height: fit-content;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+  border: none;
+  border-top: 1px solid #ebebeb;
+  background-color: #fff;
+  text-align: left;
+  cursor: pointer;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.TbdSuggestedTopicList__SuggestedTopic:first-child {
+  border-top: none;
+}
+
+.TbdSuggestedTopicList__SuggestedTopic:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdSuggestedTopicList__SuggestedTopic:focus {
+  outline: none;
+}
+
+.TbdSuggestedTopicList__SuggestedTopic--selected {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdSuggestedTopicList__FirstTopic {
+  @include TbdFont--small;
+  margin-right: 5px;
 }
 
 .TbdNewPost__Buttons {
