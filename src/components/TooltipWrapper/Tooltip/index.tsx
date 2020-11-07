@@ -43,17 +43,17 @@ export default function Tooltip() {
 
   useEffect(() => {
     if (posts) {
-      console.log(posts)
-      posts.reverse().forEach((post) => {
-        if (post.highlight) {
-          try {
-            const range = getRangeFromXRange(post.highlight.range);
-            if (range) addHighlight(range, post.highlight.id, post.creator.color);
-          } catch (e) {
-            console.error(e);
+      posts.sort((p1, p2) => p1.creationDatetime - p2.creationDatetime)
+        .forEach((post) => {
+          if (post.highlight) {
+            try {
+              const range = getRangeFromXRange(post.highlight.range);
+              if (range) addHighlight(range, post.highlight.id, post.creator.color);
+            } catch (e) {
+              console.error(e);
+            }
           }
-        }
-      });
+        });
     }
   }, [posts]);
 
