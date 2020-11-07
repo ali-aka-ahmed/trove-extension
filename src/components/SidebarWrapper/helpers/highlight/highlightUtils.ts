@@ -9,6 +9,7 @@ export enum MarkDataKey {
 const MARK_CLASS_NAME = 'TbdMark';
 
 export const addHighlight = (range: Range, rootId: string, color: string='yellow') => {
+  rootId = getCssCompatibleId(rootId);
   let start = range.startContainer;
   let end = range.endContainer;
   let hasContent = true;
@@ -55,7 +56,7 @@ export const addHighlight = (range: Range, rootId: string, color: string='yellow
         const mark = document.createElement('mark'); 
         mark.className = MARK_CLASS_NAME;
         mark.style.backgroundColor = color;
-        mark.dataset[MarkDataKey.ThisMarkId] = uuid();
+        mark.dataset[MarkDataKey.ThisMarkId] = getCssCompatibleId(uuid());
         if (marks.length === 0) {
           mark.id = rootId;
         } else {
@@ -98,6 +99,7 @@ export const addHighlight = (range: Range, rootId: string, color: string='yellow
 }
 
 export const removeHighlight = (id: string) => {
+  id = getCssCompatibleId(id);
   const marks = getHighlight(id);
   for (const mark of marks) {
     // Move each child of mark and merge if appropriate
@@ -127,6 +129,7 @@ export const modifyHighlight = (id: string, style: string, value: string) => {
 }
 
 const getHighlight = (id: string) => { 
+  id = getCssCompatibleId(id);
   const mark = document.getElementById(id);
   if (!mark) return [];
 
@@ -193,4 +196,12 @@ type valueof<T> = T[keyof T];
  */
 const attr = (attr: valueof<typeof MarkDataKey>) => {
   return 'data-' + attr.replace(/([A-Z])/g, '-$1').toLowerCase();
+}
+
+/**
+ * Since querySelector uses CSS3 selectors, ids can't start with a number.
+ * @param id 
+ */
+const getCssCompatibleId = (id: string) => {
+  return 'trove-' + id;
 }
