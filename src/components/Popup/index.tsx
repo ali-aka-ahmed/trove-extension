@@ -111,7 +111,7 @@ export default function Popup() {
                 className='TbdPopupContainer__Button'
                 onClick={handleLogout}
               >
-                logout
+                Logout
               </button>
             ) : (
               <div className='TbdPopupContainer__Loading'><LoadingOutlined /></div>
