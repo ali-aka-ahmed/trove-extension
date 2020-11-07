@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
-import { ITopic } from '../../../models/IPost';
+import ITopic from '../../../models/ITopic';
 import IUser from '../../../models/IUser';
 import { createPost, IPostsRes } from '../../../server/posts';
 import { get1 } from '../../../utils/chrome/storage';
@@ -24,7 +24,7 @@ export default function Tooltip() {
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [topics, setTopics] = useState<ITopic[]>([{ color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }]);
+  const [topics, setTopics] = useState<Partial<ITopic>[]>([{ color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }]);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function Tooltip() {
           text: selection.toString(),
           url: window.location.href
         },
-        tags: []
+        topics: []
       });
 
       const color = user ? hexToRgba(user.color, 0.25) : 'yellow';

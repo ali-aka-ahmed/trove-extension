@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
 interface PillProps {
-  color: string;
-  text: string;
+  color?: string;
+  text?: string;
   onClose: () => void;
 }
 

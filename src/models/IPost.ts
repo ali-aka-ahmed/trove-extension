@@ -1,10 +1,6 @@
 import IHighlight from './IHighlight';
+import ITopic from './ITopic';
 import IUser from './IUser';
-
-export interface ITopic {
-  text: string;
-  color: string; // hex code
-}
 
 export default interface IPost {
   id: string;
@@ -13,7 +9,7 @@ export default interface IPost {
   creator: IUser;
   domain: string;
   url: string;
-  tags: ITopic[];
+  topics: ITopic[];
   taggedUsers: IUser[]; // must contain values for parent post
   numComments: number;
   numLikes: number;

@@ -48,5 +48,6 @@ export type BaseRes = {
  * Base params object. Copy of core.ParamsDictionary in express.
  */
 export interface BaseParams {
+  id: string;
   [key: string]: string;
 }

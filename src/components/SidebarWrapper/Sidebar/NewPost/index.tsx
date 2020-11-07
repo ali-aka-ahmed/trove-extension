@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../../entities/Post';
 import User from '../../../../entities/User';
-import { ITopic } from '../../../../models/IPost';
+import ITopic from '../../../../models/ITopic';
 import IUser from '../../../../models/IUser';
 import { CreatePostReqBody, IPostRes } from '../../../../server/posts';
 import { log } from '../../../../utils';
@@ -217,7 +217,12 @@ export default function NewPost(props: NewPostProps) {
         topics = [];
       }
 
-      const newTopic: ITopic = { text: currWord.slice(1), color: '#dddddd' };
+      const newTopic: ITopic = { 
+        color: '#dddddd',
+        creationDatetime: Date.now(),
+        id: uuid(),
+        text: currWord.slice(1), 
+      };
       if (topics.some(topic => topic.text === newTopic.text)) {
         setShowCreateTopic(false);
       } else {
@@ -362,7 +367,7 @@ export default function NewPost(props: NewPostProps) {
         ...post,
         content: '',
         taggedUserIds: [],
-        tags: []
+        topics: []
       });
 
       // Highlight any selected text or, if none, put user in highighting mode
@@ -445,10 +450,10 @@ export default function NewPost(props: NewPostProps) {
     const newContent = content.slice(0, userTagBounds.start) 
     setContent(newContent);
 
-    if (!post.tags!.some(t => t.text === tag.text)) {
-      const topicsCopy = post.tags!.slice(0);
+    if (!post.topics!.some(t => t.text === tag.text)) {
+      const topicsCopy = post.topics!.slice(0);
       topicsCopy.push(tag);
-      setPost({ ...post, content: newContent, tags: topicsCopy });
+      setPost({ ...post, content: newContent, topics: topicsCopy });
     }
 
     // Reset state
@@ -626,7 +631,7 @@ export default function NewPost(props: NewPostProps) {
               </div>
             )}
             <div className="TbdNewPost__TopicList">
-              {post.tags?.map((tag) => (
+              {post.topics?.map((tag) => (
                 <div
                   className="TbdTopicList__Topic"
                   key={tag.text}

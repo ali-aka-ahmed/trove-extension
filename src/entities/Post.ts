@@ -1,6 +1,7 @@
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
-import { default as IPost, ITopic } from '../models/IPost';
+import IPost from '../models/IPost';
+import ITopic from '../models/ITopic';
 import Highlight from './Highlight';
 import User from './User';
 
@@ -11,7 +12,7 @@ export default class Post implements IPost {
   public creator: User;
   public domain: string;
   public url: string;
-  public tags: ITopic[];
+  public topics: ITopic[];
   public taggedUsers: User[]; // must contain values for parent post
   public numComments: number;
   public numLikes: number;
@@ -27,7 +28,7 @@ export default class Post implements IPost {
     this.creator = new User(p.creator);
     this.domain = p.domain;
     this.url = p.url;
-    this.tags = p.tags;
+    this.topics = p.topics.sort((t1, t2) => t2.creationDatetime - t1.creationDatetime);
     this.taggedUsers = p.taggedUsers.map((u) => new User(u));
     this.numComments = p.numComments;
     this.numLikes = p.numLikes;

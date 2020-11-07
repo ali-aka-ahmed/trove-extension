@@ -1,12 +1,7 @@
-import { api, AxiosRes, BaseParams, BaseRes } from '.';
+import { api, AxiosRes, BaseRes } from '.';
 import IUser from '../models/IUser';
 
 type IAuthRes = AuthRes & AxiosRes;
-type IUsernameRes = UsernameRes & AxiosRes;
-
-export const signup = async (args: SignupReqBody): Promise<IAuthRes> => {
-  return await api.post('/auth/signup', args);
-};
 
 export const login = async (args: LoginReqBody): Promise<IAuthRes> => {
   return await api.post('/auth/login', args);
@@ -14,23 +9,6 @@ export const login = async (args: LoginReqBody): Promise<IAuthRes> => {
 
 export const forgotPassword = async (args: ForgotReqBody): Promise<AxiosRes> => {
   return await api.post('/auth/forgot', args)
-}
-
-export const checkValidUsername = async (username: string): Promise<IUsernameRes> => {
-  const args: UsernameReqBody = { username }
-  return await api.post('/auth/username', args);
-}
-
-/**
- * POST /auth/signup
- */
-interface SignupReqBody {
-  color: string;
-  displayName: string;
-  password: string;
-  username: string;
-  email?: string; // either email or phoneNumber
-  phoneNumber?: string; // include country code ex. 13017872508
 }
 
 /**
@@ -51,26 +29,9 @@ export interface ForgotReqBody {
   phoneNumber?: string; // include country code ex. 13017872508
 }
 
-/**
- * POST /auth/reset/:token
- */
-interface ResetReqBody {
-  password: string;
-}
-
-/**
- * POST /auth/reset/:token
- */
-interface ResetReqParams extends BaseParams {
-  token: string;
-}
-
-/**
- * POST /auth/username
- */
-interface UsernameReqBody {
-  username: string;
-}
+/** ************************* */
+/** ********** RES ********** */
+/** ************************* */
 
 /**
  * POST /auth/signup
@@ -80,11 +41,4 @@ interface UsernameReqBody {
 type AuthRes = {
   user?: IUser;
   token?: string;
-} & BaseRes;
-
-/**
- * POST /auth/username
- */
-type UsernameRes = {
-  exists?: boolean;
 } & BaseRes;
