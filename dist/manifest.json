@@ -35,7 +35,8 @@
     "310": "icon/icon310.png"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab"
   ],
   "externally_connectable": {
     "matches": [
