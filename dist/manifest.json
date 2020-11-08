@@ -18,21 +18,21 @@
     }
   ],
   "icons": {
-    "16": "icon/icon16.png",
-    "32": "icon/icon32.png",
-    "36": "icon/icon36.png",
-    "48": "icon/icon48.png",
-    "60": "icon/icon60.png",
-    "72": "icon/icon72.png",
-    "96": "icon/icon96.png",
-    "114": "icon/icon114.png",
-    "120": "icon/icon120.png",
-    "128": "icon/icon128.png",
-    "144": "icon/icon144.png",
-    "152": "icon/icon152.png",
-    "180": "icon/icon180.png",
-    "192": "icon/icon192.png",
-    "310": "icon/icon310.png"
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "36": "icon36.png",
+    "48": "icon48.png",
+    "60": "icon60.png",
+    "72": "icon72.png",
+    "96": "icon96.png",
+    "114": "icon114.png",
+    "120": "icon120.png",
+    "128": "icon128.png",
+    "144": "icon144.png",
+    "152": "icon152.png",
+    "180": "icon180.png",
+    "192": "icon192.png",
+    "310": "icon310.png"
   },
   "permissions": [
     "storage",
@@ -46,5 +46,6 @@
       "https://development.trove.so/*",
       "https://demo.trove.so/*"
     ]
-  }
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5TagdpKSFisCCe+sD6ODt7G2DDeb2lOQLdooGmdhgP16RREYVdxy0p5txRnUsXRPkDqvOHp9hc4OcaA7ZSVyBLE+Dhrf//AM8XL7D934YeR+PR4oIArFI1fREp0xrWbL4M7Abm/Wci8sy2eBbJhaVPnd5W6Y7aceYWLldnwt+YRnx52m8SNr6wNJ/hRpYt5gj2NGAtf7rullQJnQ1SYGwHrjhPiyn8/iq3F2YR2j1SpowqAYCqalTTlZUGUz1qytMi4KUduN2VdBsszhfg7Sl/dpdpczJITTiJSmOLtqAQLe5biagaz4fplhjDo867505CBZ1anwb5CmQ3QlBNomLwIDAQAB"
 }
