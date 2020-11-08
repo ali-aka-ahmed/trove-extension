@@ -61,7 +61,7 @@ export default function Tooltip() {
    * Position and display tooltip according to change in selection.
    */
   const onSelectionChange = useCallback(() => {
-    const selection = getSelection();
+    const selection = getSelection(); console.log('onSelectionChange')
     if (
       selection 
       && selection.rangeCount 
@@ -88,7 +88,11 @@ export default function Tooltip() {
 
   useEffect(() => {
     document.addEventListener('selectionchange', onSelectionChange);
-    return () => document.removeEventListener('selectionchange', onSelectionChange);
+    window.addEventListener('resize', onSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', onSelectionChange);
+      window.removeEventListener('resize', onSelectionChange);
+    };
   }, [onSelectionChange]);
 
   const renderTopics = useCallback(() => {
