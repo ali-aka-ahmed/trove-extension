@@ -34,10 +34,6 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.2.2",
-    "@rangy/classapplier": "^2.1.0",
-    "@rangy/core": "^2.1.0",
-    "@rangy/highlighter": "^2.1.0",
-    "@rangy/serializer": "^2.1.0",
     "antd": "^4.6.2",
     "axios": "^0.20.0",
     "classnames": "^2.2.6",
