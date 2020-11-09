@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import Color from 'color';
+import React, { useState } from 'react';
 
 interface PillProps {
   color?: string;
@@ -24,7 +25,12 @@ export default function Pill(props: PillProps) {
       onMouseLeave={onMouseLeave}
       style={{ backgroundColor: props.color }}
     >
-      <div className="TbdPill__Text">{props.text}</div>
+      <div 
+        className="TbdPill__Text"
+        style={{ color: Color(props.color).isLight() ? 'black' : 'white' }}
+      >
+        {props.text}
+      </div>
       {isHovering && (
         <button className="TbdPill__CloseButton" onClick={props.onClose}></button>
       )}
