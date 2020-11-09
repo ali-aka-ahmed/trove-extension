@@ -220,6 +220,7 @@ export default function NewPost(props: NewPostProps) {
       const newTopic: ITopic = { 
         color: '#dddddd',
         creationDatetime: Date.now(),
+        lastEdited: Date.now(),
         id: uuid(),
         text: currWord.slice(1), 
       };
@@ -334,7 +335,6 @@ export default function NewPost(props: NewPostProps) {
       setPost({
         ...post, 
         highlight: {
-          context: selection.toString(),
           range: xrange,
           text: selection.toString(),
           url: window.location.href

@@ -281,7 +281,7 @@ export default function Sidebar() {
         setRunOnceInitialAnchor(true);
       });
     });
-    
+
     // Listener to update extension-wide settings
     chrome.storage.onChanged.addListener((change) => {
       if (change.isExtensionOn !== undefined) {

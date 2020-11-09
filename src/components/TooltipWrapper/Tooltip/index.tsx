@@ -119,7 +119,6 @@ export default function Tooltip() {
         url: window.location.href,
         taggedUserIds: [],
         highlight: {
-          context: selection.toString(),
           range: xrange,
           text: selection.toString(),
           url: window.location.href

@@ -2,7 +2,6 @@ import { XRange } from '../components/SidebarWrapper/helpers/highlight/rangeUtil
 
 export default interface IHighlight {
   id: string;
-  context: string; // Highlighted text + surrounding words for context
   creationDatetime: number;
   text: string;
   range: XRange; // Serialized Range object

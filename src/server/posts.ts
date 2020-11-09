@@ -48,25 +48,23 @@ export const unlikePost = async (postId: string): Promise<AxiosRes> => {
 /**
  * POST /posts/
  */
-export interface GetPostsReqBody {
-  paginationStart?: number;
-  url?: string;
+type GetPostsReqBody = {
+  url: string;
   allUsers?: boolean;
-}
+} | {}
 
 /**
  * POST /posts/create
  */
 export interface CreatePostReqBody {
-  content: string;
-  url: string;
-  taggedUserIds?: string[];
   highlight?: HighlightParam;
+  url: string;
+  content: string;
+  taggedUserIds?: string[];
   topics?: ITopic[];
 }
 
 type HighlightParam = {
-  context: string; // Highlighted text + surrounding words for context
   text: string;
   range: XRange; // Serialized Range object
   url: string;

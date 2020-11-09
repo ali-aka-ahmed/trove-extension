@@ -61,7 +61,6 @@ export const posts: IPost[] = [
     topics: [],
     highlight: {
       id: '21a8a9d3-2d41-454e-ab5d-1e1ebb6abd93',
-      context: '',
       creationDatetime: 1601178997080,
       text: '',
       range: {
