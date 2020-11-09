@@ -129,6 +129,12 @@ export default function Tooltip() {
     return () => document.removeEventListener('mousedown', onMouseDownPage);
   }, [tempHighlightId, onMouseDownPage]);
 
+  const addTopic = (topic: Partial<ITopic>) => {
+    const newTopics = topics.slice().filter(t => t !== topic);
+    newTopics.unshift(topic);
+    setTopics(newTopics);
+  }
+
   const renderTopics = useCallback(() => {
     const pills = topics.map(topic =>
       <Pill 
@@ -141,7 +147,7 @@ export default function Tooltip() {
 
     return (
       <div className="TbdTooltip__TopicList">
-        <InputPill />
+        <InputPill onSubmit={addTopic} />
         {pills}
       </div>
     );

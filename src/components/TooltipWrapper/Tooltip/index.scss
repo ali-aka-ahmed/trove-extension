@@ -1,4 +1,4 @@
-$tooltip-width: 250px;
+$tooltip-width: 175px;
 $tooltip-padding: 10px;
 
 .TbdTooltip {
@@ -7,7 +7,7 @@ $tooltip-padding: 10px;
   left: 0px;
   // height: 45px;
   // width: 45px;
-  min-height: 150px;
+  min-height: 125px;
   width: $tooltip-width;
   background-color: #fff;
   border-radius: 15px;
