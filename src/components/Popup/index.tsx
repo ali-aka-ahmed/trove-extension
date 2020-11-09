@@ -41,19 +41,19 @@ export default function Popup() {
 
     chrome.storage.onChanged.addListener((change) => {
       if (change.isExtensionOn !== undefined) {
-        if (change.isExtensionOn.newValue) setIsExtensionOn(change.isExtensionOn.newValue);
+        if (change.isExtensionOn.newValue !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
         else setIsExtensionOn(false);
       }
       if (change.isAuthenticated !== undefined) {
-        if (change.isAuthenticated.newValue) setIsAuthenticated(change.isAuthenticated.newValue);
+        if (change.isAuthenticated.newValue !== undefined) setIsAuthenticated(change.isAuthenticated.newValue);
         else setIsAuthenticated(false);
       }
       if (change.user !== undefined) {
-        if (change.user.newValue) setUser(new User(change.user.newValue));
+        if (change.user.newValue !== undefined) setUser(new User(change.user.newValue));
         else setUser(null)
       }
       if (change.notifications !== undefined) {
-        if (change.notifications.newValue) setNotifications(change.notifications.newValue.map((n: INotification) => new Notification(n)));
+        if (change.notifications.newValue !== undefined) setNotifications(change.notifications.newValue.map((n: INotification) => new Notification(n)));
         else setNotifications([])
       }
     });

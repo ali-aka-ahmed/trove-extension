@@ -285,11 +285,11 @@ export default function Sidebar() {
     // Listener to update extension-wide settings
     chrome.storage.onChanged.addListener((change) => {
       if (change.isExtensionOn !== undefined) {
-        if (change.user.newValue) setIsExtensionOn(change.isExtensionOn.newValue);
+        if (change.isExtensionOn.newValue !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
         else setIsExtensionOn(false);
       }
       if (change.user !== undefined) {
-        if (change.user.newValue) setUser(new User(change.user.newValue));
+        if (change.user.newValue !== undefined) setUser(new User(change.user.newValue));
         else setUser(null)
       }
     });
