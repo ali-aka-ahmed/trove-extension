@@ -147,7 +147,7 @@ export default function Tooltip() {
           })}
           style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         >
-          {/* {renderTopics()} */}
+          {renderTopics()}
           <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
         </div>
       )}
