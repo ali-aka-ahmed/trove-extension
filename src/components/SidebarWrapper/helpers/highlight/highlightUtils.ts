@@ -99,7 +99,6 @@ export const addHighlight = (range: Range, rootId: string, color: string='yellow
 }
 
 export const removeHighlight = (id: string) => {
-  id = getCssCompatibleId(id);
   const marks = getHighlight(id);
   for (const mark of marks) {
     // Move each child of mark and merge if appropriate

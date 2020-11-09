@@ -62,10 +62,10 @@ export interface CreatePostReqBody {
   url: string;
   taggedUserIds?: string[];
   highlight?: HighlightParam;
-  topics?: ITopic[];
+  topics?: Partial<ITopic>[];
 }
 
-type HighlightParam = {
+export type HighlightParam = {
   context: string; // Highlighted text + surrounding words for context
   text: string;
   range: XRange; // Serialized Range object
@@ -80,7 +80,7 @@ export interface CreateCommentReqBody {
   url: string;
   taggedUserIds?: string[]; // if you tag someone, they can see this post and tag others
   highlight?: HighlightParam;
-  topics?: ITopic[];
+  topics?: Partial<ITopic>[];
 }
 
 /**
@@ -89,7 +89,7 @@ export interface CreateCommentReqBody {
 interface EditPostReqBody {
   content?: string;
   taggedUserIds?: string[];
-  topics?: ITopic[];
+  topics?: Partial<ITopic>[];
 }
 
 /** ************************* */

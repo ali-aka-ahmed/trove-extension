@@ -1,5 +1,6 @@
+import classNames from 'classnames';
 import Color from 'color';
-import React, { useState } from 'react';
+import React from 'react';
 
 interface PillProps {
   color?: string;
@@ -8,21 +9,9 @@ interface PillProps {
 }
 
 export default function Pill(props: PillProps) {
-  const [isHovering, setIsHovering] = useState(false);
-
-  const onMouseEnter = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    setIsHovering(true);
-  }
-
-  const onMouseLeave = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    setIsHovering(false);
-  }
-
   return (
     <div 
       className="TbdPill"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
       style={{ backgroundColor: props.color }}
     >
       <div 
@@ -31,9 +20,12 @@ export default function Pill(props: PillProps) {
       >
         {props.text}
       </div>
-      {isHovering && (
-        <button className="TbdPill__CloseButton" onClick={props.onClose}></button>
-      )}
+      <button 
+        className={classNames('TbdPill__CloseButton', {
+          'TbdPill__CloseButton--inverted': Color(props.color).isLight()
+        })} 
+        onClick={props.onClose}
+      />
     </div>
   );
 }

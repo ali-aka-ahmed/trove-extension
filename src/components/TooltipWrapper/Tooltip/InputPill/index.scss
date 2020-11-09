@@ -14,8 +14,9 @@ $tooltip-padding: 10px;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .5px;
-  line-height: $pill-height;
-  margin-bottom: 10px;
+  line-height: $pill-height - 2px;
+  margin-right: 5px;
+  margin-bottom: 5px;
 }
 
 .TbdInputPill--button {
@@ -30,5 +31,6 @@ $tooltip-padding: 10px;
 .TbdInputPill--input {
   border: 1px solid #777;
   width: 62.5px;
+  height: $pill-height - 2px;
   max-width: $tooltip-width - 2 * $tooltip-padding;
 }

@@ -6,24 +6,28 @@ import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import ITopic from '../../../models/ITopic';
 import IUser from '../../../models/IUser';
-import { createPost, IPostsRes } from '../../../server/posts';
+import { createPost, HighlightParam, IPostsRes } from '../../../server/posts';
 import { get1 } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from '../../SidebarWrapper/helpers/Edge';
-import { addHighlight } from '../../SidebarWrapper/helpers/highlight/highlightUtils';
+import Highlighter, { HighlightType } from '../../SidebarWrapper/helpers/highlight/Highlighter';
 import { getRangeFromXRange, getXRangeFromRange } from '../../SidebarWrapper/helpers/highlight/rangeUtils';
 import Point from '../../SidebarWrapper/helpers/Point';
 import InputPill from './InputPill';
 import Pill from './Pill';
 
 const TOOLTIP_MARGIN = 10;
-const TOOLTIP_HEIGHT = 45;
+const TOOLTIP_HEIGHT = 200;
 
 export default function Tooltip() {
-  const [isVisible, setIsVisible] = useState(false);
+  const [highlight, setHighlight] = useState<HighlightParam | null>(null);
+  const [highlighter, setHighlighter] = useState(new Highlighter());
+  const [isSelectionHighlighted, setIsSelectionHighlighted] = useState(false);
+  const [isSelectionVisible, setIsSelectionVisible] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [tempHighlightId, setTempHighlightId] = useState('');
   const [topics, setTopics] = useState<Partial<ITopic>[]>([{ color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }]);
   const [user, setUser] = useState<User | null>(null);
 
@@ -48,7 +52,14 @@ export default function Tooltip() {
           if (post.highlight) {
             try {
               const range = getRangeFromXRange(post.highlight.range);
-              if (range) addHighlight(range, post.highlight.id, post.creator.color);
+              if (range) {
+                highlighter.addHighlight(
+                  range, 
+                  post.highlight.id, 
+                  post.creator.color, 
+                  HighlightType.Default
+                );
+              }
             } catch (e) {
               console.error(e);
             }
@@ -61,13 +72,18 @@ export default function Tooltip() {
    * Position and display tooltip according to change in selection.
    */
   const onSelectionChange = useCallback(() => {
-    const selection = getSelection(); console.log('onSelectionChange')
+    const selection = getSelection();
     if (
       selection 
       && selection.rangeCount 
       && !selection.isCollapsed 
       && selection.toString()
     ) {
+      if (isSelectionHighlighted) {
+        highlighter.removeHighlight(tempHighlightId);
+        setIsSelectionHighlighted(false);
+      }
+
       const selPos = selection.getRangeAt(0).getBoundingClientRect();
       if (selPos.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
         setPositionEdge(Edge.Top);
@@ -80,11 +96,11 @@ export default function Tooltip() {
         setPosition(new Point(selPos.left + window.scrollX, selPos.bottom + window.scrollY));
       }
       
-      setIsVisible(true);
+      setIsSelectionVisible(true);
     } else {
-      setIsVisible(false);
+      setIsSelectionVisible(false);
     }
-  }, []);
+  }, [tempHighlightId]);
 
   useEffect(() => {
     document.addEventListener('selectionchange', onSelectionChange);
@@ -94,6 +110,24 @@ export default function Tooltip() {
       window.removeEventListener('resize', onSelectionChange);
     };
   }, [onSelectionChange]);
+
+  const onMouseDownPage = useCallback((e: MouseEvent) => {
+    if ((e.target as HTMLElement).className.match(/tbd/i)) return;
+    setIsSelectionHighlighted(false);
+    setIsSelectionVisible(false);
+    highlighter.removeHighlight(tempHighlightId);
+    setTempHighlightId('');
+  }, [tempHighlightId]);
+
+  useEffect(() => {
+    if (tempHighlightId !== '') {
+      document.addEventListener('mousedown', onMouseDownPage);
+    } else {
+      document.removeEventListener('mousedown', onMouseDownPage);
+    }
+    
+    return () => document.removeEventListener('mousedown', onMouseDownPage);
+  }, [tempHighlightId, onMouseDownPage]);
 
   const renderTopics = useCallback(() => {
     const pills = topics.map(topic =>
@@ -106,45 +140,55 @@ export default function Tooltip() {
     );
 
     return (
-      <div className="TbdTooltip__TopicList"> 
-        {pills}
+      <div className="TbdTooltip__TopicList">
         <InputPill />
+        {pills}
       </div>
     );
   }, [topics]);
 
-  const onClickSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onMouseDownTooltip = () => {
     const selection = getSelection();
     if (selection && selection.toString()) {
       const range = selection.getRangeAt(0);
       const xrange = getXRangeFromRange(range);
-      createPost({
-        content: selection.toString(),
-        url: window.location.href,
-        taggedUserIds: [],
-        highlight: {
-          context: selection.toString(),
-          range: xrange,
-          text: selection.toString(),
-          url: window.location.href
-        },
-        topics: []
+      setHighlight({
+        context: selection.toString(),
+        range: xrange,
+        text: selection.toString(),
+        url: window.location.href
       });
 
+      setIsSelectionHighlighted(true);
+      const id = uuid();
       const color = user ? hexToRgba(user.color, 0.25) : 'yellow';
-      addHighlight(range, uuid(), color);
+      setTempHighlightId(id);
+      highlighter.addHighlight(range, id, color, HighlightType.Active);
       selection.removeAllRanges();
+    }
+  }
+
+  const onClickSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (highlight) {
+      createPost({
+        content: highlight.text,
+        url: window.location.href,
+        taggedUserIds: [],
+        highlight: highlight,
+        topics: topics
+      });
     }
   }
 
   return (
     <>
-      {isVisible && (
+      {(isSelectionVisible || isSelectionHighlighted) && (
         <div 
           className={classNames('TbdTooltip', {
             'TbdTooltip--position-above': positionEdge === Edge.Top,
             'TbdTooltip--position-below': positionEdge === Edge.Bottom
           })}
+          onMouseDown={onMouseDownTooltip}
           style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         >
           {renderTopics()}
