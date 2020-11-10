@@ -28,7 +28,6 @@ export default function ColorPicker({ onSelect, defaultColor }: ColorPickerProps
 
   useEffect(() => {
     window.addEventListener("keypress", onEnter);
-    console.log('addlistener')
     return () => { window.removeEventListener("keypress", onEnter) }
   }, [colorPickerOpen, onEnter])
   
