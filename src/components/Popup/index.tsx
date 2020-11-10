@@ -32,7 +32,6 @@ export default function Popup() {
       notifications: [],
     }).then((items) => {
       setIsAuthenticated(items.isAuthenticated);
-      console.log('items', items);
       if (items.isAuthenticated) {
         setNotifications(items.notifications.map((n: INotification) => new Notification(n)));
         setIsExtensionOn(items.isExtensionOn);
@@ -41,7 +40,6 @@ export default function Popup() {
     });
 
     chrome.storage.onChanged.addListener((change) => {
-      console.log(change.isExtensionOn);
       if (change.isExtensionOn !== undefined) {
         if (change.isExtensionOn.newValue !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
         else setIsExtensionOn(false);
@@ -79,7 +77,7 @@ export default function Popup() {
     if (!isAuthenticated) return;
     await set({ isExtensionOn: checked });
   }
-  
+    
   return (
     <div className="TbdPopupContainer">
       {isAuthenticated ? (
