@@ -9,6 +9,7 @@ import INotification from '../../models/INotification';
 import { MessageType, sendMessageToWebsite } from '../../utils/chrome/external';
 import { get, remove, set } from '../../utils/chrome/storage';
 import Login from './Login';
+import Notifications from './Notifications';
 import Profile from './Profile';
 import './style.scss';
 
@@ -40,6 +41,7 @@ export default function Popup() {
     });
 
     chrome.storage.onChanged.addListener((change) => {
+      console.log(change.isExtensionOn);
       if (change.isExtensionOn !== undefined) {
         if (change.isExtensionOn.newValue !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
         else setIsExtensionOn(false);
@@ -81,12 +83,12 @@ export default function Popup() {
   return (
     <div className="TbdPopupContainer">
       {isAuthenticated ? (
-        <Tabs defaultActiveKey="2">
-          {/* <Tabs.TabPane tab="notifications" key="1" CHANGE DEFAULT ACTIVE KEY BACK TO 1>
+        <Tabs defaultActiveKey="1">
+          <Tabs.TabPane tab="notifications" key="1">
             <div className="TbdPopupContainer__TabWrapper">
               {notifications && <Notifications notifications={notifications} />}
             </div>
-          </Tabs.TabPane> */}
+          </Tabs.TabPane>
           <Tabs.TabPane tab="profile" key="2">
             <div className="TbdPopupContainer__TabWrapper">
               {user && <Profile user={user} />}
@@ -102,9 +104,9 @@ export default function Popup() {
             <div>Turn Trove</div>
             <div className="TbdPopupContainer__OnOff">{isExtensionOn ? 'OFF' : 'ON'}</div>
           </div>
-          <Switch onClick={(checked) => { handleOnOff(checked); }} checked={isExtensionOn} />
+          <Switch onClick={(checked) => handleOnOff(checked)} checked={isExtensionOn} />
         </div>
-        {isAuthenticated ? (
+        {isAuthenticated && (
           <div className='TbdPopupContainer__ButtonWrapper'>
             {!logoutLoading ? (
               <button
@@ -114,11 +116,11 @@ export default function Popup() {
                 Logout
               </button>
             ) : (
-              <div className='TbdPopupContainer__Loading'><LoadingOutlined /></div>
+              <div className='TbdPopupContainer__Loading'>
+                <LoadingOutlined />
+              </div>
             )}
           </div>
-        ) : (
-          <div></div>
         )}
       </div>
     </div>

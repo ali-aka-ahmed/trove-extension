@@ -1,0 +1,32 @@
+.TbdColorPicker {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: fit-content;
+  margin-top: 2px;
+}
+
+.TbdProfile__ColorPreview {
+  border-radius: 5px;
+  height: 20px;
+  width: 20px;
+  margin-left: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.TbdColorPicker__Wrapper {
+  position: absolute;
+  z-index: 9999999;
+  margin-bottom: 20px;
+}
+
+.ColorPicker__ColorPickerWrapper {
+  position: absolute;
+  z-index: 99999999;
+  margin-bottom: 15px;
+  top: 15px;
+  left: 18px;
+}

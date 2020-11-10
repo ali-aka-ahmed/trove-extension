@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import IUser from '../../../models/IUser';
 import { updateColor, updateDisplayName, updateUsername } from '../../../server/users';
 import { set } from '../../../utils/chrome/storage';
+import ColorPicker from '../../colorPicker';
 import { validateDisplayName, validateUsername } from '../helpers/auth';
 import '../style.scss';
-import ColorPicker from './ColorPicker';
 import './style.scss';
 
 interface ProfileProps {
@@ -112,7 +112,7 @@ export default function Profile({ user }: ProfileProps) {
         </div>
         <div className="TbdProfile__HeaderContent">
           {editable === 'displayName' ? (
-            <div className="TbdProfile__EditDisplayName">
+            <div className="TbdProfile__EditDisplayName EditProp">
               <input
                 autoFocus
                 style={{width: `${(displayName.length+1)*8}px`}}
@@ -144,7 +144,7 @@ export default function Profile({ user }: ProfileProps) {
             </div>
           )}
           {editable === 'username' ? (
-            <div className="TbdProfile__EditUsername">
+            <div className="TbdProfile__EditUsername EditProp">
               <div className="TbdProfile__InputPrefix" style={{ color: user.color }}>@</div>
               <input
                 autoFocus
@@ -180,12 +180,12 @@ export default function Profile({ user }: ProfileProps) {
         </div>
       </div>
       {editable === 'color' ? (
-        <div className="TbdProfile__Color TbdProfile__EditColor">
+        <div className="TbdProfile__Color TbdProfile__EditColor EditProp">
           <div className="TbdProfile__ColorText">
             Accent Color
             {loading === 'color' && <div className="TbdProfile__Loading"><LoadingOutlined /></div>}
           </div>
-          <ColorPicker onSelect={saveColor} />
+          <ColorPicker onSelect={saveColor} defaultColor={user.color} />
         </div>
       ) : (
         <div
