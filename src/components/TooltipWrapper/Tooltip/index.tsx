@@ -1,5 +1,4 @@
 import classNames from 'classnames';
-import hexToRgba from 'hex-to-rgba';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import { v4 as uuid } from 'uuid';
@@ -215,9 +214,8 @@ export default function Tooltip() {
 
       setIsSelectionHighlighted(true);
       const id = uuid();
-      const color = user ? hexToRgba(user.color, 0.25) : 'yellow';
       setTempHighlightId(id);
-      highlighter.addHighlight(range, id, color, HighlightType.Active);
+      highlighter.addHighlight(range, id, user?.color, HighlightType.Active);
       selection.removeAllRanges();
     }
   }
