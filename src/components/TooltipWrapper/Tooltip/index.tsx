@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import hexToRgba from 'hex-to-rgba';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../entities/Post';
@@ -32,6 +32,7 @@ export default function Tooltip() {
   const [tempHighlightId, setTempHighlightId] = useState('');
   const [topics, setTopics] = useState<Partial<ITopic>[]>([]); // { color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }
   const [user, setUser] = useState<User | null>(null);
+  const tooltipRef = useRef<any>(null);
 
   useEffect(() => {
     // Get user object
@@ -75,7 +76,7 @@ export default function Tooltip() {
   /**
    * Position and display tooltip according to change in selection.
    */
-  const onSelectionChange = useCallback(() => {
+  const positionTooltip = useCallback(() => {
     const selection = getSelection();
     if (
       selection 
@@ -89,6 +90,7 @@ export default function Tooltip() {
       }
 
       const selPos = selection.getRangeAt(0).getBoundingClientRect();
+
       if (selPos.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
         setPositionEdge(Edge.Top);
         setPosition(new Point(
@@ -107,31 +109,38 @@ export default function Tooltip() {
   }, [tempHighlightId]);
 
   useEffect(() => {
-    document.addEventListener('selectionchange', onSelectionChange);
-    window.addEventListener('resize', onSelectionChange);
+    document.addEventListener('mouseup', positionTooltip);
+    window.addEventListener('resize', positionTooltip);
     return () => {
-      document.removeEventListener('selectionchange', onSelectionChange);
-      window.removeEventListener('resize', onSelectionChange);
+      document.removeEventListener('mouseup', positionTooltip);
+      window.removeEventListener('resize', positionTooltip);
     };
-  }, [onSelectionChange]);
+  }, [positionTooltip]);
 
   const onMouseDownPage = useCallback((e: MouseEvent) => {
+    // Do nothing if user clicks Trove tooltip
     if ((e.target as HTMLElement).className.match(/tbd/i)) return;
+    
+    // Remove temp highlight if it exists
+    if (tempHighlightId) {
+      highlighter.removeHighlight(tempHighlightId);
+      setTempHighlightId('');
+    }
+
+    // Hide tooltip
     setIsSelectionHighlighted(false);
     setIsSelectionVisible(false);
-    highlighter.removeHighlight(tempHighlightId);
-    setTempHighlightId('');
   }, [tempHighlightId]);
 
   useEffect(() => {
-    if (tempHighlightId !== '') {
+    if (isSelectionHighlighted || isSelectionVisible) {
       document.addEventListener('mousedown', onMouseDownPage);
     } else {
       document.removeEventListener('mousedown', onMouseDownPage);
     }
     
     return () => document.removeEventListener('mousedown', onMouseDownPage);
-  }, [tempHighlightId, onMouseDownPage]);
+  }, [isSelectionHighlighted, isSelectionVisible, onMouseDownPage]);
 
   const addTopic = (topic: Partial<ITopic>) => {
     const newTopics = topics.slice().filter(t => t !== topic);
@@ -221,6 +230,7 @@ export default function Tooltip() {
           })}
           onMouseDown={onMouseDownTooltip}
           style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+          ref={tooltipRef}
         >
           {renderTopics()}
           <ReactQuill 
