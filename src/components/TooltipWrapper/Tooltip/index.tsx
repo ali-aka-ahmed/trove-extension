@@ -73,24 +73,25 @@ export default function Tooltip() {
     }
   }, [posts]);
 
+  const selectionExists = (selection: Selection | null) => {
+    return selection 
+      && selection.rangeCount 
+      && !selection.isCollapsed 
+      && selection.toString();
+  }
+
   /**
    * Position and display tooltip according to change in selection.
    */
   const positionTooltip = useCallback(() => {
     const selection = getSelection();
-    if (
-      selection 
-      && selection.rangeCount 
-      && !selection.isCollapsed 
-      && selection.toString()
-    ) {
+    if (selectionExists(selection)) {
       if (isSelectionHighlighted) {
         highlighter.removeHighlight(tempHighlightId);
         setIsSelectionHighlighted(false);
       }
 
-      const selPos = selection.getRangeAt(0).getBoundingClientRect();
-
+      const selPos = selection!.getRangeAt(0).getBoundingClientRect();
       if (selPos.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
         setPositionEdge(Edge.Top);
         setPosition(new Point(
@@ -117,10 +118,28 @@ export default function Tooltip() {
     };
   }, [positionTooltip]);
 
+  const onSelectionChange = () => {
+    const selection = getSelection();
+    if (!selectionExists(selection)) {
+      setIsSelectionVisible(false);
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener('selectionchange', onSelectionChange);
+    return () => document.removeEventListener('selectionchange', onSelectionChange);
+  }, [onSelectionChange]);
+
   const onMouseDownPage = useCallback((e: MouseEvent) => {
+    // Do nothing if selection exists, let onSelectionChange take care of it
+    if (selectionExists(getSelection())) return;
+
     // Do nothing if user clicks Trove tooltip
-    if ((e.target as HTMLElement).className.match(/tbd/i)) return;
-    
+    const target = e.target as HTMLElement;
+    if (target.className.match(/tbd/i) || target.className.match(/trove/i)) {
+      return;
+    }
+
     // Remove temp highlight if it exists
     if (tempHighlightId) {
       highlighter.removeHighlight(tempHighlightId);
