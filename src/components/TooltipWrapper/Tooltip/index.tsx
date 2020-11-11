@@ -30,7 +30,7 @@ export default function Tooltip() {
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
   const [posts, setPosts] = useState<Post[]>([]);
   const [tempHighlightId, setTempHighlightId] = useState('');
-  const [topics, setTopics] = useState<Partial<ITopic>[]>([{ color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }]);
+  const [topics, setTopics] = useState<Partial<ITopic>[]>([]); // { color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -163,7 +163,7 @@ export default function Tooltip() {
       const range = selection.getRangeAt(0);
       const xrange = getXRangeFromRange(range);
       setHighlight({
-        context: selection.toString(),
+        // context: selection.toString(),
         range: xrange,
         text: selection.toString(),
         url: window.location.href
