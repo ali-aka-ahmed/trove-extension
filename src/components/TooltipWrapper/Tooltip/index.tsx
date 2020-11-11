@@ -51,7 +51,6 @@ export default function Tooltip() {
   useEffect(() => {
     if (posts) {
       highlighter.removeAllHighlights();
-      
       posts.sort((p1, p2) => p1.creationDatetime - p2.creationDatetime)
         .forEach((post) => {
           if (post.highlight) {
@@ -77,7 +76,8 @@ export default function Tooltip() {
     return selection 
       && selection.rangeCount 
       && !selection.isCollapsed 
-      && selection.toString();
+      && selection.toString()
+      && !selection.toString().match(/^\n+$/i);
   }
 
   /**
@@ -215,7 +215,6 @@ export default function Tooltip() {
         highlight: highlight,
         topics: topics
       };
-      console.log(JSON.stringify(post))
       createPost(post);
       setIsSelectionVisible(false);
       setIsSelectionHighlighted(false);
