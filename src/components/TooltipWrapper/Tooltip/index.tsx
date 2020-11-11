@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import hexToRgba from 'hex-to-rgba';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import ReactQuill from 'react-quill';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
@@ -30,6 +31,8 @@ export default function Tooltip() {
   const [tempHighlightId, setTempHighlightId] = useState('');
   const [topics, setTopics] = useState<Partial<ITopic>[]>([{ color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }]);
   const [user, setUser] = useState<User | null>(null);
+  const [value, setValue] = useState('');
+  const editorRef = useRef<any>(null);
 
   useEffect(() => {
     // Get user object
@@ -47,6 +50,8 @@ export default function Tooltip() {
 
   useEffect(() => {
     if (posts) {
+      highlighter.removeAllHighlights();
+      
       posts.sort((p1, p2) => p1.creationDatetime - p2.creationDatetime)
         .forEach((post) => {
           if (post.highlight) {
@@ -176,13 +181,32 @@ export default function Tooltip() {
 
   const onClickSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (highlight) {
-      createPost({
+      const post = {
         content: highlight.text,
         url: window.location.href,
         taggedUserIds: [],
+        taggedUsers: [],
         highlight: highlight,
         topics: topics
+      };
+      createPost(post);
+      setIsSelectionVisible(false);
+      setIsSelectionHighlighted(false);
+      // @ts-ignore
+      posts.push({
+        ...post, 
+        creationDatetime: Date.now(),
+        id: uuid(),
+        creator: user!,
+        domain: '',
+        numComments: 0,
+        numLikes: 0,
+        isComment: false,
+        isTopOfThread: false,
+        timeAgo: ''
       });
+      // console.log(editorRef.current, editorRef.current.value, editorRef.current.html, editorRef.current.innerHtml);
+      // for (const key in editorRef.current) console.log(key)
     }
   }
 
@@ -198,6 +222,13 @@ export default function Tooltip() {
           style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         >
           {renderTopics()}
+          <ReactQuill 
+            className="TroveTooltip__Editor" 
+            theme="bubble" 
+            value={value} 
+            onChange={setValue}
+            placeholder="Add note"
+          />
           <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
         </div>
       )}

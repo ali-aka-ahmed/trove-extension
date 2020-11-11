@@ -1,0 +1,12 @@
+.TroveTooltip__Editor {
+  padding: 3px 2.5px 26.5px 2.5px;
+}
+
+.TroveTooltip__Editor .ql-editor {
+  padding: 0px;
+}
+
+.TroveTooltip__Editor .ql-editor.ql-blank::before {
+  left: 0px;
+  right: 0px;
+}
