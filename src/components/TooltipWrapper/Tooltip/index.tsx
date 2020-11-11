@@ -184,13 +184,14 @@ export default function Tooltip() {
         content: editorValue,
         url: window.location.href,
         taggedUserIds: [],
-        taggedUsers: [],
         highlight: highlight,
         topics: topics
       };
+      console.log(JSON.stringify(post))
       createPost(post);
       setIsSelectionVisible(false);
       setIsSelectionHighlighted(false);
+      setEditorValue('');
 
       // // @ts-ignore
       // posts.push({

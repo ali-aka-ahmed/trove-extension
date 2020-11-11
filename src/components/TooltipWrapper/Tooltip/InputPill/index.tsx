@@ -17,7 +17,13 @@ export default function InputPill(props: InputPillProps) {
     if (isInput) {
       (inputRef.current as HTMLInputElement).focus();
     }
-  }, [isInput])
+  }, [isInput]);
+
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const val = (e.target as HTMLInputElement).value.trim();
+    console.log(val, val && val === '')
+    if (val === '') setIsInput(false);
+  }
 
   const onKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -27,7 +33,9 @@ export default function InputPill(props: InputPillProps) {
       });
 
       (e.target as HTMLInputElement).value = '';
-    }
+    } else if (e.key === 'Escape') {
+      (e.target as HTMLInputElement).blur();
+    } 
   }
 
   return (
@@ -35,7 +43,8 @@ export default function InputPill(props: InputPillProps) {
       {isInput ? (
         <input 
           className="TbdInputPill TbdInputPill--input"
-          onKeyUp={onKeyUp} 
+          onBlur={onBlur}
+          onKeyUp={onKeyUp}
           ref={inputRef} 
         />
       ) : (
