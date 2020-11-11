@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import hexToRgba from 'hex-to-rgba';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import { v4 as uuid } from 'uuid';
 import Post from '../../../entities/Post';
@@ -21,6 +21,7 @@ const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
 
 export default function Tooltip() {
+  const [editorValue, setEditorValue] = useState('');
   const [highlight, setHighlight] = useState<HighlightParam | null>(null);
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isSelectionHighlighted, setIsSelectionHighlighted] = useState(false);
@@ -31,8 +32,6 @@ export default function Tooltip() {
   const [tempHighlightId, setTempHighlightId] = useState('');
   const [topics, setTopics] = useState<Partial<ITopic>[]>([{ color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }]);
   const [user, setUser] = useState<User | null>(null);
-  const [value, setValue] = useState('');
-  const editorRef = useRef<any>(null);
 
   useEffect(() => {
     // Get user object
@@ -182,7 +181,7 @@ export default function Tooltip() {
   const onClickSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (highlight) {
       const post = {
-        content: highlight.text,
+        content: editorValue,
         url: window.location.href,
         taggedUserIds: [],
         taggedUsers: [],
@@ -192,19 +191,20 @@ export default function Tooltip() {
       createPost(post);
       setIsSelectionVisible(false);
       setIsSelectionHighlighted(false);
-      // @ts-ignore
-      posts.push({
-        ...post, 
-        creationDatetime: Date.now(),
-        id: uuid(),
-        creator: user!,
-        domain: '',
-        numComments: 0,
-        numLikes: 0,
-        isComment: false,
-        isTopOfThread: false,
-        timeAgo: ''
-      });
+
+      // // @ts-ignore
+      // posts.push({
+      //   ...post, 
+      //   creationDatetime: Date.now(),
+      //   id: uuid(),
+      //   creator: user!,
+      //   domain: '',
+      //   numComments: 0,
+      //   numLikes: 0,
+      //   isComment: false,
+      //   isTopOfThread: false,
+      //   timeAgo: ''
+      // });
       // console.log(editorRef.current, editorRef.current.value, editorRef.current.html, editorRef.current.innerHtml);
       // for (const key in editorRef.current) console.log(key)
     }
@@ -225,8 +225,8 @@ export default function Tooltip() {
           <ReactQuill 
             className="TroveTooltip__Editor" 
             theme="bubble" 
-            value={value} 
-            onChange={setValue}
+            value={editorValue} 
+            onChange={setEditorValue}
             placeholder="Add note"
           />
           <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
