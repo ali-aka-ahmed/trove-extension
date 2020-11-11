@@ -55,7 +55,18 @@ export default function Tooltip() {
 
   useEffect(() => {
     if (posts) {
-      highlighter.removeAllHighlights();
+      // TODO: make this more efficient - compare how list changes + modify highlights (dispatch)
+      posts.sort((p1, p2) => p2.creationDatetime - p1.creationDatetime)
+        .forEach((post) => {
+          if (post.highlight) {
+            try {
+              highlighter.removeHighlight(post.highlight.id);
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        });
+
       posts.sort((p1, p2) => p1.creationDatetime - p2.creationDatetime)
         .forEach((post) => {
           if (post.highlight) {
@@ -211,19 +222,32 @@ export default function Tooltip() {
     }
   }
 
-  const onClickSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (highlight) {
-      const post = {
+      const postReq = {
         content: editorValue,
         url: window.location.href,
         taggedUserIds: [],
         highlight: highlight,
         topics: topics
       };
-      createPost(post);
+      
       setIsSelectionVisible(false);
       setIsSelectionHighlighted(false);
       setEditorValue('');
+      const postRes = await createPost(postReq);
+      if (postRes.success && postRes.post) {
+        if (tempHighlightId) {
+          highlighter.removeHighlight(tempHighlightId);
+          setTempHighlightId('');
+        }
+        
+        const newPosts = posts.slice();
+        newPosts.push(new Post(postRes.post));
+        setPosts(newPosts);
+      } else {
+        // Show that highlighting failed
+      }
 
       // // @ts-ignore
       // posts.push({
