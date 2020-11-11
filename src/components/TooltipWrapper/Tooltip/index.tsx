@@ -222,6 +222,10 @@ export default function Tooltip() {
     }
   }
 
+  const onEditorChange = (content: string) => {
+    setEditorValue(content);
+  }
+
   const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (highlight) {
       const postReq = {
@@ -284,7 +288,7 @@ export default function Tooltip() {
             className="TroveTooltip__Editor" 
             theme="bubble" 
             value={editorValue} 
-            onChange={setEditorValue}
+            onChange={onEditorChange}
             placeholder="Add note"
           />
           <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
