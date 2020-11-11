@@ -26,15 +26,17 @@ export default function InputPill(props: InputPillProps) {
   }
 
   const onKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
     if (e.key === 'Enter') {
       props.onSubmit({
         color: '#ebebeb',
-        text: (e.target as HTMLInputElement).value
+        text: target.value
       });
 
-      (e.target as HTMLInputElement).value = '';
+      target.value = '';
     } else if (e.key === 'Escape') {
-      (e.target as HTMLInputElement).blur();
+      target.value = '';
+      target.blur();
     } 
   }
 
