@@ -6,9 +6,8 @@ import { v4 as uuid } from 'uuid';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import ITopic from '../../../models/ITopic';
-import IUser from '../../../models/IUser';
 import { createPost, HighlightParam, IPostsRes } from '../../../server/posts';
-import { get1 } from '../../../utils/chrome/storage';
+import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from '../../SidebarWrapper/helpers/Edge';
 import Highlighter, { HighlightType } from '../../SidebarWrapper/helpers/highlight/Highlighter';
@@ -36,16 +35,22 @@ export default function Tooltip() {
 
   useEffect(() => {
     // Get user object
-    get1('user').then((userData: IUser) => setUser(new User(userData)));
+    get(['user', 'isAuthenticated', 'isExtensionOn'])
+      .then((data) => {
+        if (!data.isAuthenticated || !data.isExtensionOn) return;
 
-    // Get posts on current page
-    const url = window.location.href;
-    sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
-      if (res.success) {
-        const posts = res.posts!.map((p) => new Post(p));
-        setPosts(posts);
-      };
-    });
+        // Set current user
+        if (data.user) setUser(new User(data.user));
+
+        // Get posts on current page
+        const url = window.location.href;
+        sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
+          if (res.success) {
+            const posts = res.posts!.map((p) => new Post(p));
+            setPosts(posts);
+          };
+        });
+      });
   }, []);
 
   useEffect(() => {
