@@ -85,6 +85,7 @@ export default function Tooltip(props: TooltipProps) {
   }
 
   useEffect(() => {
+    // Workaround to force Quill placeholder to change dynamically
     const editor = props.root.querySelector('.ql-editor');
     if (!!hoveredHighlightPost) {
       editor?.setAttribute('data-placeholder', 'No added note');
