@@ -67,6 +67,6 @@ export default class Highlighter {
     const color = Color(colorStr);
     const rgba = (c: Color<string>, o: number) => `rgba(${c.red()},${c.green()},${c.blue()},${o})`;
     if (type === HighlightType.Default) return rgba(color, 0.25);
-    return rgba(color, 0.5);
+    return rgba(color, 0.65);
   }
 }

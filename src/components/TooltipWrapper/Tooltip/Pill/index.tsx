@@ -6,6 +6,7 @@ interface PillProps {
   color?: string;
   text?: string;
   onClose: () => void;
+  readOnly: boolean;
 }
 
 export default function Pill(props: PillProps) {
@@ -20,12 +21,14 @@ export default function Pill(props: PillProps) {
       >
         {props.text}
       </div>
-      <button 
-        className={classNames('TbdPill__CloseButton', {
-          'TbdPill__CloseButton--inverted': Color(props.color).isLight()
-        })} 
-        onClick={props.onClose}
-      />
+      {!props.readOnly && (
+        <button 
+          className={classNames('TbdPill__CloseButton', {
+            'TbdPill__CloseButton--inverted': Color(props.color).isLight()
+          })} 
+          onClick={props.onClose}
+        />
+      )}
     </div>
   );
 }
