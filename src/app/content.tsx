@@ -18,4 +18,4 @@ tooltipContainer.setAttribute('class', 'TbdTooltipWrapper');
 document.body.appendChild(tooltipContainer);
 
 const tooltipShadowRoot = tooltipContainer.attachShadow({ mode: 'open' });
-ReactDOM.render(<TooltipWrapper />, tooltipShadowRoot);
+ReactDOM.render(<TooltipWrapper root={tooltipShadowRoot} />, tooltipShadowRoot);

@@ -8,10 +8,14 @@ import tooltipStyles from './Tooltip/index.scss?inject';
 import inputPillStyles from './Tooltip/InputPill/index.scss?inject';
 import pillStyles from './Tooltip/Pill/index.scss?inject';
 
-export default function TooltipWrapper() {
+interface TooltipWrapperProps {
+  root: ShadowRoot;
+}
+
+export default function TooltipWrapper(props: TooltipWrapperProps) {
   return (
     <ErrorBoundary>
-      <Tooltip />
+      <Tooltip root={props.root} />
       <style type="text/css">{quillStyles}</style>
       <style type="text/css">{editorStyles}</style>
       <style type="text/css">{tooltipStyles}</style>

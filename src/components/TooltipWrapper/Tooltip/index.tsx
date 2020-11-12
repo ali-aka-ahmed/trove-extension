@@ -18,7 +18,11 @@ import Pill from './Pill';
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
 
-export default function Tooltip() {
+interface TooltipProps {
+  root: ShadowRoot;
+}
+
+export default function Tooltip(props: TooltipProps) {
   const [editorValue, setEditorValue] = useState('');
   const [highlight, setHighlight] = useState<HighlightParam | null>(null);
   const [highlighter, setHighlighter] = useState(new Highlighter());
@@ -79,6 +83,15 @@ export default function Tooltip() {
     }
     highlighter.addHighlight(range, post.id, color, type, onMouseEnter, onMouseLeave);
   }
+
+  useEffect(() => {
+    const editor = props.root.querySelector('.ql-editor');
+    if (!!hoveredHighlightPost) {
+      editor?.setAttribute('data-placeholder', 'No added note');
+    } else {
+      editor?.setAttribute('data-placeholder', 'Add note');
+    }
+  }, [hoveredHighlightPost])
 
   useEffect(() => {
     if (posts) {
@@ -275,22 +288,6 @@ export default function Tooltip() {
       } else {
         // Show that highlighting failed
       }
-
-      // // @ts-ignore
-      // posts.push({
-      //   ...post, 
-      //   creationDatetime: Date.now(),
-      //   id: uuid(),
-      //   creator: user!,
-      //   domain: '',
-      //   numComments: 0,
-      //   numLikes: 0,
-      //   isComment: false,
-      //   isTopOfThread: false,
-      //   timeAgo: ''
-      // });
-      // console.log(editorRef.current, editorRef.current.value, editorRef.current.html, editorRef.current.innerHtml);
-      // for (const key in editorRef.current) console.log(key)
     }
   }
 
