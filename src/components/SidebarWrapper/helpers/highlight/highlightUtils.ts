@@ -8,7 +8,13 @@ export enum MarkDataKey {
 
 const MARK_CLASS_NAME = 'TbdMark';
 
-export const addHighlight = (range: Range, rootId: string, color: string='yellow') => {
+export const addHighlight = (
+  range: Range, 
+  rootId: string, 
+  color: string='yellow', 
+  onMouseEnter=(e: MouseEvent) => {},
+  onMouseLeave=(e: MouseEvent) => {}
+) => {
   rootId = getCssCompatibleId(rootId);
   let start = range.startContainer;
   let end = range.endContainer;
@@ -65,6 +71,9 @@ export const addHighlight = (range: Range, rootId: string, color: string='yellow
           prevMark.dataset[MarkDataKey.NextMarkId] = mark.dataset[MarkDataKey.ThisMarkId];
         }
 
+        // Add handlers
+        mark.addEventListener('mouseenter', onMouseEnter);
+        mark.addEventListener('mouseleave', onMouseLeave);
         marks.push(mark);
 
         // Position new wrapper accordingly

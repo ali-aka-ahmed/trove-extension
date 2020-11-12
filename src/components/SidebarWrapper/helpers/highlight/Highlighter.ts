@@ -26,18 +26,20 @@ export default class Highlighter {
     range: Range, 
     rootId: string, 
     colorStr: string | null='yellow', 
-    type: HighlightType
+    type: HighlightType,
+    onMouseEnter=(e: MouseEvent) => {},
+    onMouseLeave=(e: MouseEvent) => {}
   ) => {
     const hd = this.highlights.get(rootId);
     const color = colorStr ? this.getColor(colorStr, type) : 'yellow';
     if (!hd) {
       // Add new highlight
-      addHighlight(range, rootId, color);
+      addHighlight(range, rootId, color, onMouseEnter, onMouseLeave);
     } else {
       if (!areRangesEqual(range, hd.range)) {
         // If range is different, remove previous highlight and add new one
         removeHighlight(rootId);
-        addHighlight(range, rootId, color);
+        addHighlight(range, rootId, color, onMouseEnter, onMouseLeave);
       } else if (type !== hd.type || color !== hd.color) {
         // Range is same, but type of highlight is different, so just modify existing one
         modifyHighlight(rootId, 'backgroundColor', color);
