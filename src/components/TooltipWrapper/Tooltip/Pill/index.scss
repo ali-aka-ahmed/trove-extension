@@ -7,18 +7,10 @@ $pill-padding: 10px;
   padding: 0 $pill-padding;
   width: auto;
   height: $pill-height;
-  margin-left: 10px;
-  margin-bottom: 10px;
+  margin-right: 5px;
+  margin-bottom: 5px;
   border-radius: $pill-height / 2;
   transition: width .5s;
-}
-
-.TbdPill:first-child {
-  margin-left: 0px;
-}
-
-.TbdPill:nth-last-child(2) {
-  margin-right: 10px;
 }
 
 .TbdPill__Text {
@@ -36,10 +28,15 @@ $pill-padding: 10px;
   border-radius: 50%;
   margin: auto;
   margin-left: 5px;
-  background-color: #545454;
+  background-color: transparent;
   background-image: url('../../../../../public/images/new-post-icon.svg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 8px 8px;
   cursor: pointer;
+}
+
+.TbdPill__CloseButton--inverted {
+  filter: invert(100%);
+  -webkit-filter: invert(100%);
 }

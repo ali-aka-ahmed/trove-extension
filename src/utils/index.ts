@@ -34,3 +34,23 @@ export const displayRelativeTime = (datetime: number): string => {
   else if (deltaHrs < 24) return `${deltaHrs.toString()}h`;
   else return deltaDate;
 };
+
+/**
+ * Converts Hex to RGBA.
+ * @param {string} hex 
+ * @param {number} opacity
+ * @returns {string|null}
+ */
+export const hexToRgba = (hex: string, opacity: number): string | null => {
+  let c: string[];
+  let hexCode: number;
+  if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+      c = hex.substring(1).split('');
+      if (c.length === 3) {
+          c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+      }
+      hexCode = parseInt('0x' + c.join(''));
+      return `rgba(${[(hexCode >> 16) & 255, (hexCode >> 8) & 255, hexCode & 255].join(',')}, ${opacity.toString()})`;
+  }
+  return null
+}

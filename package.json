@@ -10,6 +10,7 @@
   "author": "Akshath Sivaprasad",
   "devDependencies": {
     "@types/chrome": "^0.0.60",
+    "@types/color": "^3.0.1",
     "@types/javascript-time-ago": "^2.0.1",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/react": "^16.9.32",
@@ -33,19 +34,16 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.2.2",
-    "@rangy/classapplier": "^2.1.0",
-    "@rangy/core": "^2.1.0",
-    "@rangy/highlighter": "^2.1.0",
-    "@rangy/serializer": "^2.1.0",
     "antd": "^4.6.2",
     "axios": "^0.20.0",
     "classnames": "^2.2.6",
-    "hex-to-rgba": "^2.0.1",
+    "color": "^3.1.3",
     "javascript-time-ago": "^2.0.13",
     "jsonwebtoken": "^8.5.1",
     "react": "^16.13.1",
     "react-color": "^2.19.3",
     "react-dom": "^16.13.1",
+    "react-quill": "^1.3.5",
     "socket.io-client": "^2.3.1",
     "uuid": "^8.3.0"
   }

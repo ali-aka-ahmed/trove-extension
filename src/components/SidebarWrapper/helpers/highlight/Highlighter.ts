@@ -1,4 +1,4 @@
-import hexToRgba from "hex-to-rgba";
+import Color from "color";
 import { addHighlight, modifyHighlight, removeHighlight } from "./highlightUtils";
 import { areRangesEqual } from "./rangeUtils";
 
@@ -21,19 +21,28 @@ export default class Highlighter {
     this.highlights = new Map<string, HighlightData>();
   }
 
-  addHighlight = (range: Range, rootId: string, color: string='yellow', type: HighlightType) => {
+  // TODO: use shorter id
+  addHighlight = (
+    range: Range, 
+    rootId: string, 
+    colorStr: string | null='yellow', 
+    type: HighlightType,
+    onMouseEnter=(e: MouseEvent) => {},
+    onMouseLeave=(e: MouseEvent) => {}
+  ) => {
     const hd = this.highlights.get(rootId);
+    const color = colorStr ? this.getColor(colorStr, type) : 'yellow';
     if (!hd) {
       // Add new highlight
-      addHighlight(range, rootId, color);
+      addHighlight(range, rootId, color, onMouseEnter, onMouseLeave);
     } else {
       if (!areRangesEqual(range, hd.range)) {
         // If range is different, remove previous highlight and add new one
         removeHighlight(rootId);
-        addHighlight(range, rootId, color);
+        addHighlight(range, rootId, color, onMouseEnter, onMouseLeave);
       } else if (type !== hd.type || color !== hd.color) {
         // Range is same, but type of highlight is different, so just modify existing one
-        modifyHighlight(rootId, 'backgroundColor', this.getColor(color, type));
+        modifyHighlight(rootId, 'backgroundColor', color);
       }
     }
 
@@ -47,14 +56,17 @@ export default class Highlighter {
     }
   }
 
+  // TODO: Need to get highlights by reverse chronological order
   removeAllHighlights = () => {
     for (const id of Object.keys(this.highlights)) {
       this.removeHighlight(id);
     }
   }
 
-  private getColor = (color: string, type: HighlightType) => {
-    if (type === HighlightType.Default) return hexToRgba(color, 0.1);
-    return hexToRgba(color, 0.25);
+  private getColor = (colorStr: string, type: HighlightType): string => {
+    const color = Color(colorStr);
+    const rgba = (c: Color<string>, o: number) => `rgba(${c.red()},${c.green()},${c.blue()},${o})`;
+    if (type === HighlightType.Default) return rgba(color, 0.25);
+    return rgba(color, 0.65);
   }
 }
