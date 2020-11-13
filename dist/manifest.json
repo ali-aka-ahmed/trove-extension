@@ -25,7 +25,10 @@
   "permissions": [
     "storage",
     "tabs",
-    "activeTab"
+    "activeTab",
+    "http://localhost:5000/*",
+    "https://api.trove.so/*",
+    "https://dev.trove.so/*"
   ],
   "externally_connectable": {
     "matches": [

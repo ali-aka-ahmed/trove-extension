@@ -15,6 +15,7 @@ import './style.scss';
 
 export default function Popup() {
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const [tabKey, setTabKey] = useState("1");
   
   /**
    * Global state.
@@ -59,12 +60,24 @@ export default function Popup() {
     });
   }, []);
 
+  useEffect(() => {
+    const zeroNotificationDisplayIcon = async () => {
+      if (tabKey === "1" && user) {
+        await set({ notificationDisplayIcon: 0 })
+        socket.emit('opened notification tray', user.id)
+      }
+    };
+    zeroNotificationDisplayIcon();
+  }, [tabKey, user])
+
   const handleLogout = async () => {
     setLogoutLoading(true)
     const items = await get(null)
     socket.emit('leave room', items.user.id);
     await remove(Object.keys(items))
-    await set({ isAuthenticated: false })
+    await set({ 
+      isAuthenticated: false,
+    })
     sendMessageToWebsite({ type: MessageType.Logout })
     setLogoutLoading(false)
   }
@@ -77,11 +90,11 @@ export default function Popup() {
     if (!isAuthenticated) return;
     await set({ isExtensionOn: checked });
   }
-    
+
   return (
     <div className="TbdPopupContainer">
       {isAuthenticated ? (
-        <Tabs defaultActiveKey="1">
+        <Tabs activeKey={tabKey} onChange={(newTabKey) => setTabKey(newTabKey)}>
           <Tabs.TabPane tab="notifications" key="1">
             <div className="TbdPopupContainer__TabWrapper">
               {notifications && <Notifications notifications={notifications} />}

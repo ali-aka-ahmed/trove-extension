@@ -29,7 +29,9 @@ export default function Tooltip() {
 
   useEffect(() => {
     // Get user object
-    get1('user').then((userData: IUser) => setUser(new User(userData)));
+    get1('user').then((userData: IUser) => {
+      if (userData) setUser(new User(userData))
+    });
 
     // Get posts on current page
     const url = window.location.href;

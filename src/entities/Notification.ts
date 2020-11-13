@@ -8,6 +8,7 @@ export default class Notification implements INotification {
   public content: string;
   public sender: User;
   public url: string;
+  public read: boolean;
   public postId: string;
   public taggedUsers: User[];
   public creationDatetime: number;
@@ -19,6 +20,7 @@ export default class Notification implements INotification {
     this.creationDatetime = n.creationDatetime;
     this.sender = new User(n.sender);
     this.url = n.url;
+    this.read = n.read;
     this.postId = n.postId;
     this.taggedUsers = n.taggedUsers.map((u) => new User(u));
   }
