@@ -2,6 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Switch, Tabs } from 'antd';
 import 'antd/dist/antd.min.css';
 import React, { useEffect, useState } from 'react';
+import 'react-quill/dist/quill.bubble.css';
 import { socket } from '../../app/background';
 import Notification from '../../entities/Notification';
 import User from '../../entities/User';

@@ -224,16 +224,17 @@ export default function Tooltip(props: TooltipProps) {
     const pills = (post ? post.topics : topics).map(topic =>
       <Pill 
         key={topic.text} 
-        color={topic.color} 
-        text={topic.text}
+        color={topic.color!} 
+        text={topic.text!}
         onClose={() => { setTopics(topics.slice().filter(t => t !== topic)); }}
-        readOnly={!!post}
+        showClose={!post}
+        style={{marginBottom: '3px'}}
       />
     );
 
     return (
       <div className="TbdTooltip__TopicList">
-        {!post && <InputPill onSubmit={addTopic} />}
+        {!post && <InputPill onSubmit={addTopic} style={{marginBottom: '3px'}} />}
         {pills}
       </div>
     );
@@ -276,6 +277,7 @@ export default function Tooltip(props: TooltipProps) {
       setIsSelectionVisible(false);
       setIsTempHighlightVisible(false);
       setEditorValue('');
+      setTopics([])
       const postRes = await createPost(postReq);
       if (postRes.success && postRes.post) {
         if (tempHighlightId) {

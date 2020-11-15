@@ -61,3 +61,26 @@
   max-height: 70px;
   overflow: hidden;
 }
+
+.TroveTooltip__Editor {
+  margin-top: 5px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.TroveTooltip__Editor--read-only {
+  background-color: transparent;
+}
+
+.TroveTooltip__Editor .ql-editor {
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  padding: 0px;
+}
+
+.TroveTooltip__Editor .ql-editor.ql-blank::before {
+  left: 0px;
+  right: 0px;
+}
