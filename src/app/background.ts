@@ -1,6 +1,7 @@
 import io from 'socket.io-client';
 import { BACKEND_URL } from '../config';
 import User from '../entities/User';
+import INotification from '../models/INotification';
 import { createPost, createReply, getPosts } from '../server/posts';
 import { handleTopicSearch } from '../server/topics';
 import { handleUsernameSearch } from '../server/users';
@@ -12,14 +13,33 @@ get(null).then(items => console.log(items));
 
 export const socket = io.connect(BACKEND_URL);
 
-socket.on('notifications', async (notifications: Notification[]) => {
-  await set({ notifications })
+socket.on('notifications', async (notifications: INotification[]) => {
+  await set({ notifications });
 });
 
 socket.on('notification', async (n: Notification) => {
-  const notifications = await get1('notifications')
-  const newNotifications = [n].concat(notifications)
-  await set({ notifications: newNotifications })
+  const vals = await get(['notifications', 'notificationDisplayIcon'])
+  const newNotifications = [n].concat(vals['notifications'])
+  const popupOpen = chrome.extension.getViews({ type: "popup" }).length !== 0;
+  if (!popupOpen) {
+    await set({
+      notifications: newNotifications,
+      notificationDisplayIcon: vals['notificationDisplayIcon'] + 1
+    })
+  } else await set({ notifications: newNotifications })
+});
+
+chrome.storage.onChanged.addListener((change) => {
+  if (change.notificationDisplayIcon !== undefined) {
+    if (change.notificationDisplayIcon.newValue !== undefined) {
+      chrome.browserAction.setBadgeText({ 
+        text: change.notificationDisplayIcon.newValue !== 0
+          ? change.notificationDisplayIcon.newValue.toString() 
+          : ""
+      });
+      chrome.browserAction.setBadgeBackgroundColor({ color: "#FF0000" });
+    } else chrome.browserAction.setBadgeText({ text: "" });
+  }
 });
 
 // Listen to messages sent from other parts of the extension

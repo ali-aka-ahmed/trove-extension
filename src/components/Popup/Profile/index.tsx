@@ -115,7 +115,7 @@ export default function Profile({ user }: ProfileProps) {
             <div className="TbdProfile__EditDisplayName EditProp">
               <input
                 autoFocus
-                style={{width: `${(displayName.length+1)*8}px`}}
+                style={{width: `${(displayName.length+1)*7}px`}}
                 className="TbdProfile__Input TbdProfile__Input--display-name"
                 value={displayName} 
                 onChange={(e) => { setDisplayName(e.target.value) }}
@@ -148,7 +148,7 @@ export default function Profile({ user }: ProfileProps) {
               <div className="TbdProfile__InputPrefix" style={{ color: user.color }}>@</div>
               <input
                 autoFocus
-                style={{ width: `${(username.length+1)*8}px`, color: user.color }}
+                style={{ width: `${(username.length+1)*7}px`, color: user.color }}
                 className="TbdProfile__Input TbdProfile__Input--username"
                 value={username}
                 onChange={(e) => { setUsername(e.target.value) }}

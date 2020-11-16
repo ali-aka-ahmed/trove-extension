@@ -35,16 +35,17 @@ export default function Login({}: LoginProps) {
       return setErrorMessage(res.message);
     }
     socket.emit('join room', res.user?.id);
-    await set({
-      user: new User(res.user!),
-      token: res.token,
-      isExtensionOn: true,
-    });
-    await set({ isAuthenticated: true });
     await sendMessageToWebsite({ type: MessageType.Login, user: res.user, token: res.token })
     setUsername('');
     setPassword('');
     setLoading(false);
+    await set({
+      user: new User(res.user!),
+      token: res.token,
+      isExtensionOn: true,
+      notificationDisplayIcon: 0
+    });
+    await set({ isAuthenticated: true });
   }
 
   if (showForgotPassword) {

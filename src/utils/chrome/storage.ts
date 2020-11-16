@@ -9,6 +9,7 @@
 //   token: string;
 //   user: IUser;
 //   notifications: INotification[]
+//   notificationDisplayIcon: boolean
 // }
 
 // export interface TabSettings {

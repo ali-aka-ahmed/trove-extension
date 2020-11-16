@@ -90,6 +90,7 @@ export const notifications: INotification[] = [
     creationDatetime: 1601178998080,
     url: 'https://akshath.me/',
     content: '@aki yo check this out lalalalala this is a big test hello world',
+    read: false,
     taggedUsers: [
       {
         id: '30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93',

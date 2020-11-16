@@ -1,23 +1,34 @@
-$pill-height: 24px;
-$pill-padding: 10px;
+// $pill-height: 24px;
+// $pill-padding: 10px;
+
+@import '../../../../styles/general.scss';
+
+$pill-height: 22px; // 30px
+$pill-padding: 6px; // 15px
+$border-radius: 3px; // 7px
 
 .TbdPill {
   display: flex;
-  flex-direction: row;
-  padding: 0 $pill-padding;
-  width: auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+  'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+  'Noto Color Emoji';
+  align-items: center;
+  flex-shrink: 1;
+  min-width: 0px;
   height: $pill-height;
-  margin-right: 5px;
-  margin-bottom: 5px;
-  border-radius: $pill-height / 2;
-  transition: width .5s;
+  border-radius: $border-radius;
+  padding-left: $pill-padding;
+  padding-right: $pill-padding;
+  font-size: 12px;
+  line-height: 20px;
+  margin-right: 6px;
 }
 
 .TbdPill__Text {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  line-height: $pill-height;
+  @include TbdFont--small;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .TbdPill__CloseButton {
@@ -39,4 +50,11 @@ $pill-padding: 10px;
 .TbdPill__CloseButton--inverted {
   filter: invert(100%);
   -webkit-filter: invert(100%);
+}
+
+.TbdPill--filter {
+  padding: 13px;
+  cursor: pointer;
+  transition: 100ms;
+  border: 1px solid #DDDDDD;
 }

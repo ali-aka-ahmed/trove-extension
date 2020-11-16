@@ -7,6 +7,7 @@ export default interface INotification {
   sender: IUser;
   url: string;
   postId: string;
+  read: boolean;
   taggedUsers: IUser[];
   creationDatetime: number;
 }

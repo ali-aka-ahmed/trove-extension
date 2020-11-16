@@ -1,28 +1,33 @@
-$pill-height: 24px;
-$pill-padding: 10px;
-$tooltip-width: 250px;
-$tooltip-padding: 10px;
+@import '../../../../styles/general.scss';
+
+$pill-height: 22px; // 30px
+$pill-padding: 6px; // 15px
+$border-radius: 3px; // 7px
 
 .TbdInputPill {
-  padding: 0 $pill-padding;
-  width: auto;
+  display: flex;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+  'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+  'Noto Color Emoji';
+  align-items: center;
+  flex-shrink: 1;
+  min-width: 0px;
   height: $pill-height;
-  border-radius: $pill-height / 2;
-  background-color: transparent;
-  color: #545454;
-  outline: none;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  line-height: $pill-height;
-  margin-right: 5px;
-  margin-bottom: 5px;
-  box-sizing: border-box;
+  border-radius: $border-radius;
+  padding-left: $pill-padding;
+  padding-right: $pill-padding;
+  @include TbdFont--small;
+  line-height: 120%;
+  margin-right: 6px;
 }
 
 .TbdInputPill--button {
   border: 1px dashed #ccc;
   cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .TbdInputPill--button:hover {
@@ -30,8 +35,72 @@ $tooltip-padding: 10px;
 }
 
 .TbdInputPill--input {
-  border: 1px solid #c0c0c0;
-  width: 64.5px;
   height: $pill-height;
-  max-width: $tooltip-width - 2 * $tooltip-padding;
+  min-width: 30px;
+  outline: 0;
+  border: 0;
+  border: 1px dashed #ccc;
+  background-color: #fff;
+}
+
+.TbdInputPill__Wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  height: 22px;
+}
+
+.TbdNewPost__SuggestedTopicList {
+  border-radius: 5px;
+  background-color: #fff;
+  position: absolute;
+  overflow: hidden;
+  min-width: 150px;
+  z-index: 2;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
+  top: 27px;
+  left: 0;
+}
+
+
+.TbdSuggestedTopicList__SuggestedTopic {
+  @include TbdFont--small;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  height: fit-content;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  flex-direction: row;
+  padding: 5px 10px;
+  border: none;
+  border-top: 1px solid #ebebeb;
+  background-color: #fff;
+  text-align: left;
+  cursor: pointer;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.TbdSuggestedTopicList__SuggestedTopic:first-child {
+  border-top: none;
+}
+
+.TbdSuggestedTopicList__SuggestedTopic:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdSuggestedTopicList__SuggestedTopic:focus {
+  outline: none;
+}
+
+.TbdSuggestedTopicList__SuggestedTopic--selected {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TbdSuggestedTopicList__FirstTopic {
+  margin-right: 5px;
 }

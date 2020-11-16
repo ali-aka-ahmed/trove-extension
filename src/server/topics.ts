@@ -4,9 +4,10 @@ import ITopic from '../models/ITopic';
 export type ITopicsRes = TopicsRes & AxiosRes;
 export type ITopicRes = TopicRes & AxiosRes;
 
-export const getTopics = async (): Promise<ITopicsRes> => {
-  return await api.post('/topics/', {});
-}
+export const getTopics = async (text?: string): Promise<ITopicsRes> => {
+  const args: GetTopicsReqBody = text ? { text } : {}
+  return await api.post('/topics/', args);
+};
 
 export const handleTopicSearch = async (text: string): Promise<ITopicsRes> => {
   const args: GetTopicsReqBody = { text }
