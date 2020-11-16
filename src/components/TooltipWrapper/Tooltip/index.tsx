@@ -92,7 +92,7 @@ export default function Tooltip(props: TooltipProps) {
     } else {
       editor?.setAttribute('data-placeholder', 'Add note');
     }
-  }, [hoveredHighlightPost])
+  }, [hoveredHighlightPost]);
 
   useEffect(() => {
     if (posts) {
@@ -175,7 +175,13 @@ export default function Tooltip(props: TooltipProps) {
     const selection = getSelection();
     if (!selectionExists(selection)) {
       setIsSelectionVisible(false);
-    }
+    } 
+    // else {
+    //   const isTextUnique = (text: string): boolean => {
+    //     return window.find(text, true) && !window.find(text, true);
+    //   }
+    //   console.log('isUnique', isTextUnique(selection!.toString()))
+    // }
   }
 
   useEffect(() => {

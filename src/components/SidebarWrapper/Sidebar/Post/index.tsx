@@ -1,4 +1,4 @@
-import hexToRgba from 'hex-to-rgba';
+import Color from 'color';
 import React, { useState } from 'react';
 import { default as IPost, default as PostObject } from '../../../../entities/Post';
 import Highlighter, { HighlightType } from '../../helpers/highlight/Highlighter';
@@ -42,7 +42,7 @@ export default function Post(props: PostProps) {
       if (props.post.highlight?.range) {
         const range = getRangeFromXRange(props.post.highlight.range);
         if (range) {
-          const color = hexToRgba(props.post.creator.color, 0.1);
+          const color = Color(props.post.creator.color).fade(0.1).toString();
           props.highlighter.addHighlight(range, props.post.id, color, HighlightType.Active);
         }
       }
@@ -62,7 +62,7 @@ export default function Post(props: PostProps) {
     if (props.post.highlight?.range) {
       const range = getRangeFromXRange(props.post.highlight.range);
       if (range) {
-        const color = hexToRgba(props.post.creator.color, 0.25);
+        const color = Color(props.post.creator.color).fade(0.25).toString();
         props.highlighter.addHighlight(range, props.post.id, color, HighlightType.Active);
       }
     }
