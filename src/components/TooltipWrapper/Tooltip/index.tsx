@@ -11,6 +11,7 @@ import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs'
 import Edge from '../../SidebarWrapper/helpers/Edge';
 import Highlighter, { HighlightType } from '../../SidebarWrapper/helpers/highlight/Highlighter';
 import { getRangeFromXRange, getXRangeFromRange } from '../../SidebarWrapper/helpers/highlight/rangeUtils';
+import { saveTextRange } from '../../SidebarWrapper/helpers/highlight/textRangeUtils';
 import Point from '../../SidebarWrapper/helpers/Point';
 import InputPill from './InputPill';
 import Pill from './Pill';
@@ -175,13 +176,7 @@ export default function Tooltip(props: TooltipProps) {
     const selection = getSelection();
     if (!selectionExists(selection)) {
       setIsSelectionVisible(false);
-    } 
-    // else {
-    //   const isTextUnique = (text: string): boolean => {
-    //     return window.find(text, true) && !window.find(text, true);
-    //   }
-    //   console.log('isUnique', isTextUnique(selection!.toString()))
-    // }
+    }
   }
 
   useEffect(() => {
@@ -269,6 +264,26 @@ export default function Tooltip(props: TooltipProps) {
   const onEditorChange = (content: string) => {
     setEditorValue(content);
   }
+
+  const test = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      const s1 = getSelection();
+      if (!s1) return; 
+      // console.log('text:     ', s1?.toString());
+      // console.log('is unique:', isTextUnique(s1.toString()));
+
+      // for(let i=0;i<2;i++) s1.modify('move', 'left', 'character');
+      // s1.modify('extend', 'right', 'character');
+
+      saveTextRange(s1.getRangeAt(0));
+      
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('keyup', test); 
+    return () => document.removeEventListener('keyup', test);
+  }, [test])
 
   const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (highlight) {
