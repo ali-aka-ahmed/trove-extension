@@ -47,8 +47,9 @@ export const restoreTextRange = (tr: TextRange) => {
     for (let i = 0; i < e1; i++) s.modify('extend', 'right', 'character');
     if (s.toString() === tr.uniqueText) {
       // Shrink selected uniqueText to text
-      const m2 = tr.uniqueText.indexOf(tr.text);
+      const m2 = tr.textStartIdx;
       const e2 = tr.text.length;
+      s.modify('move', 'left', 'character');
       for (let i = 0; i < m2; i++) s.modify('move', 'right', 'character');
       for (let i = 0; i < e2; i++) s.modify('extend', 'right', 'character');
       return s.getRangeAt(0);

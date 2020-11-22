@@ -11,7 +11,7 @@ import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs'
 import Edge from '../../SidebarWrapper/helpers/Edge';
 import Highlighter, { HighlightType } from '../../SidebarWrapper/helpers/highlight/Highlighter';
 import { getRangeFromXRange, getXRangeFromRange } from '../../SidebarWrapper/helpers/highlight/rangeUtils';
-import { saveTextRange } from '../../SidebarWrapper/helpers/highlight/textRangeUtils';
+import { restoreTextRange, saveTextRange } from '../../SidebarWrapper/helpers/highlight/textRangeUtils';
 import Point from '../../SidebarWrapper/helpers/Point';
 import InputPill from './InputPill';
 import Pill from './Pill';
@@ -274,9 +274,15 @@ export default function Tooltip(props: TooltipProps) {
 
       // for(let i=0;i<2;i++) s1.modify('move', 'left', 'character');
       // s1.modify('extend', 'right', 'character');
+      // s1.modify('move', 'right', 'character');
+      // s1.modify('extend', 'right', 'character');
 
-      saveTextRange(s1.getRangeAt(0));
-      
+      const tr = saveTextRange(s1.getRangeAt(0));
+      s1.removeAllRanges();
+
+      const range = restoreTextRange(tr);
+      console.log(range);
+      if (range) highlighter.addHighlight(range, uuid(), 'blue', HighlightType.Default)
     }
   }, []);
 
