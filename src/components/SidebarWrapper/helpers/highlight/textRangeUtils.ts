@@ -6,25 +6,27 @@ export interface TextRange {
   url: string;
 }
 
+/**
+ * Serialize selection through text content instead of range.
+ */
 export const saveTextRange = (range: Range): TextRange => {
   const s = getSelection()!;
   s.removeAllRanges();
   s.addRange(range);
   const text = s.toString();
 
-  // 
   const ss = new SelectionStore().saveSelection();
   const pageText = getPageText();
-  ss.restoreSelection();
 
-  //
+  // In case the selected text isn't unique on the current page, we grab context before and after 
+  // such that we have a unique string
   let uniqueText: string = text;
   let textStartIdx = 0;
   while (isTextUnique(uniqueText, pageText) !== 1) {
-    textStartIdx += 5;
     ss.restoreSelection();
-    const len = text.length + 2 * textStartIdx;
     s.collapseToStart();
+    textStartIdx += 5;
+    const len = text.length + 2 * textStartIdx;
     for (let i = 0; i < textStartIdx; i++) s.modify('move', 'left', 'character');
     for (let i = 0; i < len; i++) s.modify('extend', 'right', 'character');
     uniqueText = s.toString();
@@ -33,38 +35,51 @@ export const saveTextRange = (range: Range): TextRange => {
   // Get context
   const context = '';
 
-  //
   const url = window.location.href;
-  const tr = { context, text, textStartIdx, uniqueText, url };
-  console.log('saving textrange:', tr)
-  return tr;
+  return { context, text, textStartIdx, uniqueText, url };
 }
 
+/**
+ * Deserialize stored selection. 
+ * TODO: account for case where selection is no longer unique upon deserialization.
+ */
 export const restoreTextRange = (tr: TextRange) => {
-  // debugger
-  const line = tr.uniqueText.split('\n').reduce((s1, s2) => s1.length >= s2.length ? s1 : s2);
-  const uniqueText = tr.uniqueText.replace('\n\n', '\n');
+  // Irritatingly, text split across divs is represented with '\n\n' in selection.toString(),
+  // but selection.modify() traverses the two characters with one hop. Not sure if \n\n\n+ needs to
+  // be reduced as well.
+  const uniqueTextReduced = tr.uniqueText.replace('\n\n', '\n');
+  const textReduced = tr.text.replace('\n\n', '\n');
+  const textPrefixReduced = tr.uniqueText.slice(0, tr.textStartIdx).replace('\n\n', '\n');
+
+  // Since window.line breaks on new line characters, we use it to find the longest line instead
+  const line = uniqueTextReduced.split('\n').reduce((s1, s2) => s1.length >= s2.length ? s1 : s2);
   const s = getSelection()!;
   s.removeAllRanges();
+  const ss = new SelectionStore();
 
+  // Check to see if each hit for line is the one we want
   while (window.find(line, true, false)) {
+    ss.saveSelection();
+
     // Expand current selection (line) to uniqueText
-    const m1 = uniqueText.indexOf(line);
-    const e1 = uniqueText.length;
-    for (let i = 0; i <= m1; i++) s.modify('move', 'left', 'character');
+    s.collapseToStart();
+    const m1 = uniqueTextReduced.indexOf(line);
+    const e1 = uniqueTextReduced.length;
+    for (let i = 0; i < m1; i++) s.modify('move', 'left', 'character');
     for (let i = 0; i < e1; i++) s.modify('extend', 'right', 'character');
 
     // Shrink selected uniqueText to text
     if (s.toString() === tr.uniqueText) {
       if (tr.uniqueText === tr.text) return s.getRangeAt(0);
-      const m2 = tr.textStartIdx - (tr.text.slice(0, tr.textStartIdx).length - tr.text.slice(0, tr.textStartIdx).replace('\n\n', '\n').length);
-      const e2 = tr.text.replace('\n\n', '\n').length;
       s.collapseToStart();
+      const m2 = textPrefixReduced.length;
+      const e2 = textReduced.length;
       for (let i = 0; i < m2; i++) s.modify('move', 'right', 'character');
       for (let i = 0; i < e2; i++) s.modify('extend', 'right', 'character');
       return s.getRangeAt(0);
     } else {
-      // Might have to restore to previous selection
+      // This wasn't the correct hit, so restore selection for next pass of window.find
+      ss.restoreSelection();
     }
   }
 
@@ -91,6 +106,9 @@ export const isTextUnique = (text: string, memoPageText?: string): number => {
   return isUnique;
 }
 
+/**
+ * Get all text on the current page.
+ */
 export const getPageText = () => {
   const range = document.createRange();
   range.selectNodeContents(document.body);
@@ -101,6 +119,9 @@ export const getPageText = () => {
   return selection.toString();
 }
 
+/**
+ * Simple class to save and restore selections.
+ */
 class SelectionStore {
   range: Range | null = null;
 
