@@ -55,7 +55,12 @@ export const addHighlight = (
   // This is where the magic happens
   const marks: HTMLElement[] = [];
   for (let done = false, node = start; !done; ) {
-    if (hasContent && node.nodeType === Node.TEXT_NODE && !isTable(node)) {
+    if (
+      hasContent
+      && node.nodeType === Node.TEXT_NODE
+      && /\S/.test(node.nodeValue || '')
+      && !isTable(node)
+    ) {
       let wrapper = node.previousSibling;
       if (!wrapper || marks.length === 0 || wrapper !== marks[marks.length - 1]) {
         // Create next mark in chain

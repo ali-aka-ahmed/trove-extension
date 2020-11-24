@@ -274,14 +274,17 @@ export default function Tooltip(props: TooltipProps) {
 
       // for(let i=0;i<2;i++) s1.modify('move', 'left', 'character');
       // s1.modify('extend', 'right', 'character');
-      // s1.modify('move', 'right', 'character');
+      // s1.collapseToStart();
+      // s1.modify('move', 'left', 'character');
+      // s1.modify('move', 'left', 'character');
       // s1.modify('extend', 'right', 'character');
 
       const tr = saveTextRange(s1.getRangeAt(0));
       s1.removeAllRanges();
-
       const range = restoreTextRange(tr);
-      console.log(range);
+      console.log(s1.toString())
+
+      // s1.removeAllRanges();
       if (range) highlighter.addHighlight(range, uuid(), 'blue', HighlightType.Default)
     }
   }, []);
