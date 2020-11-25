@@ -15,6 +15,8 @@ export const saveTextRange = (range: Range): TextRange => {
   s.removeAllRanges();
   s.addRange(range);
   const text = s.toString();
+  const fn = s.focusNode!;
+  const fo = s.focusOffset;
 
   const ss = new SelectionStore().saveSelection();
   const pageText = getPageText();
@@ -22,23 +24,25 @@ export const saveTextRange = (range: Range): TextRange => {
   // In case the selected text isn't unique on the current page, we grab context before and after 
   // such that we have a unique string
   let uniqueText: string = text;
+  let uniqueTextOffset = 0;
   let uniqueTextStartIdx = 0;
   while (isTextUnique(uniqueText, pageText) !== 1) {
+    uniqueTextOffset += 5;
     ss.restoreSelection();
     s.collapseToStart();
-    uniqueTextStartIdx += 5;
-    const len = text.length + 2 * uniqueTextStartIdx;
-    for (let i = 0; i < uniqueTextStartIdx; i++) s.modify('move', 'left', 'character');
-    for (let i = 0; i < len; i++) s.modify('extend', 'right', 'character');
+    for (let i = 0; i < uniqueTextOffset; i++) s.modify('extend', 'left', 'character');
+    s.collapseToStart();
+    s.extend(fn, fo);
+    uniqueTextStartIdx = s.toString().lastIndexOf(text);
+    for (let i = 0; i < uniqueTextOffset; i++) s.modify('extend', 'right', 'character');
     uniqueText = s.toString();
   }
 
   // Get context
   ss.restoreSelection();
-  const fn = s.focusNode!;
-  const fo = s.focusOffset;
   s.collapseToStart();
   for (let i = 0; i < 10; i++) s.modify('extend', 'left', 'word');
+  s.collapseToStart();
   s.extend(fn, fo);
   const contextStartIdx = s.toString().lastIndexOf(text);
   for (let i = 0; i < 10; i++) s.modify('extend', 'right', 'word');
