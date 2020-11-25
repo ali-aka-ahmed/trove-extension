@@ -274,17 +274,29 @@ export default function Tooltip(props: TooltipProps) {
 
       // for(let i=0;i<2;i++) s1.modify('move', 'left', 'character');
       // s1.modify('extend', 'right', 'character');
+
       // s1.collapseToStart();
+      // s1.modify('extend', 'left', 'word');
+      // s1.modify('extend', 'left', 'word');
+      // s1.modify('extend', 'left', 'word');
+      // console.log(s1)
+      // const fn = s1.focusNode!;
+      // const fo = s1.focusOffset;
+      // s1.collapseToEnd();
+      // s1.extend(fn, fo);
+
+      // const contextStartIdx = s1.toString().lastIndexOf(text);
       // s1.modify('move', 'left', 'character');
       // s1.modify('move', 'left', 'character');
       // s1.modify('extend', 'right', 'character');
 
       const tr = saveTextRange(s1.getRangeAt(0));
       s1.removeAllRanges();
+    console.log(tr)
       const range = restoreTextRange(tr);
       console.log(s1.toString())
 
-      // s1.removeAllRanges();
+      s1.removeAllRanges();
       if (range) highlighter.addHighlight(range, uuid(), 'blue', HighlightType.Default)
     }
   }, []);

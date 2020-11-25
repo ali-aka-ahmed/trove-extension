@@ -1,7 +1,8 @@
 export interface TextRange {
   context: string; // For display on the frontend
+  contextStartIdx: number; // Start idx of text in context
   text: string; // Text that was highlighted
-  textStartIdx: number; // Start idx of text in uniqueText
+  uniqueTextStartIdx: number; // Start idx of text in uniqueText
   uniqueText: string; // Text that has been highlighted + prefix/suffix to make it unique
   url: string;
 }
@@ -21,22 +22,30 @@ export const saveTextRange = (range: Range): TextRange => {
   // In case the selected text isn't unique on the current page, we grab context before and after 
   // such that we have a unique string
   let uniqueText: string = text;
-  let textStartIdx = 0;
+  let uniqueTextStartIdx = 0;
   while (isTextUnique(uniqueText, pageText) !== 1) {
     ss.restoreSelection();
     s.collapseToStart();
-    textStartIdx += 5;
-    const len = text.length + 2 * textStartIdx;
-    for (let i = 0; i < textStartIdx; i++) s.modify('move', 'left', 'character');
+    uniqueTextStartIdx += 5;
+    const len = text.length + 2 * uniqueTextStartIdx;
+    for (let i = 0; i < uniqueTextStartIdx; i++) s.modify('move', 'left', 'character');
     for (let i = 0; i < len; i++) s.modify('extend', 'right', 'character');
     uniqueText = s.toString();
   }
 
   // Get context
-  const context = '';
+  ss.restoreSelection();
+  const fn = s.focusNode!;
+  const fo = s.focusOffset;
+  s.collapseToStart();
+  for (let i = 0; i < 10; i++) s.modify('extend', 'left', 'word');
+  s.extend(fn, fo);
+  const contextStartIdx = s.toString().lastIndexOf(text);
+  for (let i = 0; i < 10; i++) s.modify('extend', 'right', 'word');
+  const context = s.toString();
 
   const url = window.location.href;
-  return { context, text, textStartIdx, uniqueText, url };
+  return { context, contextStartIdx, text, uniqueTextStartIdx, uniqueText, url };
 }
 
 /**
@@ -49,7 +58,7 @@ export const restoreTextRange = (tr: TextRange) => {
   // be reduced as well.
   const uniqueTextReduced = tr.uniqueText.replace('\n\n', '\n');
   const textReduced = tr.text.replace('\n\n', '\n');
-  const textPrefixReduced = tr.uniqueText.slice(0, tr.textStartIdx).replace('\n\n', '\n');
+  const textPrefixReduced = tr.uniqueText.slice(0, tr.uniqueTextStartIdx).replace('\n\n', '\n');
 
   // Since window.line breaks on new line characters, we use it to find the longest line instead
   const line = uniqueTextReduced.split('\n').reduce((s1, s2) => s1.length >= s2.length ? s1 : s2);
