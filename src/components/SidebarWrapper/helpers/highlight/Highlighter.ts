@@ -4,6 +4,7 @@ import { areRangesEqual } from "./rangeUtils";
 
 interface HighlightData {
   color: string;
+  marks: HTMLElement[];
   range: Range;
   type: HighlightType;
 }
@@ -30,28 +31,32 @@ export default class Highlighter {
     onMouseEnter=(e: MouseEvent) => {},
     onMouseLeave=(e: MouseEvent) => {}
   ) => {
-    const hd = this.highlights.get(rootId);
+    const highlight = this.highlights.get(rootId);
     const color = colorStr ? this.getColor(colorStr, type) : 'yellow';
-    if (!hd) {
+    let marks: HTMLElement[] = [];
+    if (!highlight) {
       // Add new highlight
-      addHighlight(range, rootId, color, onMouseEnter, onMouseLeave);
+      this.highlights.set
+      marks = addHighlight(range, color, onMouseEnter, onMouseLeave);
     } else {
-      if (!areRangesEqual(range, hd.range)) {
+      if (!areRangesEqual(range, highlight.range)) {
         // If range is different, remove previous highlight and add new one
-        removeHighlight(rootId);
-        addHighlight(range, rootId, color, onMouseEnter, onMouseLeave);
-      } else if (type !== hd.type || color !== hd.color) {
+        removeHighlight(highlight.marks);
+        marks = addHighlight(range, color, onMouseEnter, onMouseLeave);
+      } else if (type !== highlight.type || color !== highlight.color) {
         // Range is same, but type of highlight is different, so just modify existing one
-        modifyHighlight(rootId, 'backgroundColor', color);
+        modifyHighlight(highlight.marks, 'backgroundColor', color);
       }
     }
 
-    this.highlights.set(rootId, { color, range, type });
+    this.highlights.set(rootId, { color, marks, range, type });
+    return marks;
   }
 
   removeHighlight = (rootId: string) => {
-    if (this.highlights.get(rootId)) {
-      removeHighlight(rootId);
+    const highlight = this.highlights.get(rootId);
+    if (highlight) {
+      removeHighlight(highlight.marks);
       this.highlights.delete(rootId);
     }
   }

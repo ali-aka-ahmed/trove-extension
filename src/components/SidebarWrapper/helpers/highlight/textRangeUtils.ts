@@ -4,13 +4,12 @@ export interface TextRange {
   text: string; // Text that was highlighted
   uniqueTextStartIdx: number; // Start idx of text in uniqueText
   uniqueText: string; // Text that has been highlighted + prefix/suffix to make it unique
-  url: string;
 }
 
 /**
  * Serialize selection through text content instead of range.
  */
-export const saveTextRange = (range: Range): TextRange => {
+export const getTextRangeFromRange = (range: Range): TextRange => {
   const s = getSelection()!;
   s.removeAllRanges();
   s.addRange(range);
@@ -48,15 +47,14 @@ export const saveTextRange = (range: Range): TextRange => {
   for (let i = 0; i < 10; i++) s.modify('extend', 'right', 'word');
   const context = s.toString();
 
-  const url = window.location.href;
-  return { context, contextStartIdx, text, uniqueTextStartIdx, uniqueText, url };
+  return { context, contextStartIdx, text, uniqueTextStartIdx, uniqueText };
 }
 
 /**
  * Deserialize stored selection. 
  * TODO: account for case where selection is no longer unique upon deserialization.
  */
-export const restoreTextRange = (tr: TextRange) => {
+export const getRangeFromTextRange = (tr: TextRange) => {
   // Irritatingly, text split across divs is represented with '\n\n' in selection.toString(),
   // but selection.modify() traverses the two characters with one hop. Not sure if \n\n\n+ needs to
   // be reduced as well.
@@ -100,6 +98,17 @@ export const restoreTextRange = (tr: TextRange) => {
 }
 
 /**
+ * Compare two TextRanges and return whether or not they describe the same Range.
+ * @param tr1 
+ * @param tr2 
+ */
+export const areTextRangesEqual = (tr1: TextRange, tr2: TextRange): boolean => {
+  return tr1.uniqueText === tr2.uniqueText 
+    && tr1.uniqueTextStartIdx === tr2.uniqueTextStartIdx 
+    && tr1.text === tr2.text;
+}
+
+/**
  * Determine if given text is unique on current page.
  * @param text 
  * @param memoPageText
@@ -107,7 +116,7 @@ export const restoreTextRange = (tr: TextRange) => {
  *           0 if text is found multiple times
  *           1 if text is found only once
  */
-export const isTextUnique = (text: string, memoPageText?: string): number => {
+const isTextUnique = (text: string, memoPageText?: string): number => {
   const pageText = memoPageText || getPageText();
   const idx1 = pageText.indexOf(text);
   let isUnique = -1;
