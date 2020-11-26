@@ -65,7 +65,6 @@ export interface CreatePostReqBody {
 }
 
 export type HighlightParam = {
-  text: string;
   textRange: TextRange; // Serialized Range object
   url: string;
 };

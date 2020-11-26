@@ -11,8 +11,7 @@ import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs'
 import Edge from '../../SidebarWrapper/helpers/Edge';
 import Point from '../../SidebarWrapper/helpers/Point';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
-import { getRangeFromXRange } from './helpers/highlight/rangeUtils';
-import { getTextRangeFromRange } from './helpers/highlight/textRangeUtils';
+import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRangeUtils';
 import InputPill from './InputPill';
 import Pill from './Pill';
 
@@ -61,7 +60,7 @@ export default function Tooltip(props: TooltipProps) {
     if (!post.highlight || !post.creator || !post.id) return;
     let range: Range | null;
     try {
-      range = getRangeFromXRange(post.highlight.range);
+      range = getRangeFromTextRange(post.highlight.textRange);
     } catch (e) {
       console.error(e);
       return;
@@ -247,9 +246,7 @@ export default function Tooltip(props: TooltipProps) {
       const range = selection.getRangeAt(0);
       const textRange = getTextRangeFromRange(range);
       setHighlight({
-        // context: selection.toString(),
         textRange: textRange,
-        text: selection.toString(),
         url: window.location.href
       });
 

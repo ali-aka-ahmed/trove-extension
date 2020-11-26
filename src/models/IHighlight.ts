@@ -1,10 +1,9 @@
-import { XRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/rangeUtils';
+import { TextRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/textRangeUtils';
 
 export default interface IHighlight {
   id: string;
   creationDatetime: number;
-  text: string;
-  range: XRange; // Serialized Range object
+  textRange: TextRange; // Serialized Range object
   domain: string;
   url: string;
 }
