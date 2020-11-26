@@ -1,5 +1,5 @@
 import Color from "color";
-import { addHighlight, modifyHighlight, removeHighlight } from "./highlightUtils";
+import { addHighlight, modifyHighlight, removeHighlight } from "./highlight";
 
 interface HighlightData {
   color: string;
@@ -11,7 +11,6 @@ export enum HighlightType {
   Default,
   Active // Click, hover, new post
 }
-
 
 export default class Highlighter {
   highlights: Map<string, HighlightData>; // id -> highlight data
@@ -58,7 +57,6 @@ export default class Highlighter {
     }
   }
 
-  // TODO: Need to get highlights by reverse chronological order
   public removeAllHighlights = () => {
     for (const id of Object.keys(this.highlights)) {
       this.removeHighlight(id);

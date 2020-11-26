@@ -1,5 +1,5 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
-import { TextRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/textRangeUtils';
+import { TextRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/textRange';
 import Post from '../entities/Post';
 import ITopic from '../models/ITopic';
 

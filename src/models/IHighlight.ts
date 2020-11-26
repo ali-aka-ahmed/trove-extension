@@ -1,4 +1,4 @@
-import { TextRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/textRangeUtils';
+import { TextRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/textRange';
 
 export default interface IHighlight {
   id: string;

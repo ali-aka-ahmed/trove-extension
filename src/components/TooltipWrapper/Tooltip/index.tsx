@@ -11,7 +11,7 @@ import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs'
 import Edge from '../../SidebarWrapper/helpers/Edge';
 import Point from '../../SidebarWrapper/helpers/Point';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
-import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRangeUtils';
+import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
 import InputPill from './InputPill';
 import Pill from './Pill';
 
