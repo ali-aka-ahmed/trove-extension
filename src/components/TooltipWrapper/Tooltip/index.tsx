@@ -10,9 +10,7 @@ import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from '../../SidebarWrapper/helpers/Edge';
 import Highlighter, { HighlightType } from '../../SidebarWrapper/helpers/highlight/Highlighter';
-import { removeHighlight } from '../../SidebarWrapper/helpers/highlight/highlightUtils';
 import { getRangeFromXRange, getXRangeFromRange } from '../../SidebarWrapper/helpers/highlight/rangeUtils';
-import { getRangeFromTextRange, getTextRangeFromRange } from '../../SidebarWrapper/helpers/highlight/textRangeUtils';
 import Point from '../../SidebarWrapper/helpers/Point';
 import InputPill from './InputPill';
 import Pill from './Pill';
@@ -266,47 +264,18 @@ export default function Tooltip(props: TooltipProps) {
     setEditorValue(content);
   }
 
-  const test = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      const s1 = getSelection();
-      if (!s1) return; 
-      // console.log('text:     ', s1?.toString());
-      // console.log('is unique:', isTextUnique(s1.toString()));
+  // const test = useCallback((e: KeyboardEvent) => {
+  //   if (e.key === 'Enter') {
+  //     const s1 = getSelection();
+  //     if (!s1) return; 
 
-      // for(let i=0;i<2;i++) s1.modify('move', 'left', 'character');
-      // s1.modify('extend', 'right', 'character');
+  //   }
+  // }, []);
 
-      // s1.collapseToStart();
-      // s1.modify('extend', 'left', 'word');
-      // s1.modify('extend', 'left', 'word');
-      // s1.modify('extend', 'left', 'word');
-      // console.log(s1)
-      // const fn = s1.focusNode!;
-      // const fo = s1.focusOffset;
-      // s1.collapseToEnd();
-      // s1.extend(fn, fo);
-
-      // const contextStartIdx = s1.toString().lastIndexOf(text);
-      // s1.modify('move', 'left', 'character');
-      // s1.modify('move', 'left', 'character');
-      // s1.modify('extend', 'right', 'character');
-
-      const tr = getTextRangeFromRange(s1.getRangeAt(0));
-      s1.removeAllRanges();
-    console.log(tr)
-      const range = getRangeFromTextRange(tr);
-      console.log(s1.toString())
-
-      s1.removeAllRanges();
-      let hi: HTMLElement[] = [];
-      if (range) hi = highlighter.addHighlight(range, uuid(), 'blue', HighlightType.Default, ()=> removeHighlight(hi))
-    }
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener('keyup', test); 
-    return () => document.removeEventListener('keyup', test);
-  }, [test])
+  // useEffect(() => {
+  //   document.addEventListener('keyup', test); 
+  //   return () => document.removeEventListener('keyup', test);
+  // }, [test])
 
   const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (highlight) {

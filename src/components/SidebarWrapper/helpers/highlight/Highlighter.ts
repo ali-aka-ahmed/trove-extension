@@ -1,11 +1,9 @@
 import Color from "color";
 import { addHighlight, modifyHighlight, removeHighlight } from "./highlightUtils";
-import { areRangesEqual } from "./rangeUtils";
 
 interface HighlightData {
   color: string;
   marks: HTMLElement[];
-  range: Range;
   type: HighlightType;
 }
 
@@ -23,9 +21,9 @@ export default class Highlighter {
   }
 
   // TODO: use shorter id
-  addHighlight = (
+  public addHighlight = (
     range: Range, 
-    rootId: string, 
+    rootId: string,
     colorStr: string | null='yellow', 
     type: HighlightType,
     onMouseEnter=(e: MouseEvent) => {},
@@ -34,26 +32,25 @@ export default class Highlighter {
     const highlight = this.highlights.get(rootId);
     const color = colorStr ? this.getColor(colorStr, type) : 'yellow';
     let marks: HTMLElement[] = [];
-    if (!highlight) {
-      // Add new highlight
-      this.highlights.set
-      marks = addHighlight(range, color, onMouseEnter, onMouseLeave);
-    } else {
-      if (!areRangesEqual(range, highlight.range)) {
-        // If range is different, remove previous highlight and add new one
-        removeHighlight(highlight.marks);
-        marks = addHighlight(range, color, onMouseEnter, onMouseLeave);
-      } else if (type !== highlight.type || color !== highlight.color) {
-        // Range is same, but type of highlight is different, so just modify existing one
-        modifyHighlight(highlight.marks, 'backgroundColor', color);
-      }
-    }
 
-    this.highlights.set(rootId, { color, marks, range, type });
+    if (highlight) removeHighlight(highlight.marks);
+    marks = addHighlight(range, color, onMouseEnter, onMouseLeave);
+    this.highlights.set(rootId, { color, marks, type });
     return marks;
   }
 
-  removeHighlight = (rootId: string) => {
+  public modifyHighlight = (rootId: string, color: string) => {
+    const highlight = this.highlights.get(rootId);
+    if (highlight) {
+      modifyHighlight(highlight.marks, 'backgroundColor', color);
+      return highlight.marks;
+    } else {
+      console.error('Attempted to modify nonexistent highlight.');
+      return [];
+    }
+  }
+
+  public removeHighlight = (rootId: string) => {
     const highlight = this.highlights.get(rootId);
     if (highlight) {
       removeHighlight(highlight.marks);
@@ -62,7 +59,7 @@ export default class Highlighter {
   }
 
   // TODO: Need to get highlights by reverse chronological order
-  removeAllHighlights = () => {
+  public removeAllHighlights = () => {
     for (const id of Object.keys(this.highlights)) {
       this.removeHighlight(id);
     }
