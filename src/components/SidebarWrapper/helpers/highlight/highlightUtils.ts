@@ -79,6 +79,9 @@ export const addHighlight = (
       wrapper.appendChild(node);
       node = wrapper.lastChild!;
       hasContent = false;
+    } else if (node.nodeType === Node.TEXT_NODE) {
+      // Don't keep text node split if we don't wrap it
+      mergeTextNodes(node);
     }
 
     if (node === end && (!hasContent || !end.hasChildNodes())) {
