@@ -9,9 +9,10 @@ import { createPost, HighlightParam, IPostsRes } from '../../../server/posts';
 import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from '../../SidebarWrapper/helpers/Edge';
-import Highlighter, { HighlightType } from '../../SidebarWrapper/helpers/highlight/Highlighter';
-import { getRangeFromXRange, getXRangeFromRange } from '../../SidebarWrapper/helpers/highlight/rangeUtils';
 import Point from '../../SidebarWrapper/helpers/Point';
+import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
+import { getRangeFromXRange } from './helpers/highlight/rangeUtils';
+import { getTextRangeFromRange } from './helpers/highlight/textRangeUtils';
 import InputPill from './InputPill';
 import Pill from './Pill';
 
@@ -244,10 +245,10 @@ export default function Tooltip(props: TooltipProps) {
     const selection = getSelection();
     if (selection && selection.toString()) {
       const range = selection.getRangeAt(0);
-      const xrange = getXRangeFromRange(range);
+      const textRange = getTextRangeFromRange(range);
       setHighlight({
         // context: selection.toString(),
-        range: xrange,
+        textRange: textRange,
         text: selection.toString(),
         url: window.location.href
       });

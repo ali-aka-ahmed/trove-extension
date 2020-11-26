@@ -1,4 +1,4 @@
-import { XRange } from '../components/SidebarWrapper/helpers/highlight/rangeUtils';
+import { XRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/rangeUtils';
 
 export default interface IHighlight {
   id: string;

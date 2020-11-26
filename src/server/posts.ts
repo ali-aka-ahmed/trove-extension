@@ -1,5 +1,5 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
-import { XRange } from '../components/SidebarWrapper/helpers/highlight/rangeUtils';
+import { TextRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/textRangeUtils';
 import Post from '../entities/Post';
 import ITopic from '../models/ITopic';
 
@@ -66,7 +66,7 @@ export interface CreatePostReqBody {
 
 export type HighlightParam = {
   text: string;
-  range: XRange; // Serialized Range object
+  textRange: TextRange; // Serialized Range object
   url: string;
 };
 
