@@ -1,5 +1,5 @@
 import Color from "color";
-import { addHighlight, modifyHighlight, removeHighlight } from "./highlight";
+import { addHighlight, modifyHighlight, removeHighlight } from ".";
 
 interface HighlightData {
   color: string;

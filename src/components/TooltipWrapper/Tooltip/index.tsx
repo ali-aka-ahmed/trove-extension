@@ -8,10 +8,10 @@ import ITopic from '../../../models/ITopic';
 import { createPost, HighlightParam, IPostsRes } from '../../../server/posts';
 import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
-import Edge from '../../SidebarWrapper/helpers/Edge';
-import Point from '../../SidebarWrapper/helpers/Point';
+import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
+import Point from './helpers/Point';
 import InputPill from './InputPill';
 import Pill from './Pill';
 
