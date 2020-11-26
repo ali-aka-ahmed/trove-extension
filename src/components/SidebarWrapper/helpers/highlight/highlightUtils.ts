@@ -1,10 +1,4 @@
 
-export enum MarkDataKey {
-  RootMarkId = 'tbdRootId',
-  ThisMarkId  = 'tbdId',
-  NextMarkId  = 'tbdNextId'
-};
-
 const MARK_CLASS_NAME = 'TbdMark';
 
 export const addHighlight = (
