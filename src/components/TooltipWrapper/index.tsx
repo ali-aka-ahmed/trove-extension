@@ -1,5 +1,6 @@
 import React from 'react';
 import quillStyles from 'react-quill/dist/quill.bubble.css?inject';
+import { ErrorOrigin } from '../../server/misc';
 import ErrorBoundary from '../ErrorBoundary';
 import './index.scss';
 import Tooltip from './Tooltip';
@@ -14,7 +15,7 @@ interface TooltipWrapperProps {
 
 export default function TooltipWrapper(props: TooltipWrapperProps) {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary origin={ErrorOrigin.ContentScript}>
       <Tooltip root={props.root} />
       <style type="text/css">{quillStyles}</style>
       <style type="text/css">{editorStyles}</style>

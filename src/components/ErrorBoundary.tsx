@@ -1,6 +1,10 @@
 import React from 'react';
+import { ErrorOrigin } from '../server/misc';
 
-interface ErrorBoundaryProps {}
+interface ErrorBoundaryProps {
+  origin: ErrorOrigin
+}
+
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
@@ -32,6 +36,7 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
           <h1>Oops, something went wrong :(</h1>
           <p>The error: {this.state.error?.toString()}</p>
           <p>Where it occured: {this.state.info?.componentStack}</p>
+          <p>Where it occured x2: {this.props.origin}</p>
         </div>
       );
     }
