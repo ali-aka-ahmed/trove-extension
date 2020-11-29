@@ -22,6 +22,7 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
   }
 
   async componentDidCatch(error: IExtensionError, info: React.ErrorInfo) {
+    console.error(error.message)
     this.setState({ 
       hasError: true,
       message: error.readableMessage || error.message
