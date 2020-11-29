@@ -1,5 +1,5 @@
 import { Tabs } from 'antd';
-import 'antd/dist/antd.min.css';
+import 'antd/dist/antd.css';
 import React, { useEffect, useState } from 'react';
 import 'react-quill/dist/quill.bubble.css';
 import { socket } from '../../app/background';
@@ -8,7 +8,7 @@ import User from '../../entities/User';
 import INotification from '../../models/INotification';
 import { ErrorOrigin } from '../../server/misc';
 import { get, set } from '../../utils/chrome/storage';
-import ErrorBoundary from '../ErrorBoundary';
+import ErrorBoundary from '../errorBoundary/index';
 import BottomBar from './BottomBar';
 import Login from './Login';
 import Notifications from './Notifications';
@@ -63,7 +63,7 @@ export default function Popup() {
 
   useEffect(() => {
     const zeroNotificationDisplayIcon = async () => {
-      if (tabKey === "1" && user) {
+      if (tabKey === "1" && user?.id) {
         await set({ notificationDisplayIcon: 0 })
         socket.emit('opened notification tray', user.id)
       }

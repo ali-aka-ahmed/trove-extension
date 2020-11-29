@@ -103,7 +103,7 @@ chrome.runtime.onStartup.addListener(async () => {
   ]);
   } else {
     const user = await get1('user')
-    socket.emit('join room', user.id);
+    if (user?.id) socket.emit('join room', user.id);
   }
 });
 
@@ -117,7 +117,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   ]);
   } else {
     const user = await get1('user')
-    socket.emit('join room', user.id);
+    if (user?.id) socket.emit('join room', user.id);
   }
 });
 
