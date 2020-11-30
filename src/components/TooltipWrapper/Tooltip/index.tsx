@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import { v4 as uuid } from 'uuid';
+import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import ITopic from '../../../models/ITopic';
@@ -23,6 +24,8 @@ interface TooltipProps {
 }
 
 export default function Tooltip(props: TooltipProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [editorValue, setEditorValue] = useState('');
   const [highlight, setHighlight] = useState<HighlightParam | null>(null);
   const [highlighter, setHighlighter] = useState(new Highlighter());
@@ -40,7 +43,14 @@ export default function Tooltip(props: TooltipProps) {
     // Get user object
     get(['user', 'isAuthenticated', 'isExtensionOn'])
       .then((data) => {
-        if (!data.isAuthenticated || !data.isExtensionOn) return;
+        if (!data.isAuthenticated) {
+          setIsAuthenticated(false)
+          return;
+        }
+        if (!data.isExtensionOn) {
+          setIsExtensionOn(false)
+          return;
+        }
 
         // Set current user
         if (data.user) setUser(new User(data.user));
@@ -54,6 +64,21 @@ export default function Tooltip(props: TooltipProps) {
           };
         });
       });
+
+    chrome.storage.onChanged.addListener((change) => {
+      if (change.isExtensionOn !== undefined) {
+        if (change.isExtensionOn.newValue !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
+        else setIsExtensionOn(false);
+      }
+      if (change.isAuthenticated !== undefined) {
+        if (change.isAuthenticated.newValue !== undefined) setIsAuthenticated(change.isAuthenticated.newValue);
+        else setIsAuthenticated(false);
+      }
+      if (change.user !== undefined) {
+        if (change.user.newValue !== undefined) setUser(new User(change.user.newValue));
+        else setUser(null)
+      }
+    });
   }, []);
 
   const highlightPost = (post: Post, type: HighlightType) => {
@@ -301,10 +326,12 @@ export default function Tooltip(props: TooltipProps) {
         setPosts(newPosts);
       } else {
         // Show that highlighting failed
+        throw new ExtensionError(postRes.message!, 'Error creating highlight, try again!')
       }
     }
   }
 
+  if (!isExtensionOn || !isAuthenticated) return <div/> 
   return (
     <>
       {hoveredHighlightPost ? (

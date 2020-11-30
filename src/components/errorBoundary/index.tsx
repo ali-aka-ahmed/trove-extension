@@ -12,6 +12,12 @@ interface ErrorBoundaryState {
   message: string;
 }
 
+/**
+ * Global handler for all errors. When reporting an error, throw an ExtensionError like so:
+ * Note: You only need the stack argument if you are passed an error object
+ * 
+ * throw new ExtensionError(error.message, 'Error creating highlight, try again!', err.stack)
+ */
 export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
