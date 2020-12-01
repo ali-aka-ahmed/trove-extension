@@ -42,10 +42,10 @@ export const addHighlight = (
   } else {
     hasContent = false;
   }
-
+// debugger
   // This is where the magic happens
   const marks: HTMLElement[] = [];
-  for (let done = false, node = start; !done; ) {
+  for (let done = false, node = start; !done || !node; ) { //console.log(node, start)
     if (
       hasContent
       && node.nodeType === Node.TEXT_NODE

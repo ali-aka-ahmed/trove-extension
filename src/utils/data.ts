@@ -62,12 +62,12 @@ export const posts: IPost[] = [
     highlight: {
       id: '21a8a9d3-2d41-454e-ab5d-1e1ebb6abd93',
       creationDatetime: 1601178997080,
-      text: '',
-      range: {
-        startContainerPath: '',
-        endContainerPath: '',
-        startOffset: 0,
-        endOffset: 0
+      textRange: {
+        context: 'happy birthday',
+        contextStartIdx: 1,
+        text: 'a',
+        uniqueTextStartIdx: 1,
+        uniqueText: 'hap'
       },
       domain: 'akshath.me',
       url: 'https://akshath.me/',
