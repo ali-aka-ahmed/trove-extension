@@ -1,13 +1,15 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
 import { TextRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/textRange';
-import Post from '../entities/Post';
+import IPost from '../models/IPost';
 import ITopic from '../models/ITopic';
+import IUser from '../models/IUser';
+import { IUserRes } from './users';
 
 export type IPostsRes = PostsRes & AxiosRes;
 export type IPostRes = PostRes & AxiosRes;
 
-export const getPosts = async (url: string): Promise<IPostsRes> => {
-  const args: GetPostsReqBody = { url, allUsers: true }
+export const getPosts = async (url: string): Promise<IPostsRes | IUserRes> => {
+  const args: GetPostsReqBody = { url }
   return await api.post('/posts/', args);
 }
 
@@ -47,11 +49,16 @@ export const unlikePost = async (postId: string): Promise<AxiosRes> => {
 
 /**
  * POST /posts/
+ * Getting posts for a url versus your posts
+ * Args narrow scope of posts. If no args, returns all of your posts
+ * If url, then all posts on url
+ * If url and userId or username, all posts for the specified user
  */
 type GetPostsReqBody = {
-  url: string;
-  allUsers?: boolean;
-} | {}
+  url?: string;
+  userId?: string;
+  username?: string; // same filtering effect as above, if you want to search by username
+}
 
 /**
  * POST /posts/create
@@ -97,7 +104,9 @@ interface EditPostReqBody {
  * POST /posts/
  */
 type PostsRes = {
-  posts?: Post[]; // does not include comments for each post
+  posts?: IPost[]; // does not include comments for each post
+  taggedPosts?: IPost[]; // does not include comments for each post
+  user?: IUser;
 } & BaseRes;
 
 /**
@@ -106,6 +115,6 @@ type PostsRes = {
  * POST /posts/:id/comment/create
  */
 type PostRes = {
-  thread?: Post[]; // first index is parent ([parent, child, child of child, ...])
-  post?: Post; // includes comments
+  thread?: IPost[]; // first index is parent ([parent, child, child of child, ...])
+  post?: IPost; // includes comments
 } & BaseRes;

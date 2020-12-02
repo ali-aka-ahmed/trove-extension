@@ -1,7 +1,7 @@
 
 const MARK_CLASS_NAME = 'TbdMark';
 
-export const addHighlight = (
+export const addDOMHighlight = (
   range: Range,
   color: string='yellow', 
   onMouseEnter=(e: MouseEvent) => {},
@@ -42,10 +42,10 @@ export const addHighlight = (
   } else {
     hasContent = false;
   }
-
+// debugger
   // This is where the magic happens
   const marks: HTMLElement[] = [];
-  for (let done = false, node = start; !done; ) {
+  for (let done = false, node = start; !done || !node; ) { //console.log(node, start)
     if (
       hasContent
       && node.nodeType === Node.TEXT_NODE
@@ -100,7 +100,7 @@ export const addHighlight = (
   return marks;
 }
 
-export const removeHighlight = (marks: HTMLElement[]) => {
+export const removeDOMHighlight = (marks: HTMLElement[]) => {
   for (const mark of marks) {
     // Move each child of mark and merge if appropriate
     while (mark.hasChildNodes()) {
@@ -121,7 +121,7 @@ export const removeHighlight = (marks: HTMLElement[]) => {
   return marks;
 }
 
-export const modifyHighlight = (marks: HTMLElement[], style: string, value: string) => {
+export const modifyDOMHighlight = (marks: HTMLElement[], style: string, value: string) => {
   for (const mark of marks) {
     mark.style[style] = value;
   }

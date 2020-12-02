@@ -46,6 +46,7 @@ export const getTextRangeFromRange = (range: Range): TextRange => {
   const contextStartIdx = s.toString().lastIndexOf(text);
   for (let i = 0; i < 10; i++) s.modify('extend', 'right', 'word');
   const context = s.toString();
+  s.removeAllRanges();
 
   return { context, contextStartIdx, text, uniqueTextStartIdx, uniqueText };
 }
@@ -87,13 +88,17 @@ export const getRangeFromTextRange = (tr: TextRange) => {
       const e2 = textReduced.length;
       for (let i = 0; i < m2; i++) s.modify('move', 'right', 'character');
       for (let i = 0; i < e2; i++) s.modify('extend', 'right', 'character');
-      return s.getRangeAt(0);
+      const range = s.getRangeAt(0).cloneRange();
+      s.removeAllRanges();
+      return range;
     } else {
       // This wasn't the correct hit, so restore selection for next pass of window.find
       ss.restoreSelection();
     }
   }
 
+  console.error("Couldn't find Range corresponding to text:", tr.text);
+  s.removeAllRanges();
   return null;
 }
 
