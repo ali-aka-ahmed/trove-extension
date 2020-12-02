@@ -73,15 +73,15 @@ chrome.runtime.onMessage.addListener(async (
     case MessageType.HandleUsernameSearch: {
       if (!message.name) return;
       const res = await handleUsernameSearch(message.name);
-      sendResponse(res.users);
+      sendResponse(res);
       break;
     }
-    case MessageType.HandleTopicSearch | MessageType.GetTopics: {
+    case MessageType.HandleTopicSearch || MessageType.GetTopics: {
       const res = await getTopics(!message.text
         ? {}
         : { text: message.text }
       );
-      sendResponse(res.topics);
+      sendResponse(res);
       break;
     }
     case MessageType.Sync:

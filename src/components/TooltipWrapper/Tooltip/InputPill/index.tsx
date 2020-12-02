@@ -100,26 +100,26 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
   }
 
   const suggestTopics = async (text: string) => {
-    console.log('sending message')
-    const res = await sendMessageToExtension({ type: MessageType.HandleTopicSearch, text }) as ITopicsRes
-    if (!res.success) return;
-    const existingTopics = res.topics!;
-    if (existingTopics.some((topic) => topic.text === text)) {
-      setNewTopic(null);
-      if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
-    } else {
-      const newTopic: ITopic = { 
-        color,
-        creationDatetime: Date.now(),
-        lastEdited: Date.now(),
-        id: uuid(),
-        text, 
-      };
-      setNewTopic(newTopic)
-    }
-
-    setSuggestedTopics(existingTopics);
-    if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
+    sendMessageToExtension({ type: MessageType.HandleTopicSearch, text }).then((res: ITopicsRes) => {
+      if (!res.success) return;
+      const existingTopics = res.topics!;
+      if (existingTopics.some((topic) => topic.text === text)) {
+        setNewTopic(null);
+        if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
+      } else {
+        const newTopic: ITopic = { 
+          color,
+          creationDatetime: Date.now(),
+          lastEdited: Date.now(),
+          id: uuid(),
+          text, 
+        };
+        setNewTopic(newTopic)
+      }
+  
+      setSuggestedTopics(existingTopics);
+      if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
+    });    
   }
 
   const renderSuggestedTopics = () => {
