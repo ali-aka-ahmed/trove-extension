@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Trove Edge",
-  "description": "A hidden layer of the internet.",
+  "description": "A hidden layer of the internet. This build showcases the newest features before bringing them to our main extension.",
   "version": "0.0.1",
   "browser_action": {
     "default_icon": "icon16.png",
@@ -27,14 +27,11 @@
     "tabs",
     "activeTab",
     "http://localhost:5000/*",
-    "https://api.trove.so/*",
     "https://dev.trove.so/*"
   ],
   "externally_connectable": {
     "matches": [
       "http://localhost:3000/*", 
-      "https://trove.so/*",
-      "https://www.trove.so/*",
       "https://development.trove.so/*",
       "https://demo.trove.so/*"
     ]
