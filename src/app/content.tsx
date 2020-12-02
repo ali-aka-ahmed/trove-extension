@@ -1,21 +1,53 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TooltipWrapper from '../components/TooltipWrapper';
-
-// Render sidebar
-// const sidebarContainer = document.createElement('div');
-// sidebarContainer.setAttribute('class', 'TbdSidebarWrapper');
-// document.body.appendChild(sidebarContainer);
-
-// const sidebarShadowRoot = sidebarContainer.attachShadow({ mode: 'open' });
-// ReactDOM.render(<SidebarWrapper />, sidebarShadowRoot);
+import { get } from '../utils/chrome/storage';
 
 // Render tooltip
-// TODO: convert shadow host to React component so we can remove entire tooltip
-// when it's no longer visible
-const tooltipContainer = document.createElement('div');
-tooltipContainer.setAttribute('class', 'TbdTooltipWrapper');
-document.body.appendChild(tooltipContainer);
+let isAuthenticated: boolean = false;
+let isExtensionOn: boolean = false;
+get(['isAuthenticated', 'isExtensionOn'])
+  .then((data) => {
+    isAuthenticated = data.isAuthenticated || false;
+    isExtensionOn = data.isExtensionOn || false;
+    if (isAuthenticated && isExtensionOn) {
+      renderTooltip();
+    }
+  });
 
-const tooltipShadowRoot = tooltipContainer.attachShadow({ mode: 'open' });
-ReactDOM.render(<TooltipWrapper root={tooltipShadowRoot} />, tooltipShadowRoot);
+chrome.storage.onChanged.addListener((change) => {
+  let isChanged = false;
+  if (change.isAuthenticated !== undefined) {
+    isChanged = true;
+    isAuthenticated = change.isAuthenticated.newValue || false;
+  }
+
+  if (change.isExtensionOn !== undefined) {
+    isChanged = true;
+    isExtensionOn = change.isExtensionOn.newValue || false;
+  }
+
+  if (isChanged) {
+    if (isAuthenticated && isExtensionOn) {
+      renderTooltip();
+    } else {
+      removeTooltip();
+    }
+  }
+});
+
+const renderTooltip = () => {
+  const tooltipContainer = document.createElement('div');
+  tooltipContainer.setAttribute('id', 'TbdTooltipWrapper');
+  document.body.appendChild(tooltipContainer);
+
+  const tooltipShadowRoot = tooltipContainer.attachShadow({ mode: 'open' });
+  ReactDOM.render(<TooltipWrapper root={tooltipShadowRoot} />, tooltipShadowRoot);
+}
+
+const removeTooltip = () => {
+  const tooltipContainer = document.getElementById('TbdTooltipWrapper');
+  if (tooltipContainer) {
+    tooltipContainer.remove();
+  }
+}
