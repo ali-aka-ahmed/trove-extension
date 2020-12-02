@@ -329,7 +329,7 @@ export default function Tooltip(props: TooltipProps) {
           setTempHighlightId('');
         }
 
-        addPosts(postRes.post, HighlightType.Default);
+        addPosts(new Post(postRes.post), HighlightType.Default);
       } else {
         // Show that highlighting failed
         throw new ExtensionError(postRes.message!, 'Error creating highlight, try again!');
