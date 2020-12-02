@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import ReactQuill from 'react-quill';
 import { v4 as uuid } from 'uuid';
+import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import ITopic from '../../../models/ITopic';
@@ -24,6 +25,8 @@ interface TooltipProps {
 }
 
 export default function Tooltip(props: TooltipProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isExtensionOn, setIsExtensionOn] = useState(true);
   const [editorValue, setEditorValue] = useState('');
   const [highlight, setHighlight] = useState<HighlightParam | null>(null);
   const [highlighter, setHighlighter] = useState(new Highlighter());
@@ -41,6 +44,8 @@ export default function Tooltip(props: TooltipProps) {
     // Get user object
     get(['user', 'isAuthenticated', 'isExtensionOn'])
       .then((data) => {
+        setIsAuthenticated(data.isAuthenticated || false);
+        setIsExtensionOn(data.isExtensionOn || false);
         if (!data.isAuthenticated || !data.isExtensionOn) return;
 
         // Set current user
@@ -55,6 +60,20 @@ export default function Tooltip(props: TooltipProps) {
           };
         });
       });
+
+    chrome.storage.onChanged.addListener((change) => {
+      if (change.isExtensionOn !== undefined) {
+        setIsExtensionOn(change.isExtensionOn.newValue || false);
+      }
+
+      if (change.isAuthenticated !== undefined) {
+        setIsAuthenticated(change.isAuthenticated.newValue || false);
+      }
+      
+      if (change.user !== undefined) {
+        setUser(change.user.newValue || null);
+      }
+    });
   }, []);
 
   const addPostHighlight = (post: Post, type: HighlightType) => {
@@ -306,11 +325,12 @@ export default function Tooltip(props: TooltipProps) {
         dispatch({ type: ListReducerActionType.Clear, data: newPosts });
       } else {
         // Show that highlighting failed
-        console.error(`${postRes.message}:`, postRes);
+        throw new ExtensionError(postRes.message!, 'Error creating highlight, try again!');
       }
     }
   }
 
+  if (!isExtensionOn || !isAuthenticated) return <></>;
   return (
     <>
       {hoveredHighlightPost ? (
