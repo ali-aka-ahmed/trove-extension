@@ -19,7 +19,7 @@ api.interceptors.response.use((response) => {
   response.data.success = true;
   return response.data;
 }, (error) => {
-  if (!error.response) return error.toJSON();
+  if (!error.response) return error
   error.response.data.success = false;
   error.response.data.message = error.response.data.message || error.message;
   return error.response.data;
