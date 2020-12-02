@@ -337,7 +337,6 @@ export default function Tooltip(props: TooltipProps) {
     }
   }
 
-  if (!isExtensionOn || !isAuthenticated) return <></>;
   return (
     <>
       {hoveredHighlightPost ? (
