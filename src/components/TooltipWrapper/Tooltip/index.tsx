@@ -1,4 +1,5 @@
 import classNames from 'classnames';
+import { intersectionBy } from 'lodash';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import ReactQuill from 'react-quill';
 import { v4 as uuid } from 'uuid';
@@ -7,6 +8,7 @@ import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import ITopic from '../../../models/ITopic';
 import { createPost, HighlightParam, IPostsRes } from '../../../server/posts';
+import { toArray } from '../../../utils';
 import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Edge from './helpers/Edge';
@@ -37,8 +39,56 @@ export default function Tooltip(props: TooltipProps) {
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
   const [tempHighlightId, setTempHighlightId] = useState('');
-  const [topics, setTopics] = useState<Partial<ITopic>[]>([]); // { color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }
+  const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const [user, setUser] = useState<User | null>(null);
+
+  const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
+    postsToAdd = toArray(postsToAdd);
+    const postsToRemove = intersectionBy(posts, postsToAdd, 'id');
+    removePosts(postsToRemove);
+
+    for (const post of postsToAdd) {
+      if (!post.highlight || !post.creator) return;
+      let range: Range | null;
+      try {
+        range = getRangeFromTextRange(post.highlight.textRange);
+        getSelection()!.removeAllRanges();
+        if (!range) return;
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+
+      const id = post.highlight.id;
+      const color = post.creator.color;
+      const onMouseEnter = (e: MouseEvent) => {
+        highlighter.modifyHighlight(id, color, HighlightType.Active);
+        positionTooltip(e, range!);
+        setHoveredHighlightPost(post);
+      }
+      const onMouseLeave = (e: MouseEvent) => {
+        highlighter.modifyHighlight(id, color, HighlightType.Default);
+        setHoveredHighlightPost(null);
+        positionTooltip(e);
+      }
+      // debugger
+      highlighter.addHighlight(range, id, color, type, onMouseEnter, onMouseLeave);
+    }
+
+    // Add post(s) to list of posts
+    dispatch({ type: ListReducerActionType.UpdateOrAdd, data: postsToAdd });
+  }
+
+  const removePosts = (postsToRemove: Post | Post[]) => {
+    postsToRemove = toArray(postsToRemove);
+    for (const post of postsToRemove) {
+      if (!post.highlight) return;
+      highlighter.removeHighlight(post.highlight.id);
+    }
+
+    // Remove post(s) from list of posts
+    dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
+  }
 
   useEffect(() => {
     // Get user object
@@ -56,7 +106,7 @@ export default function Tooltip(props: TooltipProps) {
         sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
           if (res.success) {
             const newPosts = res.posts!.map((p) => new Post(p));
-            dispatch({ type: ListReducerActionType.Clear, data: newPosts });
+            addPosts(newPosts, HighlightType.Default);
           };
         });
       });
@@ -76,35 +126,6 @@ export default function Tooltip(props: TooltipProps) {
     });
   }, []);
 
-  const addPostHighlight = (post: Post, type: HighlightType) => {
-    if (!post.highlight || !post.creator) return;
-    let range: Range | null;
-    try {
-      range = getRangeFromTextRange(post.highlight.textRange);
-      getSelection()!.removeAllRanges();
-      if (!range) return;
-    } catch (e) {
-      console.error(e);
-      return;
-    }
-
-    // TODO: check if there's a memory leak when removing highlights
-    // Might have to manually remove handlers in removeHighlight
-    const color = post.creator.color;
-    const id = post.highlight.id;
-    const onMouseEnter = (e: MouseEvent) => {
-      highlighter.modifyHighlight(id, color, HighlightType.Active);
-      positionTooltip(e, range!);
-      setHoveredHighlightPost(post);
-    }
-    const onMouseLeave = (e: MouseEvent) => {
-      highlighter.modifyHighlight(id, color, HighlightType.Default);
-      setHoveredHighlightPost(null);
-      positionTooltip(e);
-    }
-    highlighter.addHighlight(range, id, color, type, onMouseEnter, onMouseLeave);
-  }
-
   useEffect(() => {
     // Workaround to force Quill placeholder to change dynamically
     const editor = props.root.querySelector('.ql-editor');
@@ -114,24 +135,6 @@ export default function Tooltip(props: TooltipProps) {
       editor?.setAttribute('data-placeholder', 'Add note');
     }
   }, [hoveredHighlightPost]);
-
-  useEffect(() => {
-    if (posts) {
-      // TODO: make this more efficient - compare how list changes + modify highlights (dispatch)
-      posts.forEach((post) => {
-        if (post.highlight) {
-          try {
-            highlighter.removeHighlight(post.highlight.id);
-          } catch (e) {
-            console.error(e);
-          }
-        }
-      });
-
-      posts.sort((p1, p2) => p1.creationDatetime - p2.creationDatetime)
-        .forEach((post) => addPostHighlight(post, HighlightType.Default));
-    }
-  }, [posts]);
 
   const selectionExists = (selection: Selection | null) => {
     return selection 
@@ -320,9 +323,7 @@ export default function Tooltip(props: TooltipProps) {
           setTempHighlightId('');
         }
 
-        const newPosts = posts.slice();
-        newPosts.push(new Post(postRes.post));
-        dispatch({ type: ListReducerActionType.Clear, data: newPosts });
+        addPosts(postRes.post, HighlightType.Default);
       } else {
         // Show that highlighting failed
         throw new ExtensionError(postRes.message!, 'Error creating highlight, try again!');
