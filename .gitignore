@@ -33,4 +33,4 @@ yarn-error.log*
 .vscode
 
 # custom
-src/config/index.tsx
+src/config/dev.tsx

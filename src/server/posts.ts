@@ -2,11 +2,13 @@ import { api, AxiosRes, BaseParams, BaseRes } from '.';
 import { TextRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/textRange';
 import IPost from '../models/IPost';
 import ITopic from '../models/ITopic';
+import IUser from '../models/IUser';
+import { IUserRes } from './users';
 
 export type IPostsRes = PostsRes & AxiosRes;
 export type IPostRes = PostRes & AxiosRes;
 
-export const getPosts = async (url: string): Promise<IPostsRes> => {
+export const getPosts = async (url: string): Promise<IPostsRes | IUserRes> => {
   const args: GetPostsReqBody = { url }
   return await api.post('/posts/', args);
 }
@@ -104,6 +106,7 @@ interface EditPostReqBody {
 type PostsRes = {
   posts?: IPost[]; // does not include comments for each post
   taggedPosts?: IPost[]; // does not include comments for each post
+  user?: IUser;
 } & BaseRes;
 
 /**
