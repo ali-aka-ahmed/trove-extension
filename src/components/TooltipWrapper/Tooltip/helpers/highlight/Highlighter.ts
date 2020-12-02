@@ -1,5 +1,5 @@
 import Color from "color";
-import { addHighlight, modifyHighlight, removeHighlight } from ".";
+import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from ".";
 
 interface HighlightData {
   color: string;
@@ -32,8 +32,8 @@ export default class Highlighter {
     const color = colorStr ? this.getColor(colorStr, type) : 'yellow';
     let marks: HTMLElement[] = [];
 
-    if (highlight) removeHighlight(highlight.marks);
-    marks = addHighlight(range, color, onMouseEnter, onMouseLeave);
+    if (highlight) removeDOMHighlight(highlight.marks);
+    marks = addDOMHighlight(range, color, onMouseEnter, onMouseLeave);
     this.highlights.set(rootId, { color, marks, type });
     return marks;
   }
@@ -42,7 +42,7 @@ export default class Highlighter {
     const highlight = this.highlights.get(rootId);
     const color = this.getColor(colorStr, type);
     if (highlight) {
-      modifyHighlight(highlight.marks, 'backgroundColor', color);
+      modifyDOMHighlight(highlight.marks, 'backgroundColor', color);
       return highlight.marks;
     } else {
       console.error('Attempted to modify nonexistent highlight.');
@@ -53,7 +53,7 @@ export default class Highlighter {
   public removeHighlight = (rootId: string) => {
     const highlight = this.highlights.get(rootId);
     if (highlight) {
-      removeHighlight(highlight.marks);
+      removeDOMHighlight(highlight.marks);
       this.highlights.delete(rootId);
     }
   }
