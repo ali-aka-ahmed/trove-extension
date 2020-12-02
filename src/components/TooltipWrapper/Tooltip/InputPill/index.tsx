@@ -165,7 +165,7 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
         <input
           value={content}
           className="TbdInputPill TbdInputPill--input"
-          style={{width: `${(content.length+1)*6}px`}}
+          style={{width: `${(content.length+1)*8}px`}}
           onChange={handleInputChange}
           onBlur={onBlur}
           onKeyDown={onKeyDownContent}
