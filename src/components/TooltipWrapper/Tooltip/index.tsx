@@ -16,8 +16,8 @@ import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
-import InputPill from './InputPill';
-import Pill from './Pill';
+import InputPill from './inputPill';
+import Pill from './pill';
 
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
@@ -218,7 +218,12 @@ export default function Tooltip(props: TooltipProps) {
 
     // Do nothing if user clicks Trove tooltip
     const target = e.target as HTMLElement;
-    if (target.className.match(/tbd/i) || target.className.match(/trove/i)) {
+    if (
+      target.className.match(/tbd/i)
+      || target.className.match(/trove/i)
+      || target.id.match(/tbd/i)
+      || target.id.match(/trove/i)
+    ) {
       return;
     }
 

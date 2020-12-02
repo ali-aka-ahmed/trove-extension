@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { DEFAULT_TOPIC_COLORS } from '../../../../constants';
 import ITopic from '../../../../models/ITopic';
 import { getTopics } from '../../../../server/topics';
-import Pill from '../Pill';
+import Pill from '../pill';
 
 interface InputPillProps {
   onSubmit: (topic: ITopic) => Promise<void> | void;

@@ -37,6 +37,22 @@ $tooltip-padding: 10px;
   width: inherit;
 }
 
+.TbdTooltip__RemoveButton {
+  height: 25px;
+  width: 25px;
+  border: none;
+  outline: none;
+  position: absolute;
+  bottom: 7px;
+  right: $tooltip-padding;
+  background-color: transparent;
+  background-image: url('../../../../public/images/submit1.svg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 25px 25px;
+  cursor: pointer;
+}
+
 .TbdTooltip__SubmitButton {
   height: 25px;
   width: 25px;
