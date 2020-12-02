@@ -27,8 +27,8 @@ interface TooltipProps {
 }
 
 export default function Tooltip(props: TooltipProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [isExtensionOn, setIsExtensionOn] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [editorValue, setEditorValue] = useState('');
   const [highlight, setHighlight] = useState<HighlightParam | null>(null);
   const [highlighter, setHighlighter] = useState(new Highlighter());
@@ -48,15 +48,15 @@ export default function Tooltip(props: TooltipProps) {
     removePosts(postsToRemove);
 
     for (const post of postsToAdd) {
-      if (!post.highlight || !post.creator) return;
+      if (!post.highlight || !post.creator) continue;
       let range: Range | null;
       try {
         range = getRangeFromTextRange(post.highlight.textRange);
         getSelection()!.removeAllRanges();
-        if (!range) return;
+        if (!range) continue;
       } catch (e) {
         console.error(e);
-        return;
+        continue;
       }
 
       const id = post.highlight.id;
@@ -71,7 +71,6 @@ export default function Tooltip(props: TooltipProps) {
         setHoveredHighlightPost(null);
         positionTooltip(e);
       }
-      // debugger
       highlighter.addHighlight(range, id, color, type, onMouseEnter, onMouseLeave);
     }
 
@@ -82,7 +81,7 @@ export default function Tooltip(props: TooltipProps) {
   const removePosts = (postsToRemove: Post | Post[]) => {
     postsToRemove = toArray(postsToRemove);
     for (const post of postsToRemove) {
-      if (!post.highlight) return;
+      if (!post.highlight) continue;
       highlighter.removeHighlight(post.highlight.id);
     }
 
@@ -100,15 +99,6 @@ export default function Tooltip(props: TooltipProps) {
 
         // Set current user
         if (data.user) setUser(new User(data.user));
-
-        // Get posts on current page
-        const url = window.location.href;
-        sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
-          if (res.success) {
-            const newPosts = res.posts!.map((p) => new Post(p));
-            addPosts(newPosts, HighlightType.Default);
-          };
-        });
       });
 
     chrome.storage.onChanged.addListener((change) => {
@@ -125,6 +115,22 @@ export default function Tooltip(props: TooltipProps) {
       }
     });
   }, []);
+  
+  useEffect(() => {
+    if (isAuthenticated && isExtensionOn) {
+      if (posts.length === 0) {
+        const url = window.location.href;
+        sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
+          if (res.success) {
+            const newPosts = res.posts!.map((p) => new Post(p));
+            addPosts(newPosts, HighlightType.Default);
+          };
+        });
+      }
+    } else {
+      removePosts(posts);
+    }
+  }, [isAuthenticated, isExtensionOn]);
 
   useEffect(() => {
     // Workaround to force Quill placeholder to change dynamically
