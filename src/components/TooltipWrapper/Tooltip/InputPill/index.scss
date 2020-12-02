@@ -19,6 +19,7 @@ $border-radius: 3px; // 7px
   @include TbdFont--small;
   line-height: 120%;
   margin-right: 6px;
+  max-width: calc(100% - 20px);
 }
 
 .TbdInputPill--button {
@@ -49,6 +50,7 @@ $border-radius: 3px; // 7px
   align-items: flex-start;
   position: relative;
   height: 22px;
+  width: inherit;
 }
 
 .TbdNewPost__SuggestedTopicList {
