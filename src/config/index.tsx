@@ -1,2 +1,2 @@
-import { BACKEND_URL, LOGGING, ORIGIN, VALID_DOMAINS } from './dev';
+import { BACKEND_URL, LOGGING, ORIGIN, VALID_DOMAINS } from './config.dev';
 export { LOGGING, ORIGIN, BACKEND_URL, VALID_DOMAINS };
