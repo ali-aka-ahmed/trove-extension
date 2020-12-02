@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import ReactQuill from 'react-quill';
 import { v4 as uuid } from 'uuid';
 import ExtensionError from '../../../entities/ExtensionError';
@@ -13,6 +13,7 @@ import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
 import Point from './helpers/Point';
+import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
 import InputPill from './InputPill';
 import Pill from './Pill';
 
@@ -34,7 +35,7 @@ export default function Tooltip(props: TooltipProps) {
   const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
   const [tempHighlightId, setTempHighlightId] = useState('');
   const [topics, setTopics] = useState<Partial<ITopic>[]>([]); // { color: '#ebebeb', text: 'Politics' }, { color: '#0d77e2', text: 'Gaming' }
   const [user, setUser] = useState<User | null>(null);
@@ -43,14 +44,9 @@ export default function Tooltip(props: TooltipProps) {
     // Get user object
     get(['user', 'isAuthenticated', 'isExtensionOn'])
       .then((data) => {
-        if (!data.isAuthenticated) {
-          setIsAuthenticated(false)
-          return;
-        }
-        if (!data.isExtensionOn) {
-          setIsExtensionOn(false)
-          return;
-        }
+        setIsAuthenticated(data.isAuthenticated || false);
+        setIsExtensionOn(data.isExtensionOn || false);
+        if (!data.isAuthenticated || !data.isExtensionOn) return;
 
         // Set current user
         if (data.user) setUser(new User(data.user));
@@ -59,54 +55,54 @@ export default function Tooltip(props: TooltipProps) {
         const url = window.location.href;
         sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
           if (res.success) {
-            const posts = res.posts!.map((p) => new Post(p));
-            setPosts(posts);
+            const newPosts = res.posts!.map((p) => new Post(p));
+            dispatch({ type: ListReducerActionType.Clear, data: newPosts });
           };
         });
       });
 
     chrome.storage.onChanged.addListener((change) => {
       if (change.isExtensionOn !== undefined) {
-        if (change.isExtensionOn.newValue !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
-        else setIsExtensionOn(false);
+        setIsExtensionOn(change.isExtensionOn.newValue || false);
       }
+
       if (change.isAuthenticated !== undefined) {
-        if (change.isAuthenticated.newValue !== undefined) setIsAuthenticated(change.isAuthenticated.newValue);
-        else setIsAuthenticated(false);
+        setIsAuthenticated(change.isAuthenticated.newValue || false);
       }
+      
       if (change.user !== undefined) {
-        if (change.user.newValue !== undefined) setUser(new User(change.user.newValue));
-        else setUser(null)
+        setUser(change.user.newValue || null);
       }
     });
   }, []);
 
-  const highlightPost = (post: Post, type: HighlightType) => {
-    if (!post.highlight || !post.creator || !post.id) return;
+  const addPostHighlight = (post: Post, type: HighlightType) => {
+    if (!post.highlight || !post.creator) return;
     let range: Range | null;
     try {
       range = getRangeFromTextRange(post.highlight.textRange);
+      getSelection()!.removeAllRanges();
+      if (!range) return;
     } catch (e) {
       console.error(e);
       return;
     }
 
-    const color = post.creator.color;
-    if (!range) return;
-
     // TODO: check if there's a memory leak when removing highlights
     // Might have to manually remove handlers in removeHighlight
+    const color = post.creator.color;
+    const id = post.highlight.id;
     const onMouseEnter = (e: MouseEvent) => {
-      highlighter.addHighlight(range!, post.id, color, HighlightType.Active);
+      highlighter.modifyHighlight(id, color, HighlightType.Active);
       positionTooltip(e, range!);
       setHoveredHighlightPost(post);
     }
     const onMouseLeave = (e: MouseEvent) => {
-      highlighter.addHighlight(range!, post.id, color, HighlightType.Default);
+      highlighter.modifyHighlight(id, color, HighlightType.Default);
       setHoveredHighlightPost(null);
       positionTooltip(e);
     }
-    highlighter.addHighlight(range, post.id, color, type, onMouseEnter, onMouseLeave);
+    highlighter.addHighlight(range, id, color, type, onMouseEnter, onMouseLeave);
   }
 
   useEffect(() => {
@@ -122,19 +118,18 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (posts) {
       // TODO: make this more efficient - compare how list changes + modify highlights (dispatch)
-      posts.sort((p1, p2) => p2.creationDatetime - p1.creationDatetime)
-        .forEach((post) => {
-          if (post.highlight) {
-            try {
-              highlighter.removeHighlight(post.highlight.id);
-            } catch (e) {
-              console.error(e);
-            }
+      posts.forEach((post) => {
+        if (post.highlight) {
+          try {
+            highlighter.removeHighlight(post.highlight.id);
+          } catch (e) {
+            console.error(e);
           }
-        });
+        }
+      });
 
       posts.sort((p1, p2) => p1.creationDatetime - p2.creationDatetime)
-        .forEach((post) => highlightPost(post, HighlightType.Default));
+        .forEach((post) => addPostHighlight(post, HighlightType.Default));
     }
   }, [posts]);
 
@@ -300,6 +295,10 @@ export default function Tooltip(props: TooltipProps) {
   //   return () => document.removeEventListener('keyup', test);
   // }, [test])
 
+  const onClickRemove = () => {
+
+  }
+
   const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (highlight) {
       const postReq = {
@@ -320,18 +319,18 @@ export default function Tooltip(props: TooltipProps) {
           highlighter.removeHighlight(tempHighlightId);
           setTempHighlightId('');
         }
-        
+
         const newPosts = posts.slice();
         newPosts.push(new Post(postRes.post));
-        setPosts(newPosts);
+        dispatch({ type: ListReducerActionType.Clear, data: newPosts });
       } else {
         // Show that highlighting failed
-        throw new ExtensionError(postRes.message!, 'Error creating highlight, try again!')
+        throw new ExtensionError(postRes.message!, 'Error creating highlight, try again!');
       }
     }
   }
 
-  if (!isExtensionOn || !isAuthenticated) return <div/> 
+  if (!isExtensionOn || !isAuthenticated) return <></>;
   return (
     <>
       {hoveredHighlightPost ? (

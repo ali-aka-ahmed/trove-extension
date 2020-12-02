@@ -15,14 +15,13 @@ api.interceptors.request.use(async (config) => {
 });
 
 api.interceptors.response.use((response) => {
-  // (200-299)
+  
   response.data.success = true;
   return response.data;
 }, (error) => {
-  // outside of (200-299)
+  if (!error.response) return error.toJSON();
   error.response.data.success = false;
-  const errorMessage = error.response.data.message
-  if (!errorMessage) error.response.data.message = error.message;
+  error.response.data.message = error.response.data.message || error.message;
   return error.response.data;
 });
 

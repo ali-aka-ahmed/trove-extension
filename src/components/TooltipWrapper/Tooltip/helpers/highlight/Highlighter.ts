@@ -38,8 +38,9 @@ export default class Highlighter {
     return marks;
   }
 
-  public modifyHighlight = (rootId: string, color: string) => {
+  public modifyHighlight = (rootId: string, colorStr: string, type: HighlightType) => {
     const highlight = this.highlights.get(rootId);
+    const color = this.getColor(colorStr, type);
     if (highlight) {
       modifyHighlight(highlight.marks, 'backgroundColor', color);
       return highlight.marks;

@@ -1,4 +1,5 @@
 import INotification from '../models/INotification';
+import IPost from '../models/IPost';
 import IUser from '../models/IUser';
 
 export const users: IUser[] = [
@@ -32,47 +33,47 @@ export const users: IUser[] = [
   }
 ];
 
-// export const posts: IPost[] = [
-//   {
-//     id: '4ff4be94-b0ac-4da5-9224-652993095c25',
-//     content: '@aki yo check this out lalalalala this is a big test hello world',
-//     creationDatetime: 1601178998080,
-//     creator: {
-//       id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
-//       displayName: 'Ali Ahmed',
-//       username: 'ali',
-//       creationDatetime: 1599521094670,
-//       color: '#52B2FA'
-//     },
-//     domain: 'akshath.me',
-//     url: 'https://akshath.me/',
-//     taggedUsers: [
-//       {
-//         id: '30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93', // needs to be unique
-//         displayName: 'Akshath Sivaprasad',
-//         username: 'aki',
-//         creationDatetime: 1599520968596,
-//         color: '#9900EF',
-//       }
-//     ],
-//     numComments: 0,
-//     numLikes: 0,
-//     topics: [],
-//     highlight: {
-//       id: '21a8a9d3-2d41-454e-ab5d-1e1ebb6abd93',
-//       creationDatetime: 1601178997080,
-//       text: '',
-//       range: {
-//         startContainerPath: '',
-//         endContainerPath: '',
-//         startOffset: 0,
-//         endOffset: 0
-//       },
-//       domain: 'akshath.me',
-//       url: 'https://akshath.me/',
-//     }
-//   }
-// ];
+export const posts: IPost[] = [
+  {
+    id: '4ff4be94-b0ac-4da5-9224-652993095c25',
+    content: '@aki yo check this out lalalalala this is a big test hello world',
+    creationDatetime: 1601178998080,
+    creator: {
+      id: 'fce65bd0-8af5-4504-a19d-8cbc767693f7',
+      displayName: 'Ali Ahmed',
+      username: 'ali',
+      creationDatetime: 1599521094670,
+      color: '#52B2FA'
+    },
+    domain: 'akshath.me',
+    url: 'https://akshath.me/',
+    taggedUsers: [
+      {
+        id: '30a8a9d3-2d42-454e-ab5d-1e1ebb6abd93', // needs to be unique
+        displayName: 'Akshath Sivaprasad',
+        username: 'aki',
+        creationDatetime: 1599520968596,
+        color: '#9900EF',
+      }
+    ],
+    numComments: 0,
+    numLikes: 0,
+    topics: [],
+    highlight: {
+      id: '21a8a9d3-2d41-454e-ab5d-1e1ebb6abd93',
+      creationDatetime: 1601178997080,
+      textRange: {
+        context: 'happy birthday',
+        contextStartIdx: 1,
+        text: 'a',
+        uniqueTextStartIdx: 1,
+        uniqueText: 'hap'
+      },
+      domain: 'akshath.me',
+      url: 'https://akshath.me/',
+    }
+  }
+];
 
 export const notifications: INotification[] = [
   {
