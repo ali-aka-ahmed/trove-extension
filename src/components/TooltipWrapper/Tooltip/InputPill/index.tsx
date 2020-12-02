@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { DEFAULT_TOPIC_COLORS } from '../../../../constants';
 import ITopic from '../../../../models/ITopic';
-import { getTopics } from '../../../../server/topics';
+import { ITopicsRes } from '../../../../server/topics';
+import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import Pill from '../pill';
 
 interface InputPillProps {
@@ -99,7 +100,8 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
   }
 
   const suggestTopics = async (text: string) => {
-    const res = await getTopics(text)
+    console.log('sending message')
+    const res = await sendMessageToExtension({ type: MessageType.HandleTopicSearch, text }) as ITopicsRes
     if (!res.success) return;
     const existingTopics = res.topics!;
     if (existingTopics.some((topic) => topic.text === text)) {
