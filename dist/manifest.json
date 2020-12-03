@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Trove Edge",
+  "name": "Trove DEV",
   "description": "A hidden layer of the internet.",
   "version": "0.0.1",
   "browser_action": {
@@ -27,14 +27,11 @@
     "tabs",
     "activeTab",
     "http://localhost:5000/*",
-    "https://api.trove.so/*",
     "https://dev.trove.so/*"
   ],
   "externally_connectable": {
     "matches": [
       "http://localhost:3000/*", 
-      "https://trove.so/*",
-      "https://www.trove.so/*",
       "https://development.trove.so/*",
       "https://demo.trove.so/*"
     ]

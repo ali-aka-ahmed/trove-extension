@@ -3,7 +3,7 @@ import { BACKEND_URL } from '../config';
 import User from '../entities/User';
 import INotification from '../models/INotification';
 import { createPost, createReply, getPosts } from '../server/posts';
-import { handleTopicSearch } from '../server/topics';
+import { getTopics } from '../server/topics';
 import { handleUsernameSearch } from '../server/users';
 import { Message as EMessage, MessageType as EMessageType } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
@@ -73,13 +73,15 @@ chrome.runtime.onMessage.addListener(async (
     case MessageType.HandleUsernameSearch: {
       if (!message.name) return;
       const res = await handleUsernameSearch(message.name);
-      sendResponse(res.users);
+      sendResponse(res);
       break;
     }
-    case MessageType.HandleTopicSearch: {
-      if (!message.topic) return;
-      const res = await handleTopicSearch(message.topic);
-      sendResponse(res.topics);
+    case MessageType.HandleTopicSearch || MessageType.GetTopics: {
+      const res = await getTopics(!message.text
+        ? {}
+        : { text: message.text }
+      );
+      sendResponse(res);
       break;
     }
     case MessageType.Sync:

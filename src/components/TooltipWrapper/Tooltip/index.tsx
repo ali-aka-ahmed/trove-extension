@@ -7,7 +7,7 @@ import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import ITopic from '../../../models/ITopic';
-import { createPost, HighlightParam, IPostsRes } from '../../../server/posts';
+import { HighlightParam, IPostRes, IPostsRes } from '../../../server/posts';
 import { toArray } from '../../../utils';
 import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
@@ -327,18 +327,19 @@ export default function Tooltip(props: TooltipProps) {
       setIsTempHighlightVisible(false);
       setEditorValue('');
       setTopics([])
-      const postRes = await createPost(postReq);
-      if (postRes.success && postRes.post) {
-        if (tempHighlightId) {
-          highlighter.removeHighlight(tempHighlightId);
-          setTempHighlightId('');
+      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then((res: IPostRes) => {
+        if (res.success && res.post) {
+          if (tempHighlightId) {
+            highlighter.removeHighlight(tempHighlightId);
+            setTempHighlightId('');
+          }
+  
+          addPosts(new Post(res.post), HighlightType.Default);
+        } else {
+          // Show that highlighting failed
+          throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
         }
-
-        addPosts(new Post(postRes.post), HighlightType.Default);
-      } else {
-        // Show that highlighting failed
-        throw new ExtensionError(postRes.message!, 'Error creating highlight, try again!');
-      }
+      });
     }
   }
 

@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { DEFAULT_TOPIC_COLORS } from '../../../../constants';
 import ITopic from '../../../../models/ITopic';
-import { getTopics } from '../../../../server/topics';
+import { ITopicsRes } from '../../../../server/topics';
+import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import Pill from '../pill';
 
 interface InputPillProps {
@@ -99,25 +100,26 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
   }
 
   const suggestTopics = async (text: string) => {
-    const res = await getTopics(text)
-    if (!res.success) return;
-    const existingTopics = res.topics!;
-    if (existingTopics.some((topic) => topic.text === text)) {
-      setNewTopic(null);
-      if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
-    } else {
-      const newTopic: ITopic = { 
-        color,
-        creationDatetime: Date.now(),
-        lastEdited: Date.now(),
-        id: uuid(),
-        text, 
-      };
-      setNewTopic(newTopic)
-    }
-
-    setSuggestedTopics(existingTopics);
-    if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
+    sendMessageToExtension({ type: MessageType.HandleTopicSearch, text }).then((res: ITopicsRes) => {
+      if (!res.success) return;
+      const existingTopics = res.topics!;
+      if (existingTopics.some((topic) => topic.text === text)) {
+        setNewTopic(null);
+        if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
+      } else {
+        const newTopic: ITopic = { 
+          color,
+          creationDatetime: Date.now(),
+          lastEdited: Date.now(),
+          id: uuid(),
+          text, 
+        };
+        setNewTopic(newTopic)
+      }
+  
+      setSuggestedTopics(existingTopics);
+      if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
+    });    
   }
 
   const renderSuggestedTopics = () => {
