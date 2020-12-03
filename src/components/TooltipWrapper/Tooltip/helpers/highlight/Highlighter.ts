@@ -22,24 +22,24 @@ export default class Highlighter {
   // TODO: use shorter id
   public addHighlight = (
     range: Range, 
-    rootId: string,
+    id: string,
     colorStr: string | null='yellow', 
     type: HighlightType,
     onMouseEnter=(e: MouseEvent) => {},
     onMouseLeave=(e: MouseEvent) => {}
   ) => {
-    const highlight = this.highlights.get(rootId);
+    const highlight = this.highlights.get(id);
     const color = colorStr ? this.getColor(colorStr, type) : 'yellow';
     let marks: HTMLElement[] = [];
 
     if (highlight) removeDOMHighlight(highlight.marks);
     marks = addDOMHighlight(range, color, onMouseEnter, onMouseLeave);
-    this.highlights.set(rootId, { color, marks, type });
+    this.highlights.set(id, { color, marks, type });
     return marks;
   }
 
-  public modifyHighlight = (rootId: string, colorStr: string, type: HighlightType) => {
-    const highlight = this.highlights.get(rootId);
+  public modifyHighlight = (id: string, colorStr: string, type: HighlightType) => {
+    const highlight = this.highlights.get(id);
     const color = this.getColor(colorStr, type);
     if (highlight) {
       modifyDOMHighlight(highlight.marks, 'backgroundColor', color);
@@ -50,11 +50,11 @@ export default class Highlighter {
     }
   }
 
-  public removeHighlight = (rootId: string) => {
-    const highlight = this.highlights.get(rootId);
+  public removeHighlight = (id: string) => {
+    const highlight = this.highlights.get(id);
     if (highlight) {
       removeDOMHighlight(highlight.marks);
-      this.highlights.delete(rootId);
+      this.highlights.delete(id);
     }
   }
 
