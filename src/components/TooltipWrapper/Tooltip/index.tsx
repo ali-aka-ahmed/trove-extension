@@ -1,7 +1,8 @@
 import classNames from 'classnames';
 import { intersectionBy } from 'lodash';
-import React, { useCallback, useEffect, useReducer, useState } from 'react';
-import ReactQuill from 'react-quill';
+import { Delta, Sources } from 'quill';
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import ReactQuill, { UnprivilegedEditor } from 'react-quill';
 import { v4 as uuid } from 'uuid';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
@@ -41,6 +42,7 @@ export default function Tooltip(props: TooltipProps) {
   const [tempHighlightId, setTempHighlightId] = useState('');
   const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const quill = useRef<ReactQuill>(null!)
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
@@ -292,9 +294,31 @@ export default function Tooltip(props: TooltipProps) {
     }
   }
 
-  const onEditorChange = (content: string) => {
+  const onEditorChange = (content: string, delta: Delta, source: Sources, editor: UnprivilegedEditor) => {
+    console.log("content", content);
+    console.log("delta", delta);
+    console.log("editor.getSelection", editor.getSelection(false));
+    console.log('\n')
+
+    // NEED TO BE ABLE TO GET WHERE THE CURRENT CURSOR IS
+
+    // Get current word cursor is in and check if it has an @
+
+    // get textAfter @ (until space)
+    // get 
+    // if it does and textAfter is empty, inject <p> tags into content
+
+    // else use textAfter to search for users
+
+
+    // check if the user is starting to tag someone
+    // if (delta.ops?.find((op) => op.insert === "@")) {
+      // 
+    // }
     setEditorValue(content);
   }
+
+  // suggestUsers sets the suggested users
 
   // const test = useCallback((e: KeyboardEvent) => {
   //   if (e.key === 'Enter') {
@@ -380,6 +404,7 @@ export default function Tooltip(props: TooltipProps) {
               value={editorValue} 
               onChange={onEditorChange}
               placeholder="Add note"
+              ref={quill}
             />
             <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
           </div>
