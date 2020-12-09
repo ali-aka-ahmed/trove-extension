@@ -295,10 +295,10 @@ export default function Tooltip(props: TooltipProps) {
   }
 
   const onEditorChange = (content: string, delta: Delta, source: Sources, editor: UnprivilegedEditor) => {
-    console.log("content", content);
-    console.log("delta", delta);
-    console.log("editor.getSelection", editor.getSelection(false));
-    console.log('\n')
+    // console.log("content", content);
+    // console.log("delta", delta);
+    // console.log("editor.getSelection", editor.getSelection(false));
+    // console.log('\n')
 
     // NEED TO BE ABLE TO GET WHERE THE CURRENT CURSOR IS
 
