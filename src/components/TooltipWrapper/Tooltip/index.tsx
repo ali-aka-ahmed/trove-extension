@@ -27,6 +27,7 @@ interface TooltipProps {
 }
 
 export default function Tooltip(props: TooltipProps) {
+  const [didInitialGetPosts, setDidInitialGetPosts] = useState(false);
   const [editorValue, setEditorValue] = useState('');
   const [hoveredHighlightPost, setHoveredHighlightPost] = useState<Post | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -172,21 +173,20 @@ console.log('temp highlight range', tempHighlightRange)
   }, []);
   
   useEffect(() => {
-    if (isAuthenticated && isExtensionOn) {
-      if (posts.length === 0) {
-        const url = window.location.href;
-        sendMessageToExtension({ type: MessageType.GetPosts, url })
-          .then((res: IPostsRes) => {
-            if (res.success) {
-              const newPosts = res.posts!.map((p) => new Post(p));
-              addPosts(newPosts, HighlightType.Default);
-            };
-          });
-      }
-    } else {
+    if (isAuthenticated && isExtensionOn && !didInitialGetPosts) {
+      const url = window.location.href;
+      sendMessageToExtension({ type: MessageType.GetPosts, url })
+        .then((res: IPostsRes) => {
+          if (res.success) {
+            setDidInitialGetPosts(true);
+            const newPosts = res.posts!.map((p) => new Post(p));
+            addPosts(newPosts, HighlightType.Default);
+          };
+        });
+    } else if ((!isAuthenticated || !isExtensionOn) && posts.length > 0) {
       removePosts(posts);
     }
-  }, [isAuthenticated, isExtensionOn, posts, addPosts]);
+  }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts, addPosts]);
 
   useEffect(() => {
     // Workaround to force Quill placeholder to change dynamically
