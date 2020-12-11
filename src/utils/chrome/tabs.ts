@@ -64,7 +64,7 @@ export const sendMessageToExtension = (message: Message) => {
         console.error(err);
         reject(err);
       } else {
-        console.log('resolve')
+        // console.log('resolve')
         resolve(response);
       }
     });

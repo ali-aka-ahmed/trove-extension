@@ -9,7 +9,7 @@ import { Message as EMessage, MessageType as EMessageType } from '../utils/chrom
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import { Message, MessageType } from '../utils/chrome/tabs';
 
-get(null).then(items => console.log(items));
+// get(null).then(items => console.log(items));
 
 export const socket = io.connect(BACKEND_URL);
 

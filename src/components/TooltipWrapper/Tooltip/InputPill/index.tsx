@@ -37,7 +37,7 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
   }
 
   const onKeyDownContent = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log(e.key)
+    // console.log(e.key)
     e.stopPropagation();
     const showSuggestedTopics = suggestedTopics.length > 0 || newTopic !== null
     switch (e.key) {
