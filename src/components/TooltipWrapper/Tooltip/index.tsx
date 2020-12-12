@@ -88,7 +88,31 @@ console.log('temp highlight range', tempHighlightRange)
     };
   }, [positionTooltip]);
 
-  const addPosts = useCallback((postsToAdd: Post | Post[], type: HighlightType) => {
+  const onHighlightMouseEnter = useCallback((
+    e: MouseEvent, 
+    id: string, 
+    post: Post, 
+    range: Range, 
+    color: string, 
+    type: HighlightType
+  ) => {
+    highlighter.modifyHighlight(id, color, type);
+    positionTooltip(e, range);
+    setHoveredHighlightPost(post);
+  }, [positionTooltip]);
+
+  const onHighlightMouseLeave = useCallback((
+    e: MouseEvent, 
+    id: string, 
+    color: string, 
+    type: HighlightType
+  ) => {
+    highlighter.modifyHighlight(id, color, type);
+    positionTooltip(e);
+    setHoveredHighlightPost(null);
+  }, [positionTooltip]);
+
+  const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
 
     // Remove DOM highlights for posts that are being updated
@@ -110,21 +134,17 @@ console.log('temp highlight range', tempHighlightRange)
       const id = post.highlight.id;
       const color = post.creator.color;
       const onMouseEnter = (e: MouseEvent) => {
-        highlighter.modifyHighlight(id, color, HighlightType.Active);
-        positionTooltip(e, range!);
-        setHoveredHighlightPost(post);
+        onHighlightMouseEnter(e, id, post, range!, color, type);
       }
       const onMouseLeave = (e: MouseEvent) => {
-        highlighter.modifyHighlight(id, color, HighlightType.Default);
-        positionTooltip(e);
-        setHoveredHighlightPost(null);
+        onHighlightMouseLeave(e, id, color, type);
       }
       highlighter.addHighlight(range, id, color, type, onMouseEnter, onMouseLeave);
     }
 
     // Add post(s) to list of posts
     dispatch({ type: ListReducerActionType.UpdateOrAdd, data: postsToAdd });
-  }, [posts, positionTooltip]);
+  }
 
   const removePosts = (postsToRemove: Post | Post[], modifyPosts=true) => {
     postsToRemove = toArray(postsToRemove);
@@ -188,7 +208,7 @@ console.log('temp highlight range', tempHighlightRange)
     } else if ((!isAuthenticated || !isExtensionOn) && posts.length > 0) {
       removePosts(posts);
     }
-  }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts, addPosts]);
+  }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts]);
 
   useEffect(() => {
     // Workaround to force Quill placeholder to change dynamically
@@ -335,7 +355,7 @@ console.log('temp highlight range', tempHighlightRange)
 
   }
 
-  const onClickSubmit = useCallback(async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (tempHighlight) {
       const postReq = {
         content: editorValue,
@@ -364,7 +384,7 @@ console.log('temp highlight range', tempHighlightRange)
         }
       });
     }
-  }, [tempHighlight, addPosts]);
+  }
 
   return (
     <>
@@ -385,6 +405,7 @@ console.log('temp highlight range', tempHighlightRange)
             placeholder="No note added"
             readOnly={true}
           />
+          <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
         </div>
       ) : (
         (isSelectionVisible || isTempHighlightVisible) && (
