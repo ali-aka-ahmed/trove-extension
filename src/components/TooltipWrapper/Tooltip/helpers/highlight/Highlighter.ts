@@ -39,13 +39,13 @@ export default class Highlighter {
   }
 
   public modifyHighlight = (id: string, colorStr: string, type: HighlightType) => {
-    const highlight = this.highlights.get(id);
+    const highlight = this.highlights.get(id); console.log(this.highlights)
     const color = this.getColor(colorStr, type);
     if (highlight) {
       modifyDOMHighlight(highlight.marks, 'backgroundColor', color);
       return highlight.marks;
     } else {
-      console.error('Attempted to modify nonexistent highlight.');
+      console.error('Attempted to modify nonexistent highlight. id: ' + id);
       return [];
     }
   }

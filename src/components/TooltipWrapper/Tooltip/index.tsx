@@ -1,5 +1,4 @@
 import classNames from 'classnames';
-import { intersectionBy } from 'lodash';
 import { Delta, Sources } from 'quill';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactQuill, { UnprivilegedEditor } from 'react-quill';
@@ -99,7 +98,7 @@ console.log('temp highlight range', tempHighlightRange)
     highlighter.modifyHighlight(id, color, type);
     positionTooltip(e, range);
     setHoveredHighlightPost(post);
-  }, [positionTooltip]);
+  }, [highlighter, positionTooltip]);
 
   const onHighlightMouseLeave = useCallback((
     e: MouseEvent, 
@@ -107,18 +106,18 @@ console.log('temp highlight range', tempHighlightRange)
     color: string, 
     type: HighlightType
   ) => {
+    console.log(e)
+    console.log((e.target as HTMLElement).getBoundingClientRect())
+    // setTimeout(() => {
+      
+    // }, 250);
     highlighter.modifyHighlight(id, color, type);
     positionTooltip(e);
     setHoveredHighlightPost(null);
-  }, [positionTooltip]);
+  }, [highlighter, positionTooltip]);
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
-
-    // Remove DOM highlights for posts that are being updated
-    const postsToRemove = intersectionBy(posts, postsToAdd, 'id');
-    removePosts(postsToRemove, false);
-
     for (const post of postsToAdd) {
       if (!post.highlight || !post.creator) continue;
       let range: Range | null;
@@ -134,19 +133,20 @@ console.log('temp highlight range', tempHighlightRange)
       const id = post.highlight.id;
       const color = post.creator.color;
       const onMouseEnter = (e: MouseEvent) => {
-        onHighlightMouseEnter(e, id, post, range!, color, type);
+        onHighlightMouseEnter(e, id, post, range!, color, HighlightType.Active);
       }
       const onMouseLeave = (e: MouseEvent) => {
-        onHighlightMouseLeave(e, id, color, type);
+        onHighlightMouseLeave(e, id, color, HighlightType.Default);
       }
       highlighter.addHighlight(range, id, color, type, onMouseEnter, onMouseLeave);
     }
 
     // Add post(s) to list of posts
     dispatch({ type: ListReducerActionType.UpdateOrAdd, data: postsToAdd });
+    console.log(highlighter.highlights)
   }
 
-  const removePosts = (postsToRemove: Post | Post[], modifyPosts=true) => {
+  const removePosts = (postsToRemove: Post | Post[]) => {
     postsToRemove = toArray(postsToRemove);
     for (const post of postsToRemove) {
       if (!post.highlight) continue;
@@ -154,9 +154,7 @@ console.log('temp highlight range', tempHighlightRange)
     }
 
     // Remove post(s) from list of posts
-    if (modifyPosts) {
-      dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
-    }
+    dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
   }
 
   const removeTempHighlight = useCallback(() => {
@@ -405,7 +403,9 @@ console.log('temp highlight range', tempHighlightRange)
             placeholder="No note added"
             readOnly={true}
           />
-          <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
+          <div className="TbdTooltip__ButtonList">
+            <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
+          </div>
         </div>
       ) : (
         (isSelectionVisible || isTempHighlightVisible) && (
