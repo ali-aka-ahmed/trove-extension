@@ -4,7 +4,7 @@ import User from '../entities/User';
 import INotification from '../models/INotification';
 import { createPost, createReply, getPosts } from '../server/posts';
 import { getTopics } from '../server/topics';
-import { handleUsernameSearch } from '../server/users';
+import { handleUserSearch } from '../server/users';
 import { Message as EMessage, MessageType as EMessageType } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import { Message, MessageType } from '../utils/chrome/tabs';
@@ -70,9 +70,9 @@ chrome.runtime.onMessage.addListener(async (
     case MessageType.GetTabId:
       sendResponse(sender.tab?.id);
       break;
-    case MessageType.HandleUsernameSearch: {
-      if (!message.name) return;
-      const res = await handleUsernameSearch(message.name);
+    case MessageType.HandleUserSearch: {
+      if (!message.text) return;
+      const res = await handleUserSearch(message.text);
       sendResponse(res);
       break;
     }

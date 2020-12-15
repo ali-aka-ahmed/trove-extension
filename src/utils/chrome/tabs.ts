@@ -15,7 +15,7 @@ export enum MessageType {
   CreateReply,
   GetPosts,
   GetTabId,
-  HandleUsernameSearch,
+  HandleUserSearch,
   GetTopics,
   HandleTopicSearch,
   Sync,
