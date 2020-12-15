@@ -38,7 +38,7 @@ chrome.storage.onChanged.addListener((change) => {
 
 const renderTooltip = () => {
   const tooltipContainer = document.createElement('div');
-  tooltipContainer.setAttribute('id', 'TbdTooltipWrapper');
+  tooltipContainer.setAttribute('id', 'TroveTooltipWrapper');
   document.body.appendChild(tooltipContainer);
 
   const tooltipShadowRoot = tooltipContainer.attachShadow({ mode: 'open' });
@@ -46,7 +46,7 @@ const renderTooltip = () => {
 }
 
 const removeTooltip = () => {
-  const tooltipContainer = document.getElementById('TbdTooltipWrapper');
+  const tooltipContainer = document.getElementById('TroveTooltipWrapper');
   if (tooltipContainer) {
     tooltipContainer.remove();
   }

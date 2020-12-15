@@ -28,26 +28,72 @@ interface TooltipProps {
 }
 
 export default function Tooltip(props: TooltipProps) {
+  const [didInitialGetPosts, setDidInitialGetPosts] = useState(false);
+  const [editorValue, setEditorValue] = useState('');
+  const [hoveredHighlightPost, setHoveredHighlightPost] = useState<Post | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(false);
-  const [editorValue, setEditorValue] = useState('');
-  const [highlight, setHighlight] = useState<HighlightParam | null>(null);
-  const [highlighter, setHighlighter] = useState(new Highlighter());
-  const [hoveredHighlightPost, setHoveredHighlightPost] = useState<Post | null>(null);
   const [isSelectionVisible, setIsSelectionVisible] = useState(false);
   const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
+  const [tempHighlight, setTempHighlight] = useState<HighlightParam | null>(null);
   const [tempHighlightId, setTempHighlightId] = useState('');
+  const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
   const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const [user, setUser] = useState<User | null>(null);
-  const quill = useRef<ReactQuill>(null!)
+  const highlighter = new Highlighter();
+  const quill = useRef<ReactQuill>(null!);
 
-  const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
+  /**
+   * Position and display tooltip according to change in selection.
+   */
+  const positionTooltip = useCallback((e: Event, range?: Range) => {
+    console.log('resosition tooltip')
+console.log('temp highlight range', tempHighlightRange)
+    const selection = getSelection()!;
+    let rect: DOMRect | null = null;
+    if (range) {
+      console.log('postition to custom range', range)
+      rect = range.getBoundingClientRect();
+    } else if (tempHighlightRange) {
+      console.log('postition to temp highlight', tempHighlightRange)
+      rect = tempHighlightRange.getBoundingClientRect();
+    } else if (selectionExists(selection)) {
+      console.log('postition to selection', selection.getRangeAt(0))
+      rect = selection.getRangeAt(0).getBoundingClientRect();
+      setIsSelectionVisible(true);
+    }
+
+    if (!rect) return;
+    if (rect.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
+      setPositionEdge(Edge.Top);
+      setPosition(new Point(
+        rect.left + window.scrollX, 
+        rect.top + window.scrollY - TOOLTIP_HEIGHT - TOOLTIP_MARGIN
+      ));
+    } else {
+      setPositionEdge(Edge.Bottom);
+      setPosition(new Point(rect.left + window.scrollX, rect.bottom + window.scrollY));
+    }
+  }, [tempHighlightRange]);
+
+  useEffect(() => {
+    document.addEventListener('mouseup', positionTooltip);
+    window.addEventListener('resize', positionTooltip);
+    return () => {
+      document.removeEventListener('mouseup', positionTooltip);
+      window.removeEventListener('resize', positionTooltip);
+    };
+  }, [positionTooltip]);
+
+  const addPosts = useCallback((postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
+
+    // Remove DOM highlights for posts that are being updated
     const postsToRemove = intersectionBy(posts, postsToAdd, 'id');
-    removePosts(postsToRemove);
+    removePosts(postsToRemove, false);
 
     for (const post of postsToAdd) {
       if (!post.highlight || !post.creator) continue;
@@ -70,17 +116,17 @@ export default function Tooltip(props: TooltipProps) {
       }
       const onMouseLeave = (e: MouseEvent) => {
         highlighter.modifyHighlight(id, color, HighlightType.Default);
-        setHoveredHighlightPost(null);
         positionTooltip(e);
+        setHoveredHighlightPost(null);
       }
       highlighter.addHighlight(range, id, color, type, onMouseEnter, onMouseLeave);
     }
 
     // Add post(s) to list of posts
     dispatch({ type: ListReducerActionType.UpdateOrAdd, data: postsToAdd });
-  }
+  }, [posts, positionTooltip]);
 
-  const removePosts = (postsToRemove: Post | Post[]) => {
+  const removePosts = (postsToRemove: Post | Post[], modifyPosts=true) => {
     postsToRemove = toArray(postsToRemove);
     for (const post of postsToRemove) {
       if (!post.highlight) continue;
@@ -88,8 +134,18 @@ export default function Tooltip(props: TooltipProps) {
     }
 
     // Remove post(s) from list of posts
-    dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
+    if (modifyPosts) {
+      dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
+    }
   }
+
+  const removeTempHighlight = useCallback(() => {
+    highlighter.removeHighlight(tempHighlightId);
+    setTempHighlight(null);
+    setTempHighlightId('');
+    setTempHighlightRange(null);
+    setIsTempHighlightVisible(false);
+  }, [tempHighlightId]);
 
   useEffect(() => {
     // Get user object
@@ -119,20 +175,20 @@ export default function Tooltip(props: TooltipProps) {
   }, []);
   
   useEffect(() => {
-    if (isAuthenticated && isExtensionOn) {
-      if (posts.length === 0) {
-        const url = window.location.href;
-        sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
+    if (isAuthenticated && isExtensionOn && !didInitialGetPosts) {
+      const url = window.location.href;
+      sendMessageToExtension({ type: MessageType.GetPosts, url })
+        .then((res: IPostsRes) => {
           if (res.success) {
+            setDidInitialGetPosts(true);
             const newPosts = res.posts!.map((p) => new Post(p));
             addPosts(newPosts, HighlightType.Default);
           };
         });
-      }
-    } else {
+    } else if ((!isAuthenticated || !isExtensionOn) && posts.length > 0) {
       removePosts(posts);
     }
-  }, [isAuthenticated, isExtensionOn]);
+  }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts, addPosts]);
 
   useEffect(() => {
     // Workaround to force Quill placeholder to change dynamically
@@ -145,64 +201,16 @@ export default function Tooltip(props: TooltipProps) {
   }, [hoveredHighlightPost]);
 
   const selectionExists = (selection: Selection | null) => {
-    return selection 
-      && selection.rangeCount 
+    return !!selection 
+      && selection.rangeCount > 0
       && !selection.isCollapsed 
-      && selection.toString()
+      && selection.toString().length > 0
       && !selection.toString().match(/^\n+$/i);
   }
 
-  /**
-   * Position and display tooltip according to change in selection.
-   */
-  const positionTooltip = useCallback((e: Event, range?: Range) => {
-    const selection = getSelection();
-    if (range) {
-      const rangePos = range.getBoundingClientRect();
-      if (rangePos.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
-        setPositionEdge(Edge.Top);
-        setPosition(new Point(
-          rangePos.left + window.scrollX, 
-          rangePos.top + window.scrollY - TOOLTIP_HEIGHT - TOOLTIP_MARGIN
-        ));
-      } else {
-        setPositionEdge(Edge.Bottom);
-        setPosition(new Point(rangePos.left + window.scrollX, rangePos.bottom + window.scrollY));
-      }
-    } else if (selectionExists(selection)) {
-      if (isTempHighlightVisible) {
-        highlighter.removeHighlight(tempHighlightId);
-        setIsTempHighlightVisible(false);
-      }
-
-      const selPos = selection!.getRangeAt(0).getBoundingClientRect();
-      if (selPos.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
-        setPositionEdge(Edge.Top);
-        setPosition(new Point(
-          selPos.left + window.scrollX, 
-          selPos.top + window.scrollY - TOOLTIP_HEIGHT - TOOLTIP_MARGIN
-        ));
-      } else {
-        setPositionEdge(Edge.Bottom);
-        setPosition(new Point(selPos.left + window.scrollX, selPos.bottom + window.scrollY));
-      }
-      
-      setIsSelectionVisible(true);
-    } else {
-      setIsSelectionVisible(false);
-    }
-  }, [tempHighlightId]);
-
-  useEffect(() => {
-    document.addEventListener('mouseup', positionTooltip);
-    window.addEventListener('resize', positionTooltip);
-    return () => {
-      document.removeEventListener('mouseup', positionTooltip);
-      window.removeEventListener('resize', positionTooltip);
-    };
-  }, [positionTooltip]);
-
   const onSelectionChange = () => {
+    // Don't set isSelectionVisible to true here because we only want tooltip to appear after 
+    // user has finished dragging selection. We set this in positionTooltip instead.
     const selection = getSelection();
     if (!selectionExists(selection)) {
       setIsSelectionVisible(false);
@@ -216,29 +224,19 @@ export default function Tooltip(props: TooltipProps) {
 
   const onMouseDownPage = useCallback((e: MouseEvent) => {
     // Do nothing if selection exists, let onSelectionChange take care of it
-    if (selectionExists(getSelection())) return;
+    if (selectionExists(getSelection())) {
+      return;
+    }
 
     // Do nothing if user clicks Trove tooltip
     const target = e.target as HTMLElement;
-    if (
-      target.className.match(/tbd/i)
-      || target.className.match(/trove/i)
-      || target.id.match(/tbd/i)
-      || target.id.match(/trove/i)
-    ) {
+    if (target.id === 'TroveTooltipWrapper') {
       return;
     }
 
     // Remove temp highlight if it exists
-    if (tempHighlightId) {
-      highlighter.removeHighlight(tempHighlightId);
-      setTempHighlightId('');
-    }
-
-    // Hide tooltip
-    setIsTempHighlightVisible(false);
-    setIsSelectionVisible(false);
-  }, [tempHighlightId]);
+    removeTempHighlight();
+  }, [removeTempHighlight]);
 
   useEffect(() => {
     if (isTempHighlightVisible || isSelectionVisible) {
@@ -278,17 +276,18 @@ export default function Tooltip(props: TooltipProps) {
 
   const onMouseDownTooltip = () => {
     const selection = getSelection();
-    if (selection && selection.toString()) {
+    if (selection?.toString()) {
       const range = selection.getRangeAt(0);
       const textRange = getTextRangeFromRange(range);
-      setHighlight({
+      setTempHighlight({
         textRange: textRange,
         url: window.location.href
       });
 
-      setIsTempHighlightVisible(true);
       const id = uuid();
       setTempHighlightId(id);
+      setTempHighlightRange(range.cloneRange());
+      setIsTempHighlightVisible(true);
       highlighter.addHighlight(range, id, user?.color, HighlightType.Active);
       selection.removeAllRanges();
     }
@@ -322,11 +321,10 @@ export default function Tooltip(props: TooltipProps) {
 
   // const test = useCallback((e: KeyboardEvent) => {
   //   if (e.key === 'Enter') {
-  //     const s1 = getSelection();
-  //     if (!s1) return; 
-
+  //     // const s1 = getSelection();
+  //     // if (!s1) return; 
   //   }
-  // }, []);
+  // }, [posts]);
 
   // useEffect(() => {
   //   document.addEventListener('keyup', test); 
@@ -337,27 +335,28 @@ export default function Tooltip(props: TooltipProps) {
 
   }
 
-  const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    if (highlight) {
+  const onClickSubmit = useCallback(async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (tempHighlight) {
       const postReq = {
         content: editorValue,
         url: window.location.href,
         taggedUserIds: [],
-        highlight: highlight,
+        highlight: tempHighlight,
         topics: topics
       };
       
+      // Hide tooltip
       setIsSelectionVisible(false);
       setIsTempHighlightVisible(false);
+
+      // Reset tooltip state
       setEditorValue('');
-      setTopics([])
+      setTopics([]);
+
+      // Show actual highlight when we get response from server
       sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then((res: IPostRes) => {
         if (res.success && res.post) {
-          if (tempHighlightId) {
-            highlighter.removeHighlight(tempHighlightId);
-            setTempHighlightId('');
-          }
-  
+          removeTempHighlight();  
           addPosts(new Post(res.post), HighlightType.Default);
         } else {
           // Show that highlighting failed
@@ -365,7 +364,7 @@ export default function Tooltip(props: TooltipProps) {
         }
       });
     }
-  }
+  }, [tempHighlight, addPosts]);
 
   return (
     <>
