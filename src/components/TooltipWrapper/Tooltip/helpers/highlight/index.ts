@@ -1,11 +1,10 @@
 
-const MARK_CLASS_NAME = 'TbdMark';
+const MARK_CLASS_NAME = 'TroveMark';
 
 export const addDOMHighlight = (
   range: Range,
   color: string='yellow', 
-  onMouseEnter=(e: MouseEvent) => {},
-  onMouseLeave=(e: MouseEvent) => {}
+  handlers: { [event: string]: (e: MouseEvent) => void }={}
 ) => {
   let start = range.startContainer;
   let end = range.endContainer;
@@ -42,7 +41,7 @@ export const addDOMHighlight = (
   } else {
     hasContent = false;
   }
-// debugger
+
   // This is where the magic happens
   const marks: HTMLElement[] = [];
   for (let done = false, node = start; !done || !node; ) { //console.log(node, start)
@@ -60,8 +59,10 @@ export const addDOMHighlight = (
         mark.style.backgroundColor = color;
 
         // Add handlers
-        mark.addEventListener('mouseenter', onMouseEnter);
-        mark.addEventListener('mouseleave', onMouseLeave);
+        for (const event in handlers) {
+          mark.addEventListener(event, handlers[event]);
+        }
+
         marks.push(mark);
 
         // Position new wrapper accordingly

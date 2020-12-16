@@ -49,18 +49,13 @@ export default function Tooltip(props: TooltipProps) {
    * Position and display tooltip according to change in selection.
    */
   const positionTooltip = useCallback((e: Event, range?: Range) => {
-    console.log('resosition tooltip')
-console.log('temp highlight range', tempHighlightRange)
     const selection = getSelection()!;
     let rect: DOMRect | null = null;
     if (range) {
-      console.log('postition to custom range', range)
       rect = range.getBoundingClientRect();
     } else if (tempHighlightRange) {
-      console.log('postition to temp highlight', tempHighlightRange)
       rect = tempHighlightRange.getBoundingClientRect();
     } else if (selectionExists(selection)) {
-      console.log('postition to selection', selection.getRangeAt(0))
       rect = selection.getRangeAt(0).getBoundingClientRect();
       setIsSelectionVisible(true);
     }
@@ -106,11 +101,6 @@ console.log('temp highlight range', tempHighlightRange)
     color: string, 
     type: HighlightType
   ) => {
-    console.log(e)
-    console.log((e.target as HTMLElement).getBoundingClientRect())
-    // setTimeout(() => {
-      
-    // }, 250);
     highlighter.modifyHighlight(id, color, type);
     positionTooltip(e);
     setHoveredHighlightPost(null);
@@ -138,12 +128,14 @@ console.log('temp highlight range', tempHighlightRange)
       const onMouseLeave = (e: MouseEvent) => {
         onHighlightMouseLeave(e, id, color, HighlightType.Default);
       }
-      highlighter.addHighlight(range, id, color, type, onMouseEnter, onMouseLeave);
+      highlighter.addHighlight(range, id, color, type, {
+        mouseenter: onMouseEnter,
+        mouseleave: onMouseLeave
+      });
     }
 
     // Add post(s) to list of posts
     dispatch({ type: ListReducerActionType.UpdateOrAdd, data: postsToAdd });
-    console.log(highlighter.highlights)
   }
 
   const removePosts = (postsToRemove: Post | Post[]) => {
@@ -280,13 +272,13 @@ console.log('temp highlight range', tempHighlightRange)
         text={topic.text!}
         onClose={() => { setTopics(topics.slice().filter(t => t !== topic)); }}
         showClose={!post}
-        style={{marginBottom: '3px'}}
+        style={{ marginBottom: '3px' }}
       />
     );
 
     return (
       <div className="TbdTooltip__TopicList">
-        {!post && <InputPill onSubmit={addTopic} style={{marginBottom: '3px'}} />}
+        {!post && <InputPill onSubmit={addTopic} style={{ marginBottom: '3px' }} />}
         {pills}
       </div>
     );
@@ -350,7 +342,7 @@ console.log('temp highlight range', tempHighlightRange)
   // }, [test])
 
   const onClickRemove = () => {
-
+    
   }
 
   const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

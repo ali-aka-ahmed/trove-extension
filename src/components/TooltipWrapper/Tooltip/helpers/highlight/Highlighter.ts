@@ -25,21 +25,20 @@ export default class Highlighter {
     id: string,
     colorStr: string | null='yellow', 
     type: HighlightType,
-    onMouseEnter=(e: MouseEvent) => {},
-    onMouseLeave=(e: MouseEvent) => {}
+    handlers?: { [event: string]: (e: MouseEvent) => void }
   ) => {
     const highlight = this.highlights.get(id);
     const color = colorStr ? this.getColor(colorStr, type) : 'yellow';
     let marks: HTMLElement[] = [];
 
     if (highlight) removeDOMHighlight(highlight.marks);
-    marks = addDOMHighlight(range, color, onMouseEnter, onMouseLeave);
+    marks = addDOMHighlight(range, color, handlers);
     this.highlights.set(id, { color, marks, type });
     return marks;
   }
 
   public modifyHighlight = (id: string, colorStr: string, type: HighlightType) => {
-    const highlight = this.highlights.get(id); console.log(this.highlights)
+    const highlight = this.highlights.get(id);
     const color = this.getColor(colorStr, type);
     if (highlight) {
       modifyDOMHighlight(highlight.marks, 'backgroundColor', color);
