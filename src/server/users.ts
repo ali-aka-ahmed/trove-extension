@@ -5,8 +5,8 @@ import { get } from '../utils/chrome/storage';
 export type IUsersRes = UsersRes & AxiosRes;
 export type IUserRes = UserRes & AxiosRes;
 
-export const handleUsernameSearch = async (searchText: string): Promise<IUsersRes> => {
-  const args: GetUsersReqBody = { username: searchText }
+export const handleUserSearch = async (searchText: string): Promise<IUsersRes> => {
+  const args: GetUsersReqBody = { text: searchText }
   return await api.post(`/users`, args);
 }
 
@@ -37,7 +37,7 @@ export const updateColor = async (color: string): Promise<IUserRes> => {
  * POST /users/
  */
 interface GetUsersReqBody {
-  username: string;
+  text: string;
 }
 
 /**
