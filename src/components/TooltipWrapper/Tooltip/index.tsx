@@ -50,18 +50,18 @@ export default function Tooltip(props: TooltipProps) {
    * Position and display tooltip according to change in selection.
    */
   const positionTooltip = useCallback((e: Event, range?: Range) => {
-    console.log('resosition tooltip')
-console.log('temp highlight range', tempHighlightRange)
+    // console.log('resosition tooltip')
+    // console.log('temp highlight range', tempHighlightRange)
     const selection = getSelection()!;
     let rect: DOMRect | null = null;
     if (range) {
-      console.log('postition to custom range', range)
+      // console.log('postition to custom range', range)
       rect = range.getBoundingClientRect();
     } else if (tempHighlightRange) {
-      console.log('postition to temp highlight', tempHighlightRange)
+      // console.log('postition to temp highlight', tempHighlightRange)
       rect = tempHighlightRange.getBoundingClientRect();
     } else if (selectionExists(selection)) {
-      console.log('postition to selection', selection.getRangeAt(0))
+      // console.log('postition to selection', selection.getRangeAt(0))
       rect = selection.getRangeAt(0).getBoundingClientRect();
       setIsSelectionVisible(true);
     }
@@ -249,7 +249,7 @@ console.log('temp highlight range', tempHighlightRange)
   }, [isTempHighlightVisible, isSelectionVisible, onMouseDownPage]);
 
   const addTopic = (topic: Partial<ITopic>) => {
-    const newTopics = topics.slice().filter(t => t !== topic);
+    const newTopics = topics.slice().filter(t => t.id !== topic.id);
     newTopics.unshift(topic);
     setTopics(newTopics);
   }
@@ -364,7 +364,7 @@ console.log('temp highlight range', tempHighlightRange)
         }
       });
     }
-  }, [tempHighlight, addPosts]);
+  }, [tempHighlight, addPosts, topics]);
 
   return (
     <>

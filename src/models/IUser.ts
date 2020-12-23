@@ -4,4 +4,7 @@ export default interface IUser {
   username: string; // alphanum and underscores, 3 < username < 20 characters
   creationDatetime: number;
   color: string; // Hex code
+  following?: number;
+  followers?: number;
+  likes?: number;
 }
