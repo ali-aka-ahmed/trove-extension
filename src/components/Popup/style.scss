@@ -53,10 +53,14 @@ body, html {
 }
 
 .TbdPopupContainer__OnOff {
-  font-weight: 700;
   margin-left: 5px;
   margin-right: 7px;
 }
+
+.TbdPopupContainer__OnOff--bold {
+  font-weight: 700;
+}
+
 
 // Shared
 .TbdProfile__Img {
