@@ -108,13 +108,22 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [getTooltipRange]);
 
+  const onDocumentMouseUp = useCallback((event: MouseEvent) => {
+    if ((event.target as HTMLElement).id === 'TroveTooltipWrapper') {
+      return;
+    }
+
+    positionTooltip();
+  }, [positionTooltip]);
+
   useEffect(() => {
-    document.addEventListener('mouseup', () => positionTooltip());
+    document.addEventListener('mouseup', onDocumentMouseUp);
+    return () => document.removeEventListener('mouseup', onDocumentMouseUp);
+  }, [onDocumentMouseUp]);
+
+  useEffect(() => {
     window.addEventListener('resize', () => positionTooltip());
-    return () => {
-      document.removeEventListener('mouseup', () => positionTooltip());
-      window.removeEventListener('resize', () => positionTooltip());
-    };
+    return () => window.removeEventListener('resize', () => positionTooltip());
   }, [positionTooltip]);
 
   // TODO: maybe move active highlight logic to highlighter?
