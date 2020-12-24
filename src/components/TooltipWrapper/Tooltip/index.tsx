@@ -44,7 +44,6 @@ export default function Tooltip(props: TooltipProps) {
   const [user, setUser] = useState<User | null>(null);
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const quill = useRef<ReactQuill>(null!);
-  // const highlighter = new Highlighter();
 
   /**
    * Position and display tooltip according to change in selection.
@@ -90,30 +89,23 @@ export default function Tooltip(props: TooltipProps) {
     let range: Range | null;
     try {
       range = getRangeFromTextRange(post.highlight.textRange);
-      // getSelection()!.removeAllRanges();
     } catch (e) {
       range = null;
     }
 
-    // highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
-    const newHighlighter = highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
-    // if (newHighlighter) setHighlighter(newHighlighter);
+    highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
     positionTooltip(e, range ? range : undefined);
     setHoveredHighlightPost(post);
   }, [highlighter, positionTooltip]);
 
   const onHighlightMouseLeave = useCallback((e: MouseEvent, post: Post) => {
     if (!post.highlight) return;
-    // highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
-    const newHighlighter = highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
-    // if (newHighlighter) setHighlighter(newHighlighter);
+    highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
     positionTooltip(e);
     setHoveredHighlightPost(null);
   }, [highlighter, positionTooltip]);
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
-    console.log('postsToAdd', postsToAdd)
-    console.log('highlighter', highlighter)
     postsToAdd = toArray(postsToAdd);
     for (const post of postsToAdd) {
       highlighter.addHighlight(post, type);
@@ -134,20 +126,8 @@ export default function Tooltip(props: TooltipProps) {
     dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
   }
 
-  // const addHighlighterHandler = (eventname: string, handler: (e: MouseEvent, post: Post) => void) => {
-  //   for (const id in highlighter.highlights) {
-  //     const highlight = highlighter.highlights.get(id)!;
-  //     const onMouseEnter = (e: MouseEvent) => onHighlightMouseEnter(e, highlight.post);
-  //     for (const mark of highlight.marks) {
-  //       mark.addEventListener('mouseenter', onMouseEnter);
-  //       highlight.handlers.mouseenter = onMouseEnter;
-  //     }
-  //   }
-  // }
-
   // Can we put these useeffects in a for loop?
   useEffect(() => {
-    console.log('mouseenter useeffect', highlighter.highlights.keys())
     highlighter.highlights.forEach((highlight, id) => {
       const onMouseEnter = (e: MouseEvent) => onHighlightMouseEnter(e, highlight.post);
       for (const mark of highlight.marks) {
@@ -156,10 +136,7 @@ export default function Tooltip(props: TooltipProps) {
       }
     });
 
-    // setHighlighter(highlighter.clone());
-
     return () => {
-      console.log('mouseenter useeffect unmount')
       highlighter.highlights.forEach((highlight, id) => {
         for (const mark of highlight.marks) {
           if (highlight.handlers?.mouseenter) {

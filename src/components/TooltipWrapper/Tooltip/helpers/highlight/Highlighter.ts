@@ -1,5 +1,4 @@
 import Color from "color";
-import { cloneDeep } from "lodash";
 import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from ".";
 import Post from "../../../../../entities/Post";
 import { getRangeFromTextRange } from "./textRange";
@@ -54,7 +53,6 @@ export default class Highlighter {
     const marks = addDOMHighlight(range, color);
     const highlightData = { marks, post, type, handlers: {} };
     this.highlights.set(id, highlightData);
-    return this.clone();
   }
 
   public modifyHighlight = (id: string, type: HighlightType) => {
@@ -63,10 +61,8 @@ export default class Highlighter {
       const color = this.getColor(highlight.post.creator.color, type);
       modifyDOMHighlight(highlight.marks, 'backgroundColor', color);
       this.highlights.set(id, { ...highlight, type });
-      return this.clone();
     } else {
       console.error('Attempted to modify nonexistent highlight. id: ' + id);
-      return null;
     }
   }
 
@@ -76,8 +72,6 @@ export default class Highlighter {
       removeDOMHighlight(highlight.marks);
       this.highlights.delete(id);
     }
-
-    return this.clone()
   }
 
   public addHighlightTemp = (range: Range, color: string = 'yellow', type: HighlightType) => {
@@ -88,7 +82,6 @@ export default class Highlighter {
     const marks = addDOMHighlight(range, color);
     const highlightData = { marks, type, handlers: {} };
     this.highlightTemp = highlightData;
-    return this.clone();
   }
 
   public removeHighlightTemp = () => {
@@ -104,12 +97,6 @@ export default class Highlighter {
       modifyDOMHighlight(this.highlightTemp.marks!, 'backgroundColor', color);
       this.highlightTemp = { ...this.highlightTemp, type };
     }
-  }
-
-  public clone = (): Highlighter => {
-    const newHighlighter = new Highlighter();
-    newHighlighter.highlights = cloneDeep(this.highlights);
-    return newHighlighter;
   }
 
   private getColor = (colorStr: string, type: HighlightType): string => {
