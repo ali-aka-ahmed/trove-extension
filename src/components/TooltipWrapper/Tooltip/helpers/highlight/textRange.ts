@@ -115,8 +115,8 @@ export const getRangeFromTextRange = (tr: TextRange) => {
  * @param tr2 
  */
 export const areTextRangesEqual = (tr1: TextRange, tr2: TextRange): boolean => {
-  return tr1.uniqueText === tr2.uniqueText 
-    && tr1.uniqueTextStartIdx === tr2.uniqueTextStartIdx 
+  return tr1.uniqueText === tr2.uniqueText
+    && tr1.uniqueTextStartIdx === tr2.uniqueTextStartIdx
     && tr1.text === tr2.text;
 }
 
@@ -146,7 +146,7 @@ const isTextUnique = (text: string, memoPageText?: string): number => {
 export const getPageText = () => {
   const range = document.createRange();
   range.selectNodeContents(document.body);
-  
+
   const selection = getSelection()!;
   selection.removeAllRanges();
   selection.addRange(range);
@@ -169,9 +169,10 @@ class SelectionStore {
   }
 
   restoreSelection = () => {
-    if (!this.range) return null;
     const s = getSelection()!;
     s.removeAllRanges();
+
+    if (!this.range) return null;
     s.addRange(this.range);
     return this.range;
   }

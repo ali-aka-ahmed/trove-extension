@@ -42,8 +42,9 @@ export default function Tooltip(props: TooltipProps) {
   const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
   const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const [user, setUser] = useState<User | null>(null);
-  const highlighter = new Highlighter();
+  const [highlighter, setHighlighter] = useState(new Highlighter());
   const quill = useRef<ReactQuill>(null!);
+  // const highlighter = new Highlighter();
 
   /**
    * Position and display tooltip according to change in selection.
@@ -64,7 +65,7 @@ export default function Tooltip(props: TooltipProps) {
     if (rect.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
       setPositionEdge(Edge.Top);
       setPosition(new Point(
-        rect.left + window.scrollX, 
+        rect.left + window.scrollX,
         rect.top + window.scrollY - TOOLTIP_HEIGHT - TOOLTIP_MARGIN
       ));
     } else {
@@ -82,56 +83,40 @@ export default function Tooltip(props: TooltipProps) {
     };
   }, [positionTooltip]);
 
-  const onHighlightMouseEnter = useCallback((
-    e: MouseEvent, 
-    id: string, 
-    post: Post, 
-    range: Range, 
-    color: string, 
-    type: HighlightType
-  ) => {
-    highlighter.modifyHighlight(id, color, type);
-    positionTooltip(e, range);
+  const onHighlightMouseEnter = useCallback((e: MouseEvent, post: Post) => {
+    console.log('mouseenter')
+    if (!post.highlight) return;
+
+    let range: Range | null;
+    try {
+      range = getRangeFromTextRange(post.highlight.textRange);
+      // getSelection()!.removeAllRanges();
+    } catch (e) {
+      range = null;
+    }
+
+    // highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
+    const newHighlighter = highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
+    // if (newHighlighter) setHighlighter(newHighlighter);
+    positionTooltip(e, range ? range : undefined);
     setHoveredHighlightPost(post);
   }, [highlighter, positionTooltip]);
 
-  const onHighlightMouseLeave = useCallback((
-    e: MouseEvent, 
-    id: string, 
-    color: string, 
-    type: HighlightType
-  ) => {
-    highlighter.modifyHighlight(id, color, type);
+  const onHighlightMouseLeave = useCallback((e: MouseEvent, post: Post) => {
+    if (!post.highlight) return;
+    // highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
+    const newHighlighter = highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
+    // if (newHighlighter) setHighlighter(newHighlighter);
     positionTooltip(e);
     setHoveredHighlightPost(null);
   }, [highlighter, positionTooltip]);
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
+    console.log('postsToAdd', postsToAdd)
+    console.log('highlighter', highlighter)
     postsToAdd = toArray(postsToAdd);
     for (const post of postsToAdd) {
-      if (!post.highlight || !post.creator) continue;
-      let range: Range | null;
-      try {
-        range = getRangeFromTextRange(post.highlight.textRange);
-        getSelection()!.removeAllRanges();
-        if (!range) continue;
-      } catch (e) {
-        console.error(e);
-        continue;
-      }
-
-      const id = post.highlight.id;
-      const color = post.creator.color;
-      const onMouseEnter = (e: MouseEvent) => {
-        onHighlightMouseEnter(e, id, post, range!, color, HighlightType.Active);
-      }
-      const onMouseLeave = (e: MouseEvent) => {
-        onHighlightMouseLeave(e, id, color, HighlightType.Default);
-      }
-      highlighter.addHighlight(range, id, color, type, {
-        mouseenter: onMouseEnter,
-        mouseleave: onMouseLeave
-      });
+      highlighter.addHighlight(post, type);
     }
 
     // Add post(s) to list of posts
@@ -149,8 +134,66 @@ export default function Tooltip(props: TooltipProps) {
     dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
   }
 
+  // const addHighlighterHandler = (eventname: string, handler: (e: MouseEvent, post: Post) => void) => {
+  //   for (const id in highlighter.highlights) {
+  //     const highlight = highlighter.highlights.get(id)!;
+  //     const onMouseEnter = (e: MouseEvent) => onHighlightMouseEnter(e, highlight.post);
+  //     for (const mark of highlight.marks) {
+  //       mark.addEventListener('mouseenter', onMouseEnter);
+  //       highlight.handlers.mouseenter = onMouseEnter;
+  //     }
+  //   }
+  // }
+
+  // Can we put these useeffects in a for loop?
+  useEffect(() => {
+    console.log('mouseenter useeffect', highlighter.highlights.keys())
+    highlighter.highlights.forEach((highlight, id) => {
+      const onMouseEnter = (e: MouseEvent) => onHighlightMouseEnter(e, highlight.post);
+      for (const mark of highlight.marks) {
+        mark.addEventListener('mouseenter', onMouseEnter);
+        highlight.handlers.mouseenter = onMouseEnter;
+      }
+    });
+
+    // setHighlighter(highlighter.clone());
+
+    return () => {
+      console.log('mouseenter useeffect unmount')
+      highlighter.highlights.forEach((highlight, id) => {
+        for (const mark of highlight.marks) {
+          if (highlight.handlers?.mouseenter) {
+            mark.removeEventListener('mouseenter', highlight.handlers.mouseenter);
+            delete highlight.handlers.mouseenter;
+          }
+        }
+      });
+    }
+  }, [posts, onHighlightMouseEnter]);
+
+  useEffect(() => {
+    highlighter.highlights.forEach((highlight, id) => {
+      const onMouseLeave = (e: MouseEvent) => onHighlightMouseLeave(e, highlight.post);
+      for (const mark of highlight.marks) {
+        mark.addEventListener('mouseleave', onMouseLeave);
+        highlight.handlers.mouseleave = onMouseLeave;
+      }
+    });
+
+    return () => {
+      highlighter.highlights.forEach((highlight, id) => {
+        for (const mark of highlight.marks) {
+          if (highlight.handlers?.mouseleave) {
+            mark.removeEventListener('mouseleave', highlight.handlers.mouseleave);
+            delete highlight.handlers.mouseleave;
+          }
+        }
+      });
+    }
+  }, [posts, onHighlightMouseLeave]);
+
   const removeTempHighlight = useCallback(() => {
-    highlighter.removeHighlight(tempHighlightId);
+    highlighter.removeHighlightTemp();
     setTempHighlight(null);
     setTempHighlightId('');
     setTempHighlightRange(null);
@@ -177,13 +220,13 @@ export default function Tooltip(props: TooltipProps) {
       if (change.isAuthenticated !== undefined) {
         setIsAuthenticated(change.isAuthenticated.newValue || false);
       }
-      
+
       if (change.user !== undefined) {
         setUser(change.user.newValue || null);
       }
     });
   }, []);
-  
+
   useEffect(() => {
     if (isAuthenticated && isExtensionOn && !didInitialGetPosts) {
       const url = window.location.href;
@@ -192,6 +235,7 @@ export default function Tooltip(props: TooltipProps) {
           if (res.success) {
             setDidInitialGetPosts(true);
             const newPosts = res.posts!.map((p) => new Post(p));
+            console.log('newposts', newPosts);
             addPosts(newPosts, HighlightType.Default);
           };
         });
@@ -211,9 +255,9 @@ export default function Tooltip(props: TooltipProps) {
   }, [hoveredHighlightPost]);
 
   const selectionExists = (selection: Selection | null) => {
-    return !!selection 
+    return !!selection
       && selection.rangeCount > 0
-      && !selection.isCollapsed 
+      && !selection.isCollapsed
       && selection.toString().length > 0
       && !selection.toString().match(/^\n+$/i);
   }
@@ -254,7 +298,7 @@ export default function Tooltip(props: TooltipProps) {
     } else {
       document.removeEventListener('mousedown', onMouseDownPage);
     }
-    
+
     return () => document.removeEventListener('mousedown', onMouseDownPage);
   }, [isTempHighlightVisible, isSelectionVisible, onMouseDownPage]);
 
@@ -266,9 +310,9 @@ export default function Tooltip(props: TooltipProps) {
 
   const renderTopics = useCallback((post?: Post) => {
     const pills = (post ? post.topics : topics).map(topic =>
-      <Pill 
-        key={topic.text} 
-        color={topic.color!} 
+      <Pill
+        key={topic.text}
+        color={topic.color!}
         text={topic.text!}
         onClose={() => { setTopics(topics.slice().filter(t => t !== topic)); }}
         showClose={!post}
@@ -284,6 +328,7 @@ export default function Tooltip(props: TooltipProps) {
     );
   }, [topics]);
 
+  // TODO: Store temp highlight stuff inside highlighter
   const onMouseDownTooltip = () => {
     const selection = getSelection();
     if (selection?.toString()) {
@@ -298,7 +343,7 @@ export default function Tooltip(props: TooltipProps) {
       setTempHighlightId(id);
       setTempHighlightRange(range.cloneRange());
       setIsTempHighlightVisible(true);
-      highlighter.addHighlight(range, id, user?.color, HighlightType.Active);
+      highlighter.addHighlightTemp(range, user?.color, HighlightType.Active);
       selection.removeAllRanges();
     }
   }
@@ -322,7 +367,7 @@ export default function Tooltip(props: TooltipProps) {
 
     // check if the user is starting to tag someone
     // if (delta.ops?.find((op) => op.insert === "@")) {
-      // 
+    // 
     // }
     setEditorValue(content);
   }
@@ -342,7 +387,7 @@ export default function Tooltip(props: TooltipProps) {
   // }, [test])
 
   const onClickRemove = () => {
-    
+
   }
 
   const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -354,7 +399,7 @@ export default function Tooltip(props: TooltipProps) {
         highlight: tempHighlight,
         topics: topics
       };
-      
+
       // Hide tooltip
       setIsSelectionVisible(false);
       setIsTempHighlightVisible(false);
@@ -366,10 +411,11 @@ export default function Tooltip(props: TooltipProps) {
       // Show actual highlight when we get response from server
       sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then((res: IPostRes) => {
         if (res.success && res.post) {
-          removeTempHighlight();  
+          removeTempHighlight();
           addPosts(new Post(res.post), HighlightType.Default);
         } else {
           // Show that highlighting failed
+          console.log(postReq)
           throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
         }
       });
@@ -379,7 +425,7 @@ export default function Tooltip(props: TooltipProps) {
   return (
     <>
       {hoveredHighlightPost ? (
-        <div 
+        <div
           className={classNames('TbdTooltip', {
             'TbdTooltip--position-above': positionEdge === Edge.Top,
             'TbdTooltip--position-below': positionEdge === Edge.Bottom,
@@ -388,10 +434,10 @@ export default function Tooltip(props: TooltipProps) {
           style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         >
           {renderTopics(hoveredHighlightPost)}
-          <ReactQuill 
-            className="TroveTooltip__Editor TroveTooltip__Editor--readonly" 
+          <ReactQuill
+            className="TroveTooltip__Editor TroveTooltip__Editor--readonly"
             theme="bubble"
-            value={hoveredHighlightPost.content} 
+            value={hoveredHighlightPost.content}
             placeholder="No note added"
             readOnly={true}
           />
@@ -400,28 +446,28 @@ export default function Tooltip(props: TooltipProps) {
           </div>
         </div>
       ) : (
-        (isSelectionVisible || isTempHighlightVisible) && (
-          <div 
-            className={classNames('TbdTooltip', {
-              'TbdTooltip--position-above': positionEdge === Edge.Top,
-              'TbdTooltip--position-below': positionEdge === Edge.Bottom
-            })}
-            onMouseDown={onMouseDownTooltip}
-            style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-          >
-            {renderTopics()}
-            <ReactQuill 
-              className="TroveTooltip__Editor" 
-              theme="bubble" 
-              value={editorValue} 
-              onChange={onEditorChange}
-              placeholder="Add note"
-              ref={quill}
-            />
-            <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
-          </div>
-        )
-      )}
+          (isSelectionVisible || isTempHighlightVisible) && (
+            <div
+              className={classNames('TbdTooltip', {
+                'TbdTooltip--position-above': positionEdge === Edge.Top,
+                'TbdTooltip--position-below': positionEdge === Edge.Bottom
+              })}
+              onMouseDown={onMouseDownTooltip}
+              style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+            >
+              {renderTopics()}
+              <ReactQuill
+                className="TroveTooltip__Editor"
+                theme="bubble"
+                value={editorValue}
+                onChange={onEditorChange}
+                placeholder="Add note"
+                ref={quill}
+              />
+              <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
+            </div>
+          )
+        )}
     </>
   );
 }
