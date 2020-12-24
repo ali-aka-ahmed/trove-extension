@@ -31,6 +31,7 @@ export default function Tooltip(props: TooltipProps) {
   const [didInitialGetPosts, setDidInitialGetPosts] = useState(false);
   const [editorValue, setEditorValue] = useState('');
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
+  const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [isSelectionVisible, setIsSelectionVisible] = useState(false);
@@ -53,9 +54,9 @@ export default function Tooltip(props: TooltipProps) {
     }
 
     let retRange: Range | null;
-    if (hoveredPost && hoveredPost.highlight) {
+    if (hoveredPostBuffer && hoveredPostBuffer.highlight) {
       try {
-        retRange = getRangeFromTextRange(hoveredPost.highlight.textRange);
+        retRange = getRangeFromTextRange(hoveredPostBuffer.highlight.textRange);
       } catch (e) {
         retRange = null;
       }
@@ -85,12 +86,12 @@ export default function Tooltip(props: TooltipProps) {
     }
 
     return null;
-  }, [clickedPost, hoveredPost, tempHighlightRange]);
+  }, [clickedPost, hoveredPostBuffer, tempHighlightRange]);
 
   /**
    * Position and display tooltip according to change in selection.
    */
-  const positionTooltip = useCallback((e: Event, range?: Range) => {
+  const positionTooltip = useCallback((range?: Range) => {
     const tooltipRange = getTooltipRange(range);
     if (!tooltipRange) return;
 
@@ -108,31 +109,33 @@ export default function Tooltip(props: TooltipProps) {
   }, [getTooltipRange]);
 
   useEffect(() => {
-    document.addEventListener('mouseup', positionTooltip);
-    window.addEventListener('resize', positionTooltip);
+    document.addEventListener('mouseup', () => positionTooltip());
+    window.addEventListener('resize', () => positionTooltip());
     return () => {
-      document.removeEventListener('mouseup', positionTooltip);
-      window.removeEventListener('resize', positionTooltip);
+      document.removeEventListener('mouseup', () => positionTooltip());
+      window.removeEventListener('resize', () => positionTooltip());
     };
   }, [positionTooltip]);
 
+  // TODO: maybe move active highlight logic to highlighter?
   const onHighlightMouseEnter = useCallback((e: MouseEvent, post: Post) => {
     if (!post.highlight) return;
-    if (clickedPost && clickedPost.id === post.id) return;
     highlighter.modifyHighlightTemp(HighlightType.Default);
     highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
-    setHoveredPost(post);
-    positionTooltip(e);
-  }, [clickedPost, highlighter, positionTooltip]);
+    setHoveredPostBuffer(post);
+  }, [highlighter, positionTooltip]);
 
   const onHighlightMouseLeave = useCallback((e: MouseEvent, post: Post) => {
     if (!post.highlight) return;
-    if (clickedPost && clickedPost.id === post.id) return;
     highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
     highlighter.modifyHighlightTemp(HighlightType.Active);
-    setHoveredPost(null);
-    positionTooltip(e);
-  }, [clickedPost, highlighter, positionTooltip]);
+    setHoveredPostBuffer(null);
+  }, [highlighter, positionTooltip]);
+
+  useEffect(() => {
+    positionTooltip();
+    setHoveredPost(hoveredPostBuffer);
+  }, [hoveredPostBuffer]);
 
   // const onHighlightClick = useCallback((e: MouseEvent, post: Post) => {
   //   console.log('click')
@@ -148,79 +151,19 @@ export default function Tooltip(props: TooltipProps) {
     highlighter.highlights.forEach((highlight, id) => {
       const onMouseEnter = (e: MouseEvent) => onHighlightMouseEnter(e, highlight.post);
       for (const mark of highlight.marks) {
-        // if (highlight.handlers.mouseenter) {
-        //   mark.removeEventListener('mouseenter', highlight.handlers.mouseenter);
-        //   delete highlight.handlers.mouseenter;
-        // }
-
-        // mark.addEventListener('mouseenter', onMouseEnter);
-        // highlight.handlers.mouseenter = onMouseEnter;
         mark.onmouseenter = onMouseEnter;
       }
     });
-
-    // return () => {
-    //   highlighter.highlights.forEach((highlight, id) => {
-    //     for (const mark of highlight.marks) {
-    //       if (highlight.handlers?.mouseenter) {
-    //         mark.removeEventListener('mouseenter', highlight.handlers.mouseenter);
-    //         delete highlight.handlers.mouseenter;
-    //       }
-    //     }
-    //   });
-    // }
   }, [posts, onHighlightMouseEnter]);
 
   useEffect(() => {
-    console.log('onhighlightleave useeffect')
     highlighter.highlights.forEach((highlight, id) => {
       const onMouseLeave = (e: MouseEvent) => onHighlightMouseLeave(e, highlight.post);
       for (const mark of highlight.marks) {
-        // if (highlight.handlers.mouseenter) {
-        //   mark.removeEventListener('mouseleave', highlight.handlers.mouseleave);
-        //   delete highlight.handlers.mouseleave;
-        // }
-        console.log(Object.keys(highlight.handlers).length)
-        // mark.addEventListener('mouseleave', onMouseLeave);
-        // highlight.handlers.mouseleave = onMouseLeave;
         mark.onmouseleave = onMouseLeave;
       }
     });
-
-    // return () => {
-    //   highlighter.highlights.forEach((highlight, id) => {
-    //     for (const mark of highlight.marks) {
-    //       if (highlight.handlers?.mouseleave) {
-    //         mark.removeEventListener('mouseleave', highlight.handlers.mouseleave);
-    //         delete highlight.handlers.mouseleave;
-    //       }
-    //     }
-    //   });
-    // }
   }, [posts, onHighlightMouseLeave]);
-
-  // useEffect(() => {
-  //   console.log('onhighlightclick useeffect')
-  //   highlighter.highlights.forEach((highlight, id) => {
-  //     const onClick = (e: MouseEvent) => onHighlightClick(e, highlight.post);
-  //     for (const mark of highlight.marks) {
-  //       mark.addEventListener('mouseclick', onClick);
-  //       highlight.handlers.mouseclick = onClick;
-  //     }
-  //   });
-
-  //   return () => {
-  //     console.log('onhighlightclick useeffect unmount')
-  //     highlighter.highlights.forEach((highlight, id) => {
-  //       for (const mark of highlight.marks) {
-  //         if (highlight.handlers?.mouseclick) {
-  //           mark.removeEventListener('mouseclick', highlight.handlers.mouseclick);
-  //           delete highlight.handlers.mouseclick;
-  //         }
-  //       }
-  //     });
-  //   }
-  // }, [posts, onHighlightClick]);
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
