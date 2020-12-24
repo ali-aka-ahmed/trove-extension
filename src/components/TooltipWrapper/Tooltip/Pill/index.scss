@@ -3,10 +3,6 @@
 
 @import '../../../../styles/general.scss';
 
-$pill-height: 22px; // 30px
-$pill-padding: 6px; // 15px
-$border-radius: 3px; // 7px
-
 .TbdPill {
   display: flex;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
@@ -16,16 +12,16 @@ $border-radius: 3px; // 7px
   flex-shrink: 1;
   min-width: 0px;
   height: $pill-height;
-  border-radius: $border-radius;
+  border-radius: $pill-border-radius;
   padding-left: $pill-padding;
   padding-right: $pill-padding;
-  font-size: 12px;
+  font-size: $pill-font-size;
   line-height: 20px;
   margin-right: 6px;
 }
 
 .TbdPill__Text {
-  @include TbdFont--small;
+  font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

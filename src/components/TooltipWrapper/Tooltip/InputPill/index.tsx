@@ -86,7 +86,8 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
     setNewTopic(null)
     setSuggestedTopics([]);
     setSuggestedTopicsIdx(-1);
-    setNewColor(DEFAULT_TOPIC_COLOR)
+    setNewColor(DEFAULT_TOPIC_COLOR);
+    setIsInput(false);
   }
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +113,7 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
           creationDatetime: Date.now(),
           lastEdited: Date.now(),
           id: uuid(),
-          text, 
+          text: text.trim(), 
         };
         setNewTopic(newTopic)
       }

@@ -1,4 +1,5 @@
 import classNames from 'classnames';
+import Color from 'color';
 import { Delta, Sources } from 'quill';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactQuill, { UnprivilegedEditor } from 'react-quill';
@@ -29,7 +30,8 @@ interface TooltipProps {
 export default function Tooltip(props: TooltipProps) {
   const [didInitialGetPosts, setDidInitialGetPosts] = useState(false);
   const [editorValue, setEditorValue] = useState('');
-  const [hoveredHighlightPost, setHoveredHighlightPost] = useState<Post | null>(null);
+  // const [hoveredHighlightPost, setHoveredHighlightPost] = useState<any | null>({"id":"fe2d5b09-07a9-423c-bea5-0d83c11aa31b","content":"","creationDatetime":1608718889207,"creator":{"id":"2d611faf-323e-49de-bedc-d3cf4254ed90","displayName":"Ali","username":"ali","creationDatetime":1607944594274,"color":"#EB144C"},"domain":"nytimes.com","url":"https://nytimes.com/2020/12/22/us/politics/trump-pardons.html","topics":[],"taggedUsers":[],"numComments":0,"numLikes":1,"liked":true,"highlight":{"id":"b638f067-f465-4ab7-becf-34c9d9d361a9","creationDatetime":1608718889208,"textRange":{"context":"inquiry, four Blackwater guards convicted in connection with the killing of Iraqi civilians and three corrupt former Republican members of Congress.\n\nIt was a remarkable assertion of pardon power","uniqueTextStartIdx":0,"contextStartIdx":65,"text":"killing of Iraqi civilians and three corrupt former Republican members of Congress","uniqueText":"killing of Iraqi civilians and three corrupt former Republican members of Congress"},"domain":"nytimes.com","type":0,"url":"https://nytimes.com/2020/12/22/us/politics/trump-pardons.html"}})
+  const [hoveredHighlightPost, setHoveredHighlightPost] = useState<Post | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [isSelectionVisible, setIsSelectionVisible] = useState(false);
@@ -280,6 +282,7 @@ export default function Tooltip(props: TooltipProps) {
   }, [isTempHighlightVisible, isSelectionVisible, onMouseDownPage]);
 
   const addTopic = (topic: Partial<ITopic>) => {
+    if (topics.some((t) => t.text?.toLowerCase() === topic.text?.toLowerCase())) return;
     const newTopics = topics.slice().filter(t => t.id !== topic.id);
     newTopics.unshift(topic);
     setTopics(newTopics);
@@ -392,7 +395,6 @@ export default function Tooltip(props: TooltipProps) {
           addPosts(new Post(res.post), HighlightType.Default);
         } else {
           // Show that highlighting failed
-          console.log(postReq)
           throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
         }
       });
@@ -408,19 +410,45 @@ export default function Tooltip(props: TooltipProps) {
             'TbdTooltip--position-below': positionEdge === Edge.Bottom,
             'TbdTooltip--readonly': true
           })}
-          style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+          style={{ 
+            transform: `translate3d(${position.x}px, ${position.y}px, 0px)`, 
+            display: !hoveredHighlightPost.content && hoveredHighlightPost.topics.length === 0 
+              ? 'flex' 
+              : undefined
+          }}
         >
-          {renderTopics(hoveredHighlightPost)}
-          <ReactQuill
-            className="TroveTooltip__Editor TroveTooltip__Editor--readonly"
-            theme="bubble"
-            value={hoveredHighlightPost.content}
-            placeholder="No note added"
-            readOnly={true}
-          />
-          <div className="TbdTooltip__ButtonList">
-            <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
+          <div className="TroveTooltip__Profile">
+            <div
+              className="TroveTooltip__ProfileImg"
+              style={{
+                backgroundColor: hoveredHighlightPost.creator.color,
+                color: Color(hoveredHighlightPost.creator.color).isLight() ? 'black' : 'white',
+              }}            >
+              {hoveredHighlightPost.creator.displayName[0]}
+            </div>
+            <div className="TroveTooltip__ProfileInfo">
+              <div className="TroveTooltip__DisplayName">{hoveredHighlightPost.creator.displayName}</div>
+              <div
+                className="TroveTooltip__Username"
+                style={{ color: hoveredHighlightPost.creator.color }}
+              >
+                {`@${hoveredHighlightPost.creator.username}`}
+              </div>
+            </div>
           </div>
+          {renderTopics(hoveredHighlightPost)}
+          {hoveredHighlightPost.content && (
+            <ReactQuill
+              className="TroveTooltip__Editor TroveTooltip__Editor--readonly"
+              theme="bubble"
+              value={hoveredHighlightPost.content}
+              placeholder="No note added"
+              readOnly={true}
+            />
+          )}
+          {/* <div className="TbdTooltip__ButtonList">
+            <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
+          </div> */}
         </div>
       ) : (
           (isSelectionVisible || isTempHighlightVisible) && (
@@ -432,6 +460,26 @@ export default function Tooltip(props: TooltipProps) {
               onMouseDown={onMouseDownTooltip}
               style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
             >
+                <div className="TroveTooltip__Profile">
+              <div
+                className="TroveTooltip__ProfileImg"
+                style={{
+                  backgroundColor: user?.color,
+                  color: Color(user?.color).isLight() ? 'black' : 'white',
+                }}
+              >
+                {user?.displayName[0]}
+              </div>
+              <div className="TroveTooltip__ProfileInfo">
+                <div className="TroveTooltip__DisplayName">{user?.displayName}</div>
+                <div
+                  className="TroveTooltip__Username"
+                  style={{ color: user?.color }}
+                >
+                  {`@${user?.username}`}
+                </div>
+              </div>
+            </div>
               {renderTopics()}
               <ReactQuill
                 className="TroveTooltip__Editor"

@@ -1,5 +1,6 @@
 import { EditOutlined, LoadingOutlined, SaveOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
+import Color from 'color';
 import React, { useState } from 'react';
 import IUser from '../../../models/IUser';
 import { updateColor, updateDisplayName, updateUsername } from '../../../server/users';
@@ -106,7 +107,10 @@ export default function Profile({ user }: ProfileProps) {
       <div className="TbdProfile__Header">
         <div
           className="TbdProfile__Img"
-          style={{ backgroundColor: user.color }} 
+          style={{
+            backgroundColor: user.color,
+            color: Color(user.color).isLight() ? 'black' : 'white',
+          }}
         >
           {displayName[0]}
         </div>

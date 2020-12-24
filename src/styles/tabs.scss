@@ -3,6 +3,7 @@
 // Tabs
 .ant-tabs-tab {
   margin: 0 20px;
+  padding: 8px 0px;
 }
 
 .ant-tabs-nav-wrap {
@@ -14,16 +15,13 @@
   margin: 0 !important;
   position: fixed !important;
   width: 100%;
-  background-color: #fafafa;
-  height: 46px;
+  background-color: #f7f6f3;
+  height: 40px;
 }
 
 // Tab text
 .ant-tabs-tab-btn {
   color: rgba(50, 50, 50, .75) !important;
-  text-transform: uppercase;
-  font-weight: bold !important;
-  letter-spacing: .75px;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -51,5 +49,5 @@
 
 // Content wrapper 
 .ant-tabs-content-holder {
-  margin-top: 46px;
+  margin-top: 40px;
 }

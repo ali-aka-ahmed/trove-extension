@@ -78,12 +78,12 @@ export default function Popup() {
         {isAuthenticated ? (
           <>
             <Tabs activeKey={tabKey} onChange={(newTabKey) => setTabKey(newTabKey)}>
-              <Tabs.TabPane tab="notifications" key="1">
+              <Tabs.TabPane tab="Notifications" key="1">
                 <div className="TbdPopupContainer__TabWrapper">
                   {notifications && <Notifications notifications={notifications} />}
                 </div>
               </Tabs.TabPane>
-              <Tabs.TabPane tab="profile" key="2">
+              <Tabs.TabPane tab="Profile" key="2">
                 <div className="TbdPopupContainer__TabWrapper">
                   {user && <Profile user={user} />}
                 </div>

@@ -1,3 +1,4 @@
+import Color from 'color';
 import React from 'react';
 import ReactQuill from 'react-quill';
 import { socket } from '../../../../app/background';
@@ -28,7 +29,13 @@ export default function Notification({ notification }: NotificationProps) {
       onClick={handleClick}
     >
       <div className="TbdNotificationWrapper__HeaderWrapper">
-        <div className="TbdProfile__Img" style={{ backgroundColor: notification.sender.color }}>
+        <div 
+          className="TbdProfile__Img" 
+          style={{
+            backgroundColor: notification.sender.color,
+            color: Color(notification.sender.color).isLight() ? 'black' : 'white',
+          }}
+        >
           {notification.sender.displayName[0]}
         </div>
         <div className="TbdNotificationWrapper__HeaderContentWrapper">

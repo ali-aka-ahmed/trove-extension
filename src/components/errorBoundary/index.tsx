@@ -51,7 +51,7 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
     const { hasError, message } = this.state;
     if (hasError) { 
       return <div/>;
-      // return ( 
+      // return (
       //   <div className="TroveErrorBoundary__Alert">
       //     <Alert type="error" message={message} />
       //   </div>

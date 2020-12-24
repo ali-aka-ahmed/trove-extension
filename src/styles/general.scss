@@ -1,6 +1,12 @@
 // Fonts
 $line-height: 22px;
 
+// Pill
+$pill-height: 20px; // 30px
+$pill-padding: 4px; // 15px
+$pill-border-radius: 3px; // 7px
+$pill-font-size: 11px;
+
 @mixin TbdFont--xsmall {
   font-size: 10px;
   font-weight: 500;
