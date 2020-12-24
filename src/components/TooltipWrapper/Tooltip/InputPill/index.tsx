@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { DEFAULT_TOPIC_COLORS } from '../../../../constants';
+import { DEFAULT_TOPIC_COLOR } from '../../../../constants';
 import ITopic from '../../../../models/ITopic';
 import { ITopicsRes } from '../../../../server/topics';
 import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
@@ -13,7 +13,7 @@ interface InputPillProps {
 
 export default function InputPill({ onSubmit, style={} }: InputPillProps) {
   const [newTopic, setNewTopic] = useState<ITopic | null>(null);
-  const [color, setNewColor] = useState(DEFAULT_TOPIC_COLORS[Math.floor(Math.random() * DEFAULT_TOPIC_COLORS.length)]);
+  const [color, setNewColor] = useState(DEFAULT_TOPIC_COLOR);
   const [suggestedTopics, setSuggestedTopics] = useState<ITopic[]>([]);
   const [suggestedTopicsIdx, setSuggestedTopicsIdx] = useState(-1);
   const [content, setContent] = useState('');
@@ -22,7 +22,7 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
 
   const onClickTopic = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setIsInput(true);
-    setNewColor(DEFAULT_TOPIC_COLORS[Math.floor(Math.random() * DEFAULT_TOPIC_COLORS.length)])
+    setNewColor(DEFAULT_TOPIC_COLOR)
   }
 
   useEffect(() => {
@@ -86,7 +86,7 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
     setNewTopic(null)
     setSuggestedTopics([]);
     setSuggestedTopicsIdx(-1);
-    setNewColor(DEFAULT_TOPIC_COLORS[Math.floor(Math.random() * DEFAULT_TOPIC_COLORS.length)])
+    setNewColor(DEFAULT_TOPIC_COLOR)
   }
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +95,7 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
       setNewTopic(null)
       setSuggestedTopicsIdx(-1)
       setSuggestedTopics([])
-      setNewColor(DEFAULT_TOPIC_COLORS[Math.floor(Math.random() * DEFAULT_TOPIC_COLORS.length)])
+      setNewColor(DEFAULT_TOPIC_COLOR)
     } else await suggestTopics(e.target.value);
   }
 

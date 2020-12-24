@@ -280,7 +280,7 @@ export default function Tooltip(props: TooltipProps) {
   }, [isTempHighlightVisible, isSelectionVisible, onMouseDownPage]);
 
   const addTopic = (topic: Partial<ITopic>) => {
-    const newTopics = topics.slice().filter(t => t !== topic);
+    const newTopics = topics.slice().filter(t => t.id !== topic.id);
     newTopics.unshift(topic);
     setTopics(newTopics);
   }

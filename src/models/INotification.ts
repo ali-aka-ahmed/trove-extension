@@ -1,13 +1,21 @@
 import IUser from './IUser';
 
+export enum NotificationType {
+  Tag = 'Tag',
+  Like = 'Like',
+  Comment = 'Comment',
+  Follow = 'Follow',
+}
+
 export default interface INotification {
   id: string;
+  type: NotificationType;
   action: string;
-  content: string;
-  sender: IUser;
-  url: string;
-  postId: string;
-  read: boolean;
-  taggedUsers: IUser[];
   creationDatetime: number;
+  read: boolean;
+  sender: IUser;
+  content?: string;
+  postId?: string;
+  taggedUsers?: IUser[];
+  url?: string;
 }
