@@ -20,10 +20,9 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
     setLogoutLoading(true);
     const items = await get(null);
     if (items?.user?.id) socket.emit('leave room', items.user.id);
+    sendMessageToWebsite({ type: MessageType.Logout });
     await remove(Object.keys(items));
     await set({ isAuthenticated: false });
-    sendMessageToWebsite({ type: MessageType.Logout });
-    setLogoutLoading(false);
   }
 
   /**

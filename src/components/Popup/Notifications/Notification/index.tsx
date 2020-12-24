@@ -15,15 +15,12 @@ interface NotificationProps {
 export default function Notification({ notification }: NotificationProps) {
 
   const handleClick = async () => {
-    console.log('clicked', notification.id)
     socket.emit('read notification', notification.id);
     const ns: NotificationObject[] = await get1('notifications')
     const i = ns.findIndex((n) => n.id === notification.id)
     notification.read = true
     ns[i] = notification
-    console.log("set to read", notification.read)
     await set({ notifications: ns })
-    console.log("set notifs")
     if (notification.url) chrome.tabs.create({url: notification.url});
   }
 	return (
