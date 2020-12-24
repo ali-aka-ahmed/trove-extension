@@ -1,17 +1,13 @@
 
 const MARK_CLASS_NAME = 'TroveMark';
 
-export const addDOMHighlight = (
-  range: Range,
-  color: string='yellow', 
-  handlers: { [event: string]: (e: MouseEvent) => void }={}
-) => {
+export const addDOMHighlight = (range: Range, color: string = 'yellow') => {
   let start = range.startContainer;
   let end = range.endContainer;
   let hasContent = true;
 
   // Determine end
-  if (range.endOffset === 0) { 
+  if (range.endOffset === 0) {
     while (!end.previousSibling && end.parentNode !== range.commonAncestorContainer) {
       end = end.parentNode!;
     }
@@ -44,7 +40,7 @@ export const addDOMHighlight = (
 
   // This is where the magic happens
   const marks: HTMLElement[] = [];
-  for (let done = false, node = start; !done || !node; ) { //console.log(node, start)
+  for (let done = false, node = start; !done || !node;) { //console.log(node, start)
     if (
       hasContent
       && node.nodeType === Node.TEXT_NODE
@@ -54,15 +50,9 @@ export const addDOMHighlight = (
       let wrapper = node.previousSibling;
       if (!wrapper || marks.length === 0 || wrapper !== marks[marks.length - 1]) {
         // Create next mark in chain
-        const mark = document.createElement('mark'); 
+        const mark = document.createElement('mark');
         mark.className = MARK_CLASS_NAME;
         mark.style.backgroundColor = color;
-
-        // Add handlers
-        for (const event in handlers) {
-          mark.addEventListener(event, handlers[event]);
-        }
-
         marks.push(mark);
 
         // Position new wrapper accordingly
@@ -130,9 +120,9 @@ export const modifyDOMHighlight = (marks: HTMLElement[], style: string, value: s
 
 const isTable = (node: Node) => {
   const types = [
-    HTMLTableElement, 
-    HTMLTableRowElement, 
-    HTMLTableColElement, 
+    HTMLTableElement,
+    HTMLTableRowElement,
+    HTMLTableColElement,
     HTMLTableSectionElement
   ];
   return types.some(type => node && node.parentNode instanceof type);

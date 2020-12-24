@@ -83,7 +83,6 @@ export default function Tooltip(props: TooltipProps) {
   }, [positionTooltip]);
 
   const onHighlightMouseEnter = useCallback((e: MouseEvent, post: Post) => {
-    console.log('mouseenter')
     if (!post.highlight) return;
 
     let range: Range | null;
@@ -93,6 +92,7 @@ export default function Tooltip(props: TooltipProps) {
       range = null;
     }
 
+    highlighter.modifyHighlightTemp(HighlightType.Default);
     highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
     positionTooltip(e, range ? range : undefined);
     setHoveredHighlightPost(post);
@@ -101,6 +101,7 @@ export default function Tooltip(props: TooltipProps) {
   const onHighlightMouseLeave = useCallback((e: MouseEvent, post: Post) => {
     if (!post.highlight) return;
     highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
+    highlighter.modifyHighlightTemp(HighlightType.Active);
     positionTooltip(e);
     setHoveredHighlightPost(null);
   }, [highlighter, positionTooltip]);
@@ -212,7 +213,6 @@ export default function Tooltip(props: TooltipProps) {
           if (res.success) {
             setDidInitialGetPosts(true);
             const newPosts = res.posts!.map((p) => new Post(p));
-            console.log('newposts', newPosts);
             addPosts(newPosts, HighlightType.Default);
           };
         });

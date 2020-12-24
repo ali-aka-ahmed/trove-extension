@@ -10,6 +10,12 @@ interface HighlightData {
   handlers: { [event: string]: (e: MouseEvent) => void }
 }
 
+interface HighlightTempData {
+  marks: HTMLElement[];
+  type: HighlightType;
+  color: string;
+}
+
 export enum HighlightType {
   Default,
   Active // Click, hover, new post
@@ -17,7 +23,7 @@ export enum HighlightType {
 
 export default class Highlighter {
   highlights: Map<string, HighlightData>; // id -> highlight data
-  highlightTemp: Partial<HighlightData> | null;
+  highlightTemp: HighlightTempData | null;
 
   constructor() {
     this.highlights = new Map<string, HighlightData>();
@@ -80,22 +86,23 @@ export default class Highlighter {
 
     color = this.getColor(color, type);
     const marks = addDOMHighlight(range, color);
-    const highlightData = { marks, type, handlers: {} };
+    const highlightData = { color, marks, type };
     this.highlightTemp = highlightData;
+  }
+
+  public modifyHighlightTemp = (type: HighlightType, color?: string) => {
+    if (this.highlightTemp) {
+      if (!color) color = this.highlightTemp.color;
+      color = this.getColor(color, type);
+      modifyDOMHighlight(this.highlightTemp.marks!, 'backgroundColor', color);
+      this.highlightTemp = { ...this.highlightTemp, type };
+    }
   }
 
   public removeHighlightTemp = () => {
     if (this.highlightTemp) {
       removeDOMHighlight(this.highlightTemp.marks!);
       this.highlightTemp = null;
-    }
-  }
-
-  public modifyHighlightTemp = (color: string, type: HighlightType) => {
-    if (this.highlightTemp) {
-      color = this.getColor(color, type);
-      modifyDOMHighlight(this.highlightTemp.marks!, 'backgroundColor', color);
-      this.highlightTemp = { ...this.highlightTemp, type };
     }
   }
 
