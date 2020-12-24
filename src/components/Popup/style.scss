@@ -7,7 +7,7 @@ $popup-height: 350px;
 $footer-height: 40px;
 
 body {
-  background-color: #fafafa;
+  background-color: #F7F6F3;
   margin: 0px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
   'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
@@ -25,6 +25,7 @@ body, html {
   color: black;
   width: $popup-width;
   position: relative;
+  background-color: #F7F6F3;
 }
 
 .TbdPopupContainer__TabWrapper {
@@ -40,7 +41,7 @@ body, html {
   justify-content: space-between;
   padding: 5px 15px;
   position: fixed;
-  background-color: #fafafa;
+  background-color: #F7F6F3;
   width: 100%;
   height: $footer-height;
   bottom: 0;
@@ -52,10 +53,14 @@ body, html {
 }
 
 .TbdPopupContainer__OnOff {
-  font-weight: 700;
   margin-left: 5px;
   margin-right: 7px;
 }
+
+.TbdPopupContainer__OnOff--bold {
+  font-weight: 700;
+}
+
 
 // Shared
 .TbdProfile__Img {
@@ -65,7 +70,7 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  border: 2px solid rgba(0,0,0, 0.25);;
   @include TbdFont--large; 
 }
 

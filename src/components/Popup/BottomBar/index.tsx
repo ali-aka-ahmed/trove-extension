@@ -20,10 +20,9 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
     setLogoutLoading(true);
     const items = await get(null);
     if (items?.user?.id) socket.emit('leave room', items.user.id);
+    sendMessageToWebsite({ type: MessageType.Logout });
     await remove(Object.keys(items));
     await set({ isAuthenticated: false });
-    sendMessageToWebsite({ type: MessageType.Logout });
-    setLogoutLoading(false);
   }
 
   /**
@@ -38,8 +37,12 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
     <div className="TbdPopupContainer__BottomWrapper">
       <div className="TbdPopupContainer__OnOffWrapper">
         <div className="TbdPopupContainer__OnOffTextWrapper">
-          <div>Turn Trove</div>
-          <div className="TbdPopupContainer__OnOff">{isExtensionOn ? 'OFF' : 'ON'}</div>
+          {/* <div>Turn Trove</div> */}
+          <div 
+            className={`TbdPopupContainer__OnOff ${!isExtensionOn && "TbdPopupContainer__OnOff--bold"}`}
+          >
+            {isExtensionOn ? 'On' : 'Off'}
+          </div>
         </div>
         <Switch onClick={(checked) => handleOnOff(checked)} checked={isExtensionOn} />
       </div>

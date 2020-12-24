@@ -1,5 +1,6 @@
 import { EditOutlined, LoadingOutlined, SaveOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
+import Color from 'color';
 import React, { useState } from 'react';
 import IUser from '../../../models/IUser';
 import { updateColor, updateDisplayName, updateUsername } from '../../../server/users';
@@ -106,7 +107,10 @@ export default function Profile({ user }: ProfileProps) {
       <div className="TbdProfile__Header">
         <div
           className="TbdProfile__Img"
-          style={{ backgroundColor: user.color }} 
+          style={{
+            backgroundColor: user.color,
+            color: Color(user.color).isLight() ? 'black' : 'white',
+          }}
         >
           {displayName[0]}
         </div>
@@ -115,7 +119,7 @@ export default function Profile({ user }: ProfileProps) {
             <div className="TbdProfile__EditDisplayName EditProp">
               <input
                 autoFocus
-                style={{width: `${(displayName.length+1)*7}px`}}
+                style={{width: `${(displayName.length+1)*8}px`}}
                 className="TbdProfile__Input TbdProfile__Input--display-name"
                 value={displayName} 
                 onChange={(e) => { setDisplayName(e.target.value) }}
@@ -148,7 +152,7 @@ export default function Profile({ user }: ProfileProps) {
               <div className="TbdProfile__InputPrefix" style={{ color: user.color }}>@</div>
               <input
                 autoFocus
-                style={{ width: `${(username.length+1)*7}px`, color: user.color }}
+                style={{ width: `${(username.length+1)*8}px`, color: user.color }}
                 className="TbdProfile__Input TbdProfile__Input--username"
                 value={username}
                 onChange={(e) => { setUsername(e.target.value) }}

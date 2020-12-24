@@ -1,3 +1,4 @@
+import Color from 'color';
 import React from 'react';
 import ReactQuill from 'react-quill';
 import { socket } from '../../../../app/background';
@@ -20,15 +21,21 @@ export default function Notification({ notification }: NotificationProps) {
     notification.read = true
     ns[i] = notification
     await set({ notifications: ns })
+    if (notification.url) chrome.tabs.create({url: notification.url});
   }
-
 	return (
-    <div 
+    <div
       className={`TbdNotificationWrapper ${!notification.read && 'TbdNotificationWrapper--unread'}`} 
-      onClick={() => handleClick()}
+      onClick={handleClick}
     >
       <div className="TbdNotificationWrapper__HeaderWrapper">
-        <div className="TbdProfile__Img" style={{ backgroundColor: notification.sender.color }}>
+        <div 
+          className="TbdProfile__Img" 
+          style={{
+            backgroundColor: notification.sender.color,
+            color: Color(notification.sender.color).isLight() ? 'black' : 'white',
+          }}
+        >
           {notification.sender.displayName[0]}
         </div>
         <div className="TbdNotificationWrapper__HeaderContentWrapper">
@@ -37,22 +44,24 @@ export default function Notification({ notification }: NotificationProps) {
               {`${notification.sender.displayName} `}
             </span>
             <span className="TbdNotificationWrapper__Action">
-              tagged you
+              {notification.action}
             </span>
           </div>
           <div className="TbdNotificationWrapper__NotificationDetails">
-            {`${notification.time} · ${notification.url}`}
+            {`${notification.time} ${notification.url ? `· ${notification.domain}${notification.path}` : ''}`}
           </div>
         </div>
       </div>
-      <div className="TbdNotificationWrapper__Content">
-        <ReactQuill 
-          className="TroveTooltip__Editor TroveTooltip__Editor--read-only"
-          theme="bubble"
-          value={notification.content}
-          readOnly={true}
-        />
-      </div>
+      {notification.content && (
+        <div className="TbdNotificationWrapper__Content">
+          <ReactQuill 
+            className="TroveTooltip__Editor TroveTooltip__Editor--read-only"
+            theme="bubble"
+            value={notification.content}
+            readOnly={true}
+          />
+        </div>
+      )}
     </div>
 	)
 };

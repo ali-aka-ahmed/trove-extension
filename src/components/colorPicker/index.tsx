@@ -43,7 +43,7 @@ export default function ColorPicker({ onSelect, defaultColor }: ColorPickerProps
         style={{backgroundColor: '#FCB900'}} 
         onClick={() => onSelect('#FCB900')}
       />
-      <div 
+      <div
         className="TbdProfile__ColorPreview"
         style={{backgroundColor: '#00D084'}} 
         onClick={() => onSelect('#00D084')}

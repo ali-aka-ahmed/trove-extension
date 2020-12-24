@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { DEFAULT_TOPIC_COLORS } from '../../../../constants';
+import { DEFAULT_TOPIC_COLOR } from '../../../../constants';
 import ITopic from '../../../../models/ITopic';
-import { getTopics } from '../../../../server/topics';
-import Pill from '../Pill';
+import { ITopicsRes } from '../../../../server/topics';
+import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
+import Pill from '../pill';
 
 interface InputPillProps {
   onSubmit: (topic: ITopic) => Promise<void> | void;
@@ -12,7 +13,7 @@ interface InputPillProps {
 
 export default function InputPill({ onSubmit, style={} }: InputPillProps) {
   const [newTopic, setNewTopic] = useState<ITopic | null>(null);
-  const [color, setNewColor] = useState(DEFAULT_TOPIC_COLORS[Math.floor(Math.random() * DEFAULT_TOPIC_COLORS.length)]);
+  const [color, setNewColor] = useState(DEFAULT_TOPIC_COLOR);
   const [suggestedTopics, setSuggestedTopics] = useState<ITopic[]>([]);
   const [suggestedTopicsIdx, setSuggestedTopicsIdx] = useState(-1);
   const [content, setContent] = useState('');
@@ -21,7 +22,7 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
 
   const onClickTopic = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setIsInput(true);
-    setNewColor(DEFAULT_TOPIC_COLORS[Math.floor(Math.random() * DEFAULT_TOPIC_COLORS.length)])
+    setNewColor(DEFAULT_TOPIC_COLOR)
   }
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
   }
 
   const onKeyDownContent = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log(e.key)
+    // console.log(e.key)
     e.stopPropagation();
     const showSuggestedTopics = suggestedTopics.length > 0 || newTopic !== null
     switch (e.key) {
@@ -85,7 +86,8 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
     setNewTopic(null)
     setSuggestedTopics([]);
     setSuggestedTopicsIdx(-1);
-    setNewColor(DEFAULT_TOPIC_COLORS[Math.floor(Math.random() * DEFAULT_TOPIC_COLORS.length)])
+    setNewColor(DEFAULT_TOPIC_COLOR);
+    setIsInput(false);
   }
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,30 +96,31 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
       setNewTopic(null)
       setSuggestedTopicsIdx(-1)
       setSuggestedTopics([])
-      setNewColor(DEFAULT_TOPIC_COLORS[Math.floor(Math.random() * DEFAULT_TOPIC_COLORS.length)])
+      setNewColor(DEFAULT_TOPIC_COLOR)
     } else await suggestTopics(e.target.value);
   }
 
   const suggestTopics = async (text: string) => {
-    const res = await getTopics(text)
-    if (!res.success) return;
-    const existingTopics = res.topics!;
-    if (existingTopics.some((topic) => topic.text === text)) {
-      setNewTopic(null);
-      if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
-    } else {
-      const newTopic: ITopic = { 
-        color,
-        creationDatetime: Date.now(),
-        lastEdited: Date.now(),
-        id: uuid(),
-        text, 
-      };
-      setNewTopic(newTopic)
-    }
-
-    setSuggestedTopics(existingTopics);
-    if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
+    sendMessageToExtension({ type: MessageType.HandleTopicSearch, text }).then((res: ITopicsRes) => {
+      if (!res.success) return;
+      const existingTopics = res.topics!;
+      if (existingTopics.some((topic) => topic.text === text)) {
+        setNewTopic(null);
+        if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
+      } else {
+        const newTopic: ITopic = { 
+          color,
+          creationDatetime: Date.now(),
+          lastEdited: Date.now(),
+          id: uuid(),
+          text: text.trim(), 
+        };
+        setNewTopic(newTopic)
+      }
+  
+      setSuggestedTopics(existingTopics);
+      if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
+    });    
   }
 
   const renderSuggestedTopics = () => {

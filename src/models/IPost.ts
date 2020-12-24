@@ -13,6 +13,7 @@ export default interface IPost {
   taggedUsers: IUser[]; // must contain values for parent post
   numComments: number;
   numLikes: number;
+  liked: boolean;
   comments?: IPost[];
   parentPostId?: string; // only exists if comment
   highlight?: IHighlight;

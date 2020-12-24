@@ -3,18 +3,21 @@ import { BACKEND_URL } from '../config';
 import User from '../entities/User';
 import INotification from '../models/INotification';
 import { createPost, createReply, getPosts } from '../server/posts';
-import { handleTopicSearch } from '../server/topics';
-import { handleUsernameSearch } from '../server/users';
+import { getTopics } from '../server/topics';
+import { handleUserSearch } from '../server/users';
 import { Message as EMessage, MessageType as EMessageType } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import { Message, MessageType } from '../utils/chrome/tabs';
 
-get(null).then(items => console.log(items));
+// get(null).then(items => console.log(items));
 
 export const socket = io.connect(BACKEND_URL);
 
-socket.on('notifications', async (notifications: INotification[]) => {
-  await set({ notifications });
+socket.on('notifications', async (notifications: INotification[], meta: number) => {
+  await set({ 
+    notifications,
+    notificationDisplayIcon: meta
+  });
 });
 
 socket.on('notification', async (n: Notification) => {
@@ -70,16 +73,18 @@ chrome.runtime.onMessage.addListener(async (
     case MessageType.GetTabId:
       sendResponse(sender.tab?.id);
       break;
-    case MessageType.HandleUsernameSearch: {
-      if (!message.name) return;
-      const res = await handleUsernameSearch(message.name);
-      sendResponse(res.users);
+    case MessageType.HandleUserSearch: {
+      if (!message.text) return;
+      const res = await handleUserSearch(message.text);
+      sendResponse(res);
       break;
     }
-    case MessageType.HandleTopicSearch: {
-      if (!message.topic) return;
-      const res = await handleTopicSearch(message.topic);
-      sendResponse(res.topics);
+    case MessageType.HandleTopicSearch || MessageType.GetTopics: {
+      const res = await getTopics(!message.text
+        ? {}
+        : { text: message.text }
+      );
+      sendResponse(res);
       break;
     }
     case MessageType.Sync:

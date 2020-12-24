@@ -10,6 +10,7 @@ export interface TextRange {
  * Serialize selection through text content instead of range.
  */
 export const getTextRangeFromRange = (range: Range): TextRange => {
+  const ss1 = new SelectionStore().saveSelection();
   const s = getSelection()!;
   s.removeAllRanges();
   s.addRange(range);
@@ -17,7 +18,7 @@ export const getTextRangeFromRange = (range: Range): TextRange => {
   const fn = s.focusNode!;
   const fo = s.focusOffset;
 
-  const ss = new SelectionStore().saveSelection();
+  const ss2 = new SelectionStore().saveSelection();
   const pageText = getPageText();
 
   // In case the selected text isn't unique on the current page, we grab context before and after 
@@ -27,7 +28,7 @@ export const getTextRangeFromRange = (range: Range): TextRange => {
   let uniqueTextStartIdx = 0;
   while (isTextUnique(uniqueText, pageText) !== 1) {
     uniqueTextOffset += 5;
-    ss.restoreSelection();
+    ss2.restoreSelection();
     s.collapseToStart();
     for (let i = 0; i < uniqueTextOffset; i++) s.modify('extend', 'left', 'character');
     s.collapseToStart();
@@ -38,7 +39,7 @@ export const getTextRangeFromRange = (range: Range): TextRange => {
   }
 
   // Get context
-  ss.restoreSelection();
+  ss2.restoreSelection();
   s.collapseToStart();
   for (let i = 0; i < 10; i++) s.modify('extend', 'left', 'word');
   s.collapseToStart();
@@ -46,8 +47,7 @@ export const getTextRangeFromRange = (range: Range): TextRange => {
   const contextStartIdx = s.toString().lastIndexOf(text);
   for (let i = 0; i < 10; i++) s.modify('extend', 'right', 'word');
   const context = s.toString();
-  s.removeAllRanges();
-
+  ss1.restoreSelection();
   return { context, contextStartIdx, text, uniqueTextStartIdx, uniqueText };
 }
 
@@ -56,6 +56,8 @@ export const getTextRangeFromRange = (range: Range): TextRange => {
  * TODO: account for case where selection is no longer unique upon deserialization.
  */
 export const getRangeFromTextRange = (tr: TextRange) => {
+  const ss1 = new SelectionStore().saveSelection();
+
   // Irritatingly, text split across divs is represented with '\n\n' in selection.toString(),
   // but selection.modify() traverses the two characters with one hop. Not sure if \n\n\n+ needs to
   // be reduced as well.
@@ -67,11 +69,11 @@ export const getRangeFromTextRange = (tr: TextRange) => {
   const line = uniqueTextReduced.split('\n').reduce((s1, s2) => s1.length >= s2.length ? s1 : s2);
   const s = getSelection()!;
   s.removeAllRanges();
-  const ss = new SelectionStore();
+  const ss2 = new SelectionStore();
 
   // Check to see if each hit for line is the one we want
   while (window.find(line, true, false)) {
-    ss.saveSelection();
+    ss2.saveSelection();
 
     // Expand current selection (line) to uniqueText
     s.collapseToStart();
@@ -82,23 +84,28 @@ export const getRangeFromTextRange = (tr: TextRange) => {
 
     // Shrink selected uniqueText to text
     if (s.toString() === tr.uniqueText) {
-      if (tr.uniqueText === tr.text) return s.getRangeAt(0);
+      if (tr.uniqueText === tr.text) {
+        const range = s.getRangeAt(0).cloneRange();
+        ss1.restoreSelection();
+        return range;
+      }
+
       s.collapseToStart();
       const m2 = textPrefixReduced.length;
       const e2 = textReduced.length;
       for (let i = 0; i < m2; i++) s.modify('move', 'right', 'character');
       for (let i = 0; i < e2; i++) s.modify('extend', 'right', 'character');
       const range = s.getRangeAt(0).cloneRange();
-      s.removeAllRanges();
+      ss1.restoreSelection();
       return range;
     } else {
       // This wasn't the correct hit, so restore selection for next pass of window.find
-      ss.restoreSelection();
+      ss2.restoreSelection();
     }
   }
 
   console.error("Couldn't find Range corresponding to text:", tr.text);
-  s.removeAllRanges();
+  ss1.restoreSelection();
   return null;
 }
 
@@ -108,8 +115,8 @@ export const getRangeFromTextRange = (tr: TextRange) => {
  * @param tr2 
  */
 export const areTextRangesEqual = (tr1: TextRange, tr2: TextRange): boolean => {
-  return tr1.uniqueText === tr2.uniqueText 
-    && tr1.uniqueTextStartIdx === tr2.uniqueTextStartIdx 
+  return tr1.uniqueText === tr2.uniqueText
+    && tr1.uniqueTextStartIdx === tr2.uniqueTextStartIdx
     && tr1.text === tr2.text;
 }
 
@@ -139,7 +146,7 @@ const isTextUnique = (text: string, memoPageText?: string): number => {
 export const getPageText = () => {
   const range = document.createRange();
   range.selectNodeContents(document.body);
-  
+
   const selection = getSelection()!;
   selection.removeAllRanges();
   selection.addRange(range);
@@ -153,14 +160,19 @@ class SelectionStore {
   range: Range | null = null;
 
   saveSelection = () => {
-    this.range = getSelection()!.getRangeAt(0).cloneRange();
+    const selection = getSelection()!;
+    if (selection.rangeCount > 0) {
+      this.range = selection.getRangeAt(0).cloneRange();
+    }
+
     return this;
   }
 
   restoreSelection = () => {
-    if (!this.range) return null;
     const s = getSelection()!;
     s.removeAllRanges();
+
+    if (!this.range) return null;
     s.addRange(this.range);
     return this.range;
   }

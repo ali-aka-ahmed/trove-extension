@@ -1,2 +1,3 @@
 import { BACKEND_URL, LOGGING, ORIGIN, VALID_DOMAINS } from './config.prod';
 export { LOGGING, ORIGIN, BACKEND_URL, VALID_DOMAINS };
+

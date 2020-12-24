@@ -6,7 +6,7 @@ export interface Message {
   id?: string;
   name?: string;
   post?: CreatePostReqBody;
-  topic?: string;
+  text?: string;
   url?: string;
 }
 
@@ -15,7 +15,8 @@ export enum MessageType {
   CreateReply,
   GetPosts,
   GetTabId,
-  HandleUsernameSearch,
+  HandleUserSearch,
+  GetTopics,
   HandleTopicSearch,
   Sync,
 }
@@ -63,6 +64,7 @@ export const sendMessageToExtension = (message: Message) => {
         console.error(err);
         reject(err);
       } else {
+        // console.log('resolve')
         resolve(response);
       }
     });
