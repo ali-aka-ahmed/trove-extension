@@ -7,4 +7,6 @@ export default interface IUser {
   following?: number;
   followers?: number;
   likes?: number;
+  followsYou?: boolean;
+  followingProfile?: boolean;
 }

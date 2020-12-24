@@ -13,8 +13,11 @@ import { Message, MessageType } from '../utils/chrome/tabs';
 
 export const socket = io.connect(BACKEND_URL);
 
-socket.on('notifications', async (notifications: INotification[]) => {
-  await set({ notifications });
+socket.on('notifications', async (notifications: INotification[], meta: number) => {
+  await set({ 
+    notifications,
+    notificationDisplayIcon: meta
+  });
 });
 
 socket.on('notification', async (n: Notification) => {
