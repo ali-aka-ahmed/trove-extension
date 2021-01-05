@@ -1,4 +1,4 @@
-import { ForgotReqBody, LoginReqBody } from '../../../server/auth';
+import { ForgotReqBody, LoginReqBody } from '../../../app/server/auth';
 
 export const validateUsername = (username: string): { success: boolean, message?: string } => {
   if (username.length === 0) {

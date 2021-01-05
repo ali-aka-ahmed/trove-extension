@@ -11,7 +11,8 @@ module.exports = merge(common, {
       entries: {
         background: 'background',
         contentScript: 'content',
-        extensionPage: 'popup'
+        extensionPage: 'popup',
+        socket: 'socket'
       }
     })
   ]

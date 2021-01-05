@@ -1,7 +1,7 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Switch } from 'antd';
 import React, { useState } from 'react';
-import { socket } from '../../../app/background';
+import { socket } from '../../../app/socket';
 import { MessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { get, remove, set } from '../../../utils/chrome/storage';
 import './style.scss';

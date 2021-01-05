@@ -2,9 +2,10 @@ import { EditOutlined, LoadingOutlined, SaveOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import Color from 'color';
 import React, { useState } from 'react';
+import { IUserRes } from '../../../app/server/users';
 import IUser from '../../../models/IUser';
-import { updateColor, updateDisplayName, updateUsername } from '../../../server/users';
 import { set } from '../../../utils/chrome/storage';
+import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import ColorPicker from '../../colorPicker';
 import { validateDisplayName, validateUsername } from '../helpers/auth';
 import '../style.scss';
@@ -31,74 +32,50 @@ export default function Profile({ user }: ProfileProps) {
     setShowEditIcon(null);
   }
 
-  const saveDisplayName = async () => {
-    if (displayName === user.displayName) {
-      setEditable(null);
-      setShowError(null);
-      return;
-    }    
-    setLoading('displayName');
-    const vRes = validateDisplayName(displayName)
-    if (!vRes.success) {
-      setShowError('displayName');
-      setErrorMessage(vRes.message || 'Please enter a name!');
-      setLoading(null);
-      return;
-    }
-    const res = await updateDisplayName(displayName);
-    if (res.success) {
-      await set({ user: res.user });
-      setEditable(null);
-      setShowError(null);
-    } else {
-      setShowError('displayName');
-      setErrorMessage(res.message);
-    }
-    setLoading(null);
-  }
+  const updateProfile = async (args: {
+    color?: string;
+    username?: string;
+    displayName?: string;
+  }) => {
+    let argString: 'color' | 'username' | 'displayName' | null = null;
+    if (args.color) argString = 'color';
+    else if (args.username) argString = 'username';
+    else if (args.displayName) argString = 'displayName';
 
-  const saveUsername = async () => {
-    if (username === user.username) {
+    if (args.color === user.color
+      || args.username === user.username
+      || args.displayName === user.displayName
+    ) {
       setEditable(null);
       setShowError(null);
       return;
     }
-    setLoading('username');
-    const vRes = validateUsername(username)
-    if (!vRes.success) {
-      setShowError('username');
-      setErrorMessage(vRes.message || 'Invalid username!');
-      setLoading(null);
-      return;
-    }
-    const res = await updateUsername(username);
-    if (res.success) {
-      await set({ user: res.user });
-      setEditable(null);
-      setShowError(null);
-    } else {
-      setShowError('username');
-      setErrorMessage(res.message);
-    }
-    setLoading(null);
-  }
+    setLoading(argString);
 
-  const saveColor = async (newColor: string) => {
-    if (newColor === user.color) {
-      setEditable(null);
-      setShowError(null);
-      return;
+    if (args.username || args.displayName) {
+      const vRes = args.username ? validateUsername(username) : validateDisplayName(displayName)
+      if (!vRes.success) {
+        setShowError(argString);
+        setErrorMessage(vRes.message || 'Invalid. Try again!');
+        setLoading(null);
+        return;
+      }
     }
-    setLoading('color');
-    const res = await updateColor(newColor);
-    if (res.success) {
-      await set({ user: res.user });
-      setEditable(null);
-      setShowError(null);
-    } else {
-      setShowError('color');
-      setErrorMessage(res.message);
-    }
+
+    sendMessageToExtension({
+      type: MessageType.UpdateUser,
+      updateUserArgs: args
+    }).then((res: IUserRes) => {
+      if (res.success) {
+        set({ user: res.user }).then(() => {
+          setEditable(null);
+          setShowError(null);
+        });
+      } else {
+        setShowError(argString);
+        setErrorMessage(res.message);
+      }
+    })
     setLoading(null);
   }
   
@@ -126,7 +103,7 @@ export default function Profile({ user }: ProfileProps) {
               />
               <div 
                 className="TbdProfile__SaveIcon TbdProfile__SaveIcon--display-name"
-                onClick={saveDisplayName}
+                onClick={() => updateProfile({ displayName })}
               >
                 {loading === 'displayName' ? <LoadingOutlined /> : <SaveOutlined />}
               </div>
@@ -159,7 +136,7 @@ export default function Profile({ user }: ProfileProps) {
               />
               <div 
                 className="TbdProfile__SaveIcon TbdProfile__SaveIcon--username"
-                onClick={saveUsername}
+                onClick={() => updateProfile({ username })}
               >
                 {loading === 'username' ? <LoadingOutlined /> : <SaveOutlined />}
               </div>
@@ -189,7 +166,7 @@ export default function Profile({ user }: ProfileProps) {
             Accent Color
             {loading === 'color' && <div className="TbdProfile__Loading"><LoadingOutlined /></div>}
           </div>
-          <ColorPicker onSelect={saveColor} defaultColor={user.color} />
+          <ColorPicker onSelect={(color) => updateProfile({ color })} defaultColor={user.color} />
         </div>
       ) : (
         <div

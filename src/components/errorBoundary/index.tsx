@@ -1,7 +1,9 @@
 import React from 'react';
+import { AxiosRes } from '../../app/server';
+import { ErrorOrigin, ErrorReqBody } from '../../app/server/misc';
 import IExtensionError from '../../models/IExtensionError';
-import { createErrorReport, ErrorOrigin, ErrorReqBody } from '../../server/misc';
 import { get1 } from '../../utils/chrome/storage';
+import { MessageType, sendMessageToExtension } from '../../utils/chrome/tabs';
 
 interface ErrorBoundaryProps {
   origin: ErrorOrigin
@@ -43,8 +45,9 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
     const user = await get1('user');
     if (user?.id) args.userId = user.id;
     if (window.location.href) args.url = window.location.href;
-    const res = await createErrorReport(args);
-    if (res.success) console.info('Error report sent!');
+    sendMessageToExtension({ type: MessageType.Error, error: args }).then((res: AxiosRes) => {
+      if (res.success) console.info('Error report sent!');
+    });
   }
 
   render() {

@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { BACKEND_URL } from '../config';
-import { get1 } from '../utils/chrome/storage';
+import { BACKEND_URL } from '../../config';
+import { get1 } from '../../utils/chrome/storage';
 
 export const api = axios.create({
   baseURL: BACKEND_URL,

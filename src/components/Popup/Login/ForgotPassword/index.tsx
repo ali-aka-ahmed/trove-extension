@@ -1,7 +1,8 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import React, { useState } from 'react';
-import { forgotPassword } from '../../../../server/auth';
+import { AxiosRes } from '../../../../app/server';
+import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import { createForgotPasswordArgs } from '../../helpers/auth';
 import '../../style.scss';
 import '../style.scss';
@@ -26,14 +27,15 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
       setLoading(false);
       return setErrorMessage('Invalid email or phone number. Try again!');
     }
-    const res = await forgotPassword(args);
-    if (!res.success) {
+    sendMessageToExtension({ type: MessageType.ForgotPassword, forgotPasswordArgs: args }).then((res: AxiosRes) => {
+      if (!res.success) {
+        setLoading(false);
+        return setErrorMessage(res.message);
+      }
+      setSuccessScreenMessage('Password reset link sent!');
+      setForgotPasswordInput('');
       setLoading(false);
-      return setErrorMessage(res.message);
-    }
-    setSuccessScreenMessage('Password reset link sent!');
-    setForgotPasswordInput('');
-    setLoading(false);
+    })
   }
 
   if (successScreenMessage) {
