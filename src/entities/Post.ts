@@ -1,8 +1,9 @@
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
+import { AxiosRes } from '../app/server';
 import IPost from '../models/IPost';
 import ITopic from '../models/ITopic';
-import { likePost, unlikePost } from '../server/posts';
+import { MessageType, sendMessageToExtension } from '../utils/chrome/tabs';
 import Highlight from './Highlight';
 import Topic from './Topic';
 import User from './User';
@@ -67,15 +68,23 @@ export default class Post implements IPost {
     this.topics.unshift(new Topic(newTopic));
   }
 
-  likePost = async () => {
-    const res = await likePost(this.id);
-    if (res.success) this.numLikes += 1
-    return res
+  likePost = () => {
+    return sendMessageToExtension({
+      type: MessageType.LikePost,
+      id: this.id
+    }).then((res: AxiosRes) => {
+      if (res.success) this.numLikes += 1
+      return res
+    })
   }
 
-  unlikePost = async () => {
-    const res = await unlikePost(this.id);
-    if (res.success) this.numLikes -= 1
-    return res
+  unlikePost = () => {
+    return sendMessageToExtension({
+      type: MessageType.UnlikePost,
+      id: this.id
+    }).then((res: AxiosRes) => {
+      if (res.success) this.numLikes -= 1
+      return res
+    })
   }
 };

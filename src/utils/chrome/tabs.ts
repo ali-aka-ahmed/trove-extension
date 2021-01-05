@@ -1,5 +1,8 @@
 import { toArray } from "..";
-import { CreatePostReqBody } from "../../server/posts";
+import { ForgotReqBody, LoginReqBody } from "../../app/server/auth";
+import { ErrorReqBody } from "../../app/server/misc";
+import { CreatePostReqBody } from "../../app/server/posts";
+import { UpdateUserReqBody } from "../../app/server/users";
 
 export interface Message {
   type: MessageType;
@@ -8,6 +11,10 @@ export interface Message {
   post?: CreatePostReqBody;
   text?: string;
   url?: string;
+  loginArgs?: LoginReqBody;
+  error?: ErrorReqBody;
+  forgotPasswordArgs?: ForgotReqBody;
+  updateUserArgs?: UpdateUserReqBody;
 }
 
 export enum MessageType {
@@ -19,6 +26,12 @@ export enum MessageType {
   GetTopics,
   HandleTopicSearch,
   Sync,
+  Login,
+  Error,
+  ForgotPassword,
+  UpdateUser,
+  LikePost,
+  UnlikePost,
 }
 
 export interface Response {
@@ -41,7 +54,7 @@ export const sendMessageToTab = (
 
   const promises = tabIds.map((tabId) => new Promise((resolve, reject) => {
     chrome.tabs.sendMessage(tabId, message, (response: Response) => {
-      resolve();
+      // resolve();
       // if (response.complete) {
       //   console.log('sent message', message, tabId)
       //   resolve();

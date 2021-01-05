@@ -3,5 +3,6 @@ export default interface ITopic {
   creationDatetime: number;
   lastEdited: number;
   text: string;
+  normalizedText: string; // lowercase, trimmed. Unique
   color: string; // hex code
 }

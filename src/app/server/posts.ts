@@ -1,8 +1,8 @@
 import { api, AxiosRes, BaseParams, BaseRes } from '.';
-import { TextRange } from '../components/TooltipWrapper/Tooltip/helpers/highlight/textRange';
-import IPost from '../models/IPost';
-import ITopic from '../models/ITopic';
-import IUser from '../models/IUser';
+import { TextRange } from '../../components/TooltipWrapper/Tooltip/helpers/highlight/textRange';
+import IPost from '../../models/IPost';
+import ITopic from '../../models/ITopic';
+import IUser from '../../models/IUser';
 import { IUserRes } from './users';
 
 export type IPostsRes = PostsRes & AxiosRes;

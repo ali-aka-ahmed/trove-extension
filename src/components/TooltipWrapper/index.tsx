@@ -1,7 +1,7 @@
 import antdStyles from 'antd/dist/antd.min.css?inject';
 import React from 'react';
 import quillStyles from 'react-quill/dist/quill.bubble.css?inject';
-import { ErrorOrigin } from '../../server/misc';
+import { ErrorOrigin } from '../../app/server/misc';
 import ErrorBoundary from '../errorBoundary/index';
 import './index.scss';
 import Tooltip from './Tooltip';

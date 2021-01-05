@@ -1,11 +1,12 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import React, { useState } from 'react';
-import { socket } from '../../../app/background';
+import { IAuthRes } from '../../../app/server/auth';
+import { socket } from '../../../app/socket';
 import User from '../../../entities/User';
-import { login } from '../../../server/auth';
-import { MessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
+import { MessageType as EMessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { set } from '../../../utils/chrome/storage';
+import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import { createLoginArgs } from '../helpers/auth';
 import '../style.scss';
 import ForgotPassword from './ForgotPassword';
@@ -24,28 +25,28 @@ export default function Login({}: LoginProps) {
   const handleUsernameInput = (e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
   const handlePasswordInput = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     if (username === '') return setErrorMessage('Enter your phone number, email or username');
     if (password === '') return setErrorMessage('Enter your password');
     setLoading(true);
     const args = createLoginArgs(username, password);
-    const res = await login(args);
-    if (!res.success) {
+    sendMessageToExtension({ type: MessageType.Login, loginArgs: args }).then((res: IAuthRes) => {
+      if (!res.success) {
+        setLoading(false);
+        return setErrorMessage(res.message);
+      }
+      socket.emit('join room', res.user?.id);
+      sendMessageToWebsite({ type: EMessageType.Login, user: res.user, token: res.token })
+      setUsername('');
+      setPassword('');
       setLoading(false);
-      return setErrorMessage(res.message);
-    }
-    socket.emit('join room', res.user?.id);
-    await sendMessageToWebsite({ type: MessageType.Login, user: res.user, token: res.token })
-    setUsername('');
-    setPassword('');
-    setLoading(false);
-    await set({
-      user: new User(res.user!),
-      token: res.token,
-      isExtensionOn: true,
-      notificationDisplayIcon: 0
-    });
-    await set({ isAuthenticated: true });
+      set({
+        user: new User(res.user!),
+        token: res.token,
+        isExtensionOn: true,
+        notificationDisplayIcon: 0
+      }).then(() => set({ isAuthenticated: true }));
+    })
   }
 
   if (showForgotPassword) {
