@@ -1,7 +1,7 @@
 import { api, AxiosRes, BaseRes } from '.';
-import IUser from '../models/IUser';
+import IUser from '../../models/IUser';
 
-type IAuthRes = AuthRes & AxiosRes;
+export type IAuthRes = AuthRes & AxiosRes;
 
 export const login = async (args: LoginReqBody): Promise<IAuthRes> => {
   return await api.post('/auth/login', args);

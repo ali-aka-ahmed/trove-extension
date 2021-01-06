@@ -1,8 +1,9 @@
+import { debounce } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
+import { ITopicsRes } from '../../../../app/server/topics';
 import { DEFAULT_TOPIC_COLOR } from '../../../../constants';
 import ITopic from '../../../../models/ITopic';
-import { ITopicsRes } from '../../../../server/topics';
 import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
 import Pill from '../pill';
 
@@ -101,26 +102,37 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
   }
 
   const suggestTopics = async (text: string) => {
-    sendMessageToExtension({ type: MessageType.HandleTopicSearch, text }).then((res: ITopicsRes) => {
-      if (!res.success) return;
-      const existingTopics = res.topics!;
-      if (existingTopics.some((topic) => topic.text === text)) {
-        setNewTopic(null);
-        if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
-      } else {
-        const newTopic: ITopic = { 
-          color,
-          creationDatetime: Date.now(),
-          lastEdited: Date.now(),
-          id: uuid(),
-          text: text.trim(), 
-        };
-        setNewTopic(newTopic)
-      }
-  
-      setSuggestedTopics(existingTopics);
-      if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
-    });    
+    const debouncedSuggestTopics = debounce(async (text) => {
+      await sendMessageToExtension({ type: MessageType.HandleTopicSearch, text: text.trim() }).then((res: ITopicsRes) => {
+        if (!res.success) return;
+        const normalizedText = text.trim().toLowerCase();
+        const existingTopics = res.topics!;
+        setSuggestedTopics(existingTopics);
+        if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
+        if (existingTopics.some((topic) => topic.normalizedText === normalizedText)) {
+          setNewTopic(null);
+          if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
+        }
+      });    
+    }, 0);
+
+    await debouncedSuggestTopics(text);
+
+    const normalizedText = text.trim().toLowerCase();
+    if (suggestedTopics.some((topic) => topic.normalizedText === normalizedText)) {
+      setNewTopic(null);
+      if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
+    } else {
+      const newTopic: ITopic = { 
+        color,
+        creationDatetime: Date.now(),
+        lastEdited: Date.now(),
+        id: uuid(),
+        text: text.trim(),
+        normalizedText, 
+      };
+      setNewTopic(newTopic) 
+    }
   }
 
   const renderSuggestedTopics = () => {

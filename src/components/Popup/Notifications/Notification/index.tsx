@@ -1,7 +1,7 @@
 import Color from 'color';
 import React from 'react';
 import ReactQuill from 'react-quill';
-import { socket } from '../../../../app/background';
+import { socket } from '../../../../app/socket';
 import NotificationObject from '../../../../entities/Notification';
 import { get1, set } from '../../../../utils/chrome/storage';
 import '../../style.scss';
