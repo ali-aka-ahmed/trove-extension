@@ -234,14 +234,19 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (isAuthenticated && isExtensionOn && !didInitialGetPosts) {
       const url = window.location.href;
+      console.log('Getting posts for url:', url)
       sendMessageToExtension({ type: MessageType.GetPosts, url })
         .then((res: IPostsRes) => {
           if (res.success) {
+            console.log('Successfully retrieved posts:', res.posts)
             setDidInitialGetPosts(true);
             const newPosts = res.posts!.map((p) => new Post(p));
             addPosts(newPosts, HighlightType.Default);
-          };
-        });
+          } else {
+            console.log('Failed to retrieve posts:', res)
+          }
+        })
+        .catch((e) => console.error('Errored while getting posts:', e));
     } else if ((!isAuthenticated || !isExtensionOn) && posts.length > 0) {
       removePosts(posts);
     }
@@ -413,15 +418,22 @@ export default function Tooltip(props: TooltipProps) {
       setTopics([]);
 
       // Show actual highlight when we get response from server
-      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then((res: IPostRes) => {
-        if (res.success && res.post) {
-          removeTempHighlight();
-          addPosts(new Post(res.post), HighlightType.Default);
-        } else {
-          // Show that highlighting failed
-          throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
-        }
-      });
+      console.log('Creating post:', postReq)
+      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq })
+        .then((res: IPostRes) => {
+          if (res.success && res.post) {
+            console.log('Creating post was successful. Response:', res.post)
+            removeTempHighlight();
+            addPosts(new Post(res.post), HighlightType.Default);
+          } else {
+            // Show that highlighting failed
+            console.log('Failed to create post:', res.message)
+            throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
+          }
+        }).catch((err) => {
+          console.error('Errored while creating post: ', err)
+          throw err
+        });
     }
   }
 
@@ -434,10 +446,10 @@ export default function Tooltip(props: TooltipProps) {
             'TbdTooltip--position-below': positionEdge === Edge.Bottom,
             'TbdTooltip--readonly': true
           })}
-          style={{ 
-            transform: `translate3d(${position.x}px, ${position.y}px, 0px)`, 
-            display: !hoveredPost.content && hoveredPost.topics.length === 0 
-              ? 'flex' 
+          style={{
+            transform: `translate3d(${position.x}px, ${position.y}px, 0px)`,
+            display: !hoveredPost.content && hoveredPost.topics.length === 0
+              ? 'flex'
               : undefined
           }}
         >
@@ -483,26 +495,26 @@ export default function Tooltip(props: TooltipProps) {
               onMouseDown={onMouseDownTooltip}
               style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
             >
-                <div className="TroveTooltip__Profile">
-              <div
-                className="TroveTooltip__ProfileImg"
-                style={{
-                  backgroundColor: user?.color,
-                  color: Color(user?.color).isLight() ? 'black' : 'white',
-                }}
-              >
-                {user?.displayName[0]}
-              </div>
-              <div className="TroveTooltip__ProfileInfo">
-                <div className="TroveTooltip__DisplayName">{user?.displayName}</div>
+              <div className="TroveTooltip__Profile">
                 <div
-                  className="TroveTooltip__Username"
-                  style={{ color: user?.color }}
+                  className="TroveTooltip__ProfileImg"
+                  style={{
+                    backgroundColor: user?.color,
+                    color: Color(user?.color).isLight() ? 'black' : 'white',
+                  }}
                 >
-                  {`@${user?.username}`}
+                  {user?.displayName[0]}
+                </div>
+                <div className="TroveTooltip__ProfileInfo">
+                  <div className="TroveTooltip__DisplayName">{user?.displayName}</div>
+                  <div
+                    className="TroveTooltip__Username"
+                    style={{ color: user?.color }}
+                  >
+                    {`@${user?.username}`}
+                  </div>
                 </div>
               </div>
-            </div>
               {renderTopics()}
               <ReactQuill
                 className="TroveTooltip__Editor"
