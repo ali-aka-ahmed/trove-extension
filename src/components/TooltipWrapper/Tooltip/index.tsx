@@ -234,8 +234,6 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (isAuthenticated && isExtensionOn && !didInitialGetPosts) {
       const url = window.location.href;
-      console.log(url)
-      console.log(new URL(url).hostname)
       sendMessageToExtension({ type: MessageType.GetPosts, url })
         .then((res: IPostsRes) => {
           if (res.success) {
