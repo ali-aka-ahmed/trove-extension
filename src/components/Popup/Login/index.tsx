@@ -3,6 +3,7 @@ import { Alert } from 'antd';
 import React, { useState } from 'react';
 import { IAuthRes } from '../../../app/server/auth';
 import { socket } from '../../../app/socket';
+import { ORIGIN } from '../../../config';
 import User from '../../../entities/User';
 import { MessageType as EMessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { set } from '../../../utils/chrome/storage';
@@ -49,6 +50,8 @@ export default function Login({}: LoginProps) {
     })
   }
 
+  const goToSignup = () => chrome.tabs.update({url: ORIGIN});
+
   if (showForgotPassword) {
     return <ForgotPassword goToLogin={() => setShowForgotPassword(false)} />
   } else return (
@@ -94,6 +97,9 @@ export default function Login({}: LoginProps) {
         ) : (
           <div className='TbdAuth__Loading'><LoadingOutlined /></div>
         )}
+        <div className='TbdLogin__SignupHere' onClick={goToSignup}>
+          or signup here
+        </div>
       </div>
       <div className={`TbdAuth__Error ${errorMessage 
           ? 'TbdAuth__Error--show' 

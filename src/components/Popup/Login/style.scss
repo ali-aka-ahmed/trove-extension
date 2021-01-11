@@ -116,3 +116,15 @@
 .TbdLogin__ForgotPassword:hover {
   text-decoration: underline;
 }
+
+.TbdLogin__SignupHere {
+  font-size: 10px;
+  cursor: pointer;
+  width: fit-content;
+  height: fit-content;
+  margin-left: 7px;
+}
+
+.TbdLogin__SignupHere:hover {
+  text-decoration: underline;
+}
