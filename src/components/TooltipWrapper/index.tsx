@@ -18,7 +18,7 @@ interface TooltipWrapperProps {
 export default function TooltipWrapper(props: TooltipWrapperProps) {
   const url = new URL(window.location.href)
   if (EXCLUDED_HOSTNAMES.includes(url.hostname)) return <div/>;
-  return (
+  else return (
     <>
       <ErrorBoundary origin={ErrorOrigin.ContentScript}>
         <Tooltip root={props.root} />

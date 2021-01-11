@@ -86,20 +86,22 @@ export default function Login({}: LoginProps) {
           Forgot password?
         </div>
       </div>
-      <div className='TbdAuth__ButtonWrapper'>
+      <div className='TbdAuth__ButtonWrapper--login'>
         {!loading ? (
-          <button
-            className='TbdAuth__Button'
-            onClick={handleLogin}
-          >
-            Login
-          </button>
+          <>
+            <button
+              className='Trove__Button'
+              onClick={handleLogin}
+            >
+              Login
+            </button>
+            <div className='TbdLogin__SignupHere' onClick={goToSignup}>
+              or signup here
+            </div>
+          </>
         ) : (
           <div className='TbdAuth__Loading'><LoadingOutlined /></div>
         )}
-        <div className='TbdLogin__SignupHere' onClick={goToSignup}>
-          or signup here
-        </div>
       </div>
       <div className={`TbdAuth__Error ${errorMessage 
           ? 'TbdAuth__Error--show' 

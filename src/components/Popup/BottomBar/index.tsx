@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { socket } from '../../../app/socket';
 import { MessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { get, remove, set } from '../../../utils/chrome/storage';
+import '../style.scss';
 import './style.scss';
 
 interface BottomBarProps {
@@ -49,7 +50,7 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
       <div className='TbdPopupContainer__ButtonWrapper'>
         {!logoutLoading ? (
           <button
-            className='TbdPopupContainer__Button'
+            className='Trove__Button'
             onClick={handleLogout}
           >
             Logout

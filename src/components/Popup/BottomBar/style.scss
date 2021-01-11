@@ -1,0 +1,36 @@
+@import '../../../styles/general.scss';
+@import '../../Popup/style.scss';
+
+.TbdPopupContainer__OnOffTextWrapper {
+  display: flex;
+}
+
+.TbdPopupContainer__OnOff {
+  margin-left: 5px;
+  margin-right: 7px;
+  font-size: 13px;
+}
+
+.TbdPopupContainer__OnOff--bold {
+  font-weight: 700;
+}
+
+.TbdPopupContainer__OnOffWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.TbdPopupContainer__BottomWrapper {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 5px 15px;
+  position: fixed;
+  background-color: #F7F6F3;
+  width: 100%;
+  height: $footer-height;
+  bottom: 0;
+  border-top: 1px solid #e0e0e0;
+}

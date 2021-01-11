@@ -69,21 +69,16 @@
 .TbdAuth__ButtonWrapper {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+
+.TbdAuth__ButtonWrapper--login {
+  display: flex;
+  align-items: center;
   justify-content: flex-start;
-  margin-top: 10px;
-}
-
-.TbdAuth__Button {
-  @include TbdFont;
-  cursor: pointer;
-  transition: 150ms;
-}
-
-.TbdAuth__Button--cancel {
-  @include TbdFont;
-  cursor: pointer;
-  transition: 150ms;
-  margin-left: 5px;
+  margin-top: 15px;
 }
 
 .TbdAuth__Error {

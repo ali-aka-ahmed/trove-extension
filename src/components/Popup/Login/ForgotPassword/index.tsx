@@ -48,7 +48,7 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
         </div>
         <div className='TbdAuth__ButtonWrapper--success'>
           <button
-            className='TbdAuth__Button'
+            className='Trove__Button--secondary'
             onClick={goToLogin}
           >
             Back
@@ -76,9 +76,15 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
         </div>
       </div>
       <div className='TbdAuth__ButtonWrapper'>
+        <button
+          className='Trove__Button--secondary'
+          onClick={goToLogin}
+        >
+          Cancel
+        </button>
         {!loading ? (
           <button
-            className='TbdAuth__Button'
+            className='Trove__Button'
             onClick={handleForgotPasswordSubmit}
           >
             Submit
@@ -86,12 +92,6 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
         ) : (
           <div className='TbdAuth__Loading'><LoadingOutlined /></div>
         )}
-        <button
-          className='TbdAuth__Button--cancel'
-          onClick={goToLogin}
-        >
-          Cancel
-        </button>
       </div>
       <div className={`TbdAuth__Error ${errorMessage 
           ? 'TbdAuth__Error--show' 
