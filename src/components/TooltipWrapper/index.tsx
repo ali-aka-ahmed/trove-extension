@@ -2,6 +2,7 @@ import antdStyles from 'antd/dist/antd.min.css?inject';
 import React from 'react';
 import quillStyles from 'react-quill/dist/quill.bubble.css?inject';
 import { ErrorOrigin } from '../../app/server/misc';
+import { EXCLUDED_HOSTNAMES } from '../../constants';
 import ErrorBoundary from '../errorBoundary/index';
 import './index.scss';
 import Tooltip from './Tooltip';
@@ -15,6 +16,8 @@ interface TooltipWrapperProps {
 }
 
 export default function TooltipWrapper(props: TooltipWrapperProps) {
+  const url = new URL(window.location.href)
+  if (EXCLUDED_HOSTNAMES.includes(url.hostname)) return <div/>;
   return (
     <>
       <ErrorBoundary origin={ErrorOrigin.ContentScript}>

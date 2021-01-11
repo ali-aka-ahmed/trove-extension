@@ -10,3 +10,10 @@ export const DEFAULT_TOPIC_COLORS = [
   '#F8CCE6', // pink
   '#FFCCD1', // red
 ];
+export const EXCLUDED_HOSTNAMES = [
+  'messenger.com',
+  'www.messenger.com',
+  'trove.so',
+  'www.trove.so',
+  'localhost',
+]
