@@ -29,10 +29,6 @@ export interface ForgotReqBody {
   phoneNumber?: string; // include country code ex. 13017872508
 }
 
-/** ************************* */
-/** ********** RES ********** */
-/** ************************* */
-
 /**
  * POST /auth/signup
  * POST /auth/login

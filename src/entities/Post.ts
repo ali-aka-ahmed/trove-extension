@@ -60,6 +60,14 @@ export default class Post implements IPost {
     return this.liked;
   }
 
+  get displayUrl(): string {
+    let hostname = new URL(this.url).hostname;
+    if (hostname.slice(0, 4) === 'www.') hostname = hostname.slice(4);
+    let path = new URL(this.url).pathname;
+    if (path.slice(-1) === '/') path = path.slice(0, -1)
+    return `${hostname}${path}`
+  }
+
   removeTopic = (topicId: string) => {
     this.topics = this.topics.filter((t) => t.id !== topicId)
   }

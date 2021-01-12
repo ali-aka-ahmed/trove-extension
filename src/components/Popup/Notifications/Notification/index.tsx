@@ -48,7 +48,7 @@ export default function Notification({ notification }: NotificationProps) {
             </span>
           </div>
           <div className="TbdNotificationWrapper__NotificationDetails">
-            {`${notification.time} ${notification.url ? `· ${notification.domain}${notification.path}` : ''}`}
+            {`${notification.time} ${notification.displayUrl ? `· ${notification.domain}${notification.path}` : ''}`}
           </div>
         </div>
       </div>
