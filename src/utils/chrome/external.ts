@@ -4,6 +4,7 @@ import { getAllTabs } from './tabs';
 
 /**
  * Typing for messages sent from website to extension.
+ * Make sure the same values exist in the extension.
  */
 export interface Message {
   type: MessageType;
@@ -13,6 +14,7 @@ export interface Message {
 
 /**
  * MessageTypes for message sent from website to extension.
+ * Make sure we have the same values in the extension.
  */
 export enum MessageType {
   IsAuthenticated = 'IS_AUTHENTICATED',

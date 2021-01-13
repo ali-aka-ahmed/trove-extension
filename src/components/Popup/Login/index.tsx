@@ -2,12 +2,11 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import React, { useState } from 'react';
 import { IAuthRes } from '../../../app/server/auth';
-import { socket } from '../../../app/socket';
 import { ORIGIN } from '../../../config';
 import User from '../../../entities/User';
 import { MessageType as EMessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { set } from '../../../utils/chrome/storage';
-import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import { MessageType, sendMessageToExtension, SocketMessageType } from '../../../utils/chrome/tabs';
 import { createLoginArgs } from '../helpers/auth';
 import '../style.scss';
 import ForgotPassword from './ForgotPassword';
@@ -36,8 +35,8 @@ export default function Login({}: LoginProps) {
         setLoading(false);
         return setErrorMessage(res.message);
       }
-      socket.emit('join room', res.user?.id);
-      sendMessageToWebsite({ type: EMessageType.Login, user: res.user, token: res.token })
+      sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: res.user?.id });
+      sendMessageToWebsite({ type: EMessageType.Login, user: res.user, token: res.token });
       setUsername('');
       setPassword('');
       setLoading(false);

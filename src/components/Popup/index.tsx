@@ -3,11 +3,11 @@ import 'antd/dist/antd.css';
 import React, { useEffect, useState } from 'react';
 import 'react-quill/dist/quill.bubble.css';
 import { ErrorOrigin } from '../../app/server/misc';
-import { socket } from '../../app/socket';
 import Notification from '../../entities/Notification';
 import User from '../../entities/User';
 import INotification from '../../models/INotification';
 import { get, set } from '../../utils/chrome/storage';
+import { sendMessageToExtension, SocketMessageType } from '../../utils/chrome/tabs';
 import ErrorBoundary from '../errorBoundary/index';
 import BottomBar from './BottomBar';
 import Login from './Login';
@@ -65,7 +65,7 @@ export default function Popup() {
     const zeroNotificationDisplayIcon = async () => {
       if (tabKey === "1" && user?.id) {
         await set({ notificationDisplayIcon: 0 })
-        socket.emit('opened notification tray', user.id)
+        sendMessageToExtension({ type: SocketMessageType.NotificationTrayOpened, userId: user.id })
       }
     };
     zeroNotificationDisplayIcon();

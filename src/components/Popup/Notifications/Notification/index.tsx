@@ -1,9 +1,9 @@
 import Color from 'color';
 import React from 'react';
 import ReactQuill from 'react-quill';
-import { socket } from '../../../../app/socket';
 import NotificationObject from '../../../../entities/Notification';
 import { get1, set } from '../../../../utils/chrome/storage';
+import { sendMessageToExtension, SocketMessageType } from '../../../../utils/chrome/tabs';
 import '../../style.scss';
 import '../style.scss';
 import './style.scss';
@@ -15,7 +15,7 @@ interface NotificationProps {
 export default function Notification({ notification }: NotificationProps) {
 
   const handleClick = async () => {
-    socket.emit('read notification', notification.id);
+    sendMessageToExtension({ type: SocketMessageType.ReadNotification, notificationId: notification.id });
     const ns: NotificationObject[] = await get1('notifications')
     const i = ns.findIndex((n) => n.id === notification.id)
     notification.read = true

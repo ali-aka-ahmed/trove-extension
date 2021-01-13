@@ -5,7 +5,7 @@ import { CreatePostReqBody } from "../../app/server/posts";
 import { UpdateUserReqBody } from "../../app/server/users";
 
 export interface Message {
-  type: MessageType;
+  type: MessageType | SocketMessageType;
   id?: string;
   name?: string;
   post?: CreatePostReqBody;
@@ -15,6 +15,8 @@ export interface Message {
   error?: ErrorReqBody;
   forgotPasswordArgs?: ForgotReqBody;
   updateUserArgs?: UpdateUserReqBody;
+  userId?: string;
+  notificationId?: string;
 }
 
 export enum MessageType {
@@ -32,6 +34,32 @@ export enum MessageType {
   UpdateUser,
   LikePost,
   UnlikePost,
+}
+
+/**
+ * Make sure this stays in sync with backend
+ */
+export enum SocketMessageType {
+  NotificationTrayOpened = 'Notification Tray Opened',
+  LeaveRoom = 'Leave Room',
+  JoinRoom = 'Join Room',
+  ReadNotification = 'Read Notification',
+  Notifications = 'Notifications',
+  Notification = 'Notification',
+}
+
+export const sendMessageToExtension = (message: Message) => {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, (response: any) => {
+      const err = chrome.runtime.lastError;
+      if (err) {
+        console.error(err);
+        reject(err);
+      } else {
+        resolve(response);
+      }
+    });
+  });
 }
 
 export interface Response {
@@ -67,21 +95,6 @@ export const sendMessageToTab = (
   }));
   
   return Promise.all(promises);
-}
-
-export const sendMessageToExtension = (message: Message) => {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, (response: any) => {
-      const err = chrome.runtime.lastError;
-      if (err) {
-        console.error(err);
-        reject(err);
-      } else {
-        // console.log('resolve')
-        resolve(response);
-      }
-    });
-  });
 }
 
 export const getActiveTabs = (): Promise<chrome.tabs.Tab[]> => {

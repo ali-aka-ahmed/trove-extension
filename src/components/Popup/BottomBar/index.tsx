@@ -1,9 +1,9 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Switch } from 'antd';
 import React, { useState } from 'react';
-import { socket } from '../../../app/socket';
 import { MessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { get, remove, set } from '../../../utils/chrome/storage';
+import { sendMessageToExtension, SocketMessageType } from '../../../utils/chrome/tabs';
 import '../style.scss';
 import './style.scss';
 
@@ -20,7 +20,7 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
   const handleLogout = async () => {
     setLogoutLoading(true);
     const items = await get(null);
-    if (items?.user?.id) socket.emit('leave room', items.user.id);
+    if (items?.user?.id) sendMessageToExtension({ type: SocketMessageType.LeaveRoom, userId: items.user.id })
     sendMessageToWebsite({ type: MessageType.Logout });
     await remove(Object.keys(items));
     await set({ isAuthenticated: false });

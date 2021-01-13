@@ -14,12 +14,11 @@ export default function Notifications({ notifications }: NotificationsProps) {
         No new notifications 🤟
       </div>
     )
-  }
-  return (
-    <>
+  } else return (
+    <div className="TroveNotificationWrapper">
       {notifications.map(n => (
         <Notification key={n.id} notification={n} />
       ))}
-    </>
+    </div>
   )
 };
