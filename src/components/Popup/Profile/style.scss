@@ -110,29 +110,18 @@
   @include TbdFont;
 }
 
-@mixin TbdProfileIcon {
+.TbdProfile__Icon {
   margin-left: 5px;
   display: flex;
   justify-items: center;
   align-items: center;
   color: black;
-}
-
-.TbdProfile__EditIcon {
-  @include TbdProfileIcon;
-}
-
-.TbdProfile__SaveIcon {
-  @include TbdProfileIcon;
   cursor: pointer;
-}
-
-.TbdProfile__SaveIcon--display-name {
   @include TbdFont--medium;
 }
 
-.TbdProfile__SaveIcon--username {
-  @include TbdFont;
+.TbdProfile__Icon--close {
+  color:rgb(224, 36, 94);
 }
 
 @mixin TbdProfile__EditWrapper {

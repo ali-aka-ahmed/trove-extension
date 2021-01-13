@@ -1,4 +1,4 @@
-import { EditOutlined, LoadingOutlined, SaveOutlined } from '@ant-design/icons';
+import { CloseOutlined, EditOutlined, LoadingOutlined, SaveOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import Color from 'color';
 import React, { useState } from 'react';
@@ -80,6 +80,13 @@ export default function Profile({ user }: ProfileProps) {
     })
     setLoading(null);
   }
+
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    onPressEnterFn: ( () => void ),
+  ) => {
+    if (e.key === 'Enter') onPressEnterFn()
+  }
   
   return (
     <div className="TbdProfile__Wrapper">
@@ -102,13 +109,20 @@ export default function Profile({ user }: ProfileProps) {
                 className="TbdProfile__Input TbdProfile__Input--display-name"
                 value={displayName} 
                 onChange={(e) => { setDisplayName(e.target.value) }}
+                onKeyDown={(e) => handleKeyDown(e, () => updateProfile({ displayName }))}
               />
               <div 
-                className="TbdProfile__SaveIcon TbdProfile__SaveIcon--display-name"
+                className="TbdProfile__Icon"
                 onClick={() => updateProfile({ displayName })}
               >
                 {loading === 'displayName' ? <LoadingOutlined /> : <SaveOutlined />}
               </div>
+              <div
+                className="TbdProfile__Icon TbdProfile__Icon--close"
+                onClick={() => setEditable(null)}
+              >
+                {loading !== 'displayName' && <CloseOutlined />}
+              </div>              
             </div>
           ) : (
             <div 
@@ -119,7 +133,7 @@ export default function Profile({ user }: ProfileProps) {
             >
               {displayName}
               <div 
-                className="TbdProfile__EditIcon"
+                className="TbdProfile__Icon"
                 style={showEditIcon !== 'displayName' ? { opacity: 0 } : {}}
               >
                 <EditOutlined />
@@ -135,12 +149,19 @@ export default function Profile({ user }: ProfileProps) {
                 className="TbdProfile__Input TbdProfile__Input--username"
                 value={username}
                 onChange={(e) => { setUsername(e.target.value) }}
+                onKeyDown={(e) => handleKeyDown(e, () => updateProfile({ username }))}
               />
               <div 
-                className="TbdProfile__SaveIcon TbdProfile__SaveIcon--username"
+                className="TbdProfile__Icon"
                 onClick={() => updateProfile({ username })}
               >
                 {loading === 'username' ? <LoadingOutlined /> : <SaveOutlined />}
+              </div>
+              <div
+                className="TbdProfile__Icon TbdProfile__Icon--close"
+                onClick={() => setEditable(null)}
+              >
+                {loading !== 'username' && <CloseOutlined />}
               </div>
             </div>
           ) : (
@@ -153,7 +174,7 @@ export default function Profile({ user }: ProfileProps) {
             >
               {`@${username}`}
               <div 
-                className="TbdProfile__EditIcon"
+                className="TbdProfile__Icon"
                 style={showEditIcon !== 'username' ? { opacity: 0 } : {}}
               >
                 <EditOutlined />
@@ -180,7 +201,7 @@ export default function Profile({ user }: ProfileProps) {
           <div className="TbdProfile__ColorText">Accent Color</div>
           <div className="TbdProfile__ColorPreview" style={{ backgroundColor: user.color }} />
           <div 
-            className="TbdProfile__EditIcon"
+            className="TbdProfile__Icon"
             style={showEditIcon !== 'color' ? { opacity: 0 } : {}} 
           >
             <EditOutlined />
