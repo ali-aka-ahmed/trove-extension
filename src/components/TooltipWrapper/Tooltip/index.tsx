@@ -332,6 +332,31 @@ export default function Tooltip(props: TooltipProps) {
     );
   }, [topics]);
 
+
+  const renderUserInfo = () => {
+    return (hoveredPost && hoveredPost.creator.id !== user?.id) ? (
+      <div className="TroveTooltip__Profile">
+        <div
+          className="TroveTooltip__ProfileImg"
+          style={{
+            backgroundColor: hoveredPost.creator.color,
+            color: Color(hoveredPost.creator.color).isLight() ? 'black' : 'white',
+          }}            >
+          {hoveredPost.creator.displayName[0]}
+        </div>
+        <div className="TroveTooltip__ProfileInfo">
+          <div className="TroveTooltip__DisplayName">{hoveredPost.creator.displayName}</div>
+          <div
+            className="TroveTooltip__Username"
+            style={{ color: hoveredPost.creator.color }}
+          >
+            {`@${hoveredPost.creator.username}`}
+          </div>
+        </div>
+      </div>
+    ) : null;
+  }
+
   // TODO: Store temp highlight stuff inside highlighter
   const onMouseDownTooltip = () => {
     const selection = getSelection();
@@ -434,32 +459,14 @@ export default function Tooltip(props: TooltipProps) {
             'TbdTooltip--position-below': positionEdge === Edge.Bottom,
             'TbdTooltip--readonly': true
           })}
-          style={{ 
-            transform: `translate3d(${position.x}px, ${position.y}px, 0px)`, 
-            display: !hoveredPost.content && hoveredPost.topics.length === 0 
-              ? 'flex' 
+          style={{
+            transform: `translate3d(${position.x}px, ${position.y}px, 0px)`,
+            display: !hoveredPost.content && hoveredPost.topics.length === 0
+              ? 'flex'
               : undefined
           }}
         >
-          <div className="TroveTooltip__Profile">
-            <div
-              className="TroveTooltip__ProfileImg"
-              style={{
-                backgroundColor: hoveredPost.creator.color,
-                color: Color(hoveredPost.creator.color).isLight() ? 'black' : 'white',
-              }}            >
-              {hoveredPost.creator.displayName[0]}
-            </div>
-            <div className="TroveTooltip__ProfileInfo">
-              <div className="TroveTooltip__DisplayName">{hoveredPost.creator.displayName}</div>
-              <div
-                className="TroveTooltip__Username"
-                style={{ color: hoveredPost.creator.color }}
-              >
-                {`@${hoveredPost.creator.username}`}
-              </div>
-            </div>
-          </div>
+          {renderUserInfo()}
           {renderTopics(hoveredPost)}
           {hoveredPost.content && (
             <ReactQuill
@@ -483,26 +490,6 @@ export default function Tooltip(props: TooltipProps) {
               onMouseDown={onMouseDownTooltip}
               style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
             >
-                <div className="TroveTooltip__Profile">
-              <div
-                className="TroveTooltip__ProfileImg"
-                style={{
-                  backgroundColor: user?.color,
-                  color: Color(user?.color).isLight() ? 'black' : 'white',
-                }}
-              >
-                {user?.displayName[0]}
-              </div>
-              <div className="TroveTooltip__ProfileInfo">
-                <div className="TroveTooltip__DisplayName">{user?.displayName}</div>
-                <div
-                  className="TroveTooltip__Username"
-                  style={{ color: user?.color }}
-                >
-                  {`@${user?.username}`}
-                </div>
-              </div>
-            </div>
               {renderTopics()}
               <ReactQuill
                 className="TroveTooltip__Editor"
