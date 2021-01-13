@@ -15,10 +15,11 @@ export interface Message {
  * MessageTypes for message sent from website to extension.
  */
 export enum MessageType {
-  isAuthenticated = 'IS_AUTHENTICATED',
+  IsAuthenticated = 'IS_AUTHENTICATED',
   Exists = 'EXISTS',
   Login = 'LOGIN',
   Logout = 'LOGOUT',
+  UpdateProfile = 'UPDATE_PROFILE',
 }
 
 export const sendMessageToWebsite = (message: Message) => {

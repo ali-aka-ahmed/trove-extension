@@ -4,6 +4,7 @@ import Color from 'color';
 import React, { useState } from 'react';
 import { IUserRes } from '../../../app/server/users';
 import IUser from '../../../models/IUser';
+import { MessageType as EMessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { set } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import ColorPicker from '../../colorPicker';
@@ -71,6 +72,7 @@ export default function Profile({ user }: ProfileProps) {
           setEditable(null);
           setShowError(null);
         });
+        sendMessageToWebsite({ type: EMessageType.UpdateProfile, user: res.user })
       } else {
         setShowError(argString);
         setErrorMessage(res.message);

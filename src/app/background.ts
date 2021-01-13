@@ -119,7 +119,7 @@ chrome.runtime.onMessageExternal.addListener((
       }).then(() => set({ isAuthenticated: true })).then(() => sendResponse(true))
       break;
     }
-    case EMessageType.isAuthenticated: {
+    case EMessageType.IsAuthenticated: {
       get({
         isAuthenticated: false,
         token: '',
