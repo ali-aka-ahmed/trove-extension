@@ -20,12 +20,12 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
 
   const handleForgotPasswordInput = (e: React.ChangeEvent<HTMLInputElement>) => setForgotPasswordInput(e.target.value);
   const handleForgotPasswordSubmit = async () => {
-    if (forgotPasswordInput === '') return setErrorMessage('Enter your phone number or email!');
+    if (forgotPasswordInput === '') return setErrorMessage('Enter your email!');
     setLoading(true);
     const args = createForgotPasswordArgs(forgotPasswordInput)
     if (args === null) {
       setLoading(false);
-      return setErrorMessage('Invalid email or phone number. Try again!');
+      return setErrorMessage('Invalid email. Try again!');
     }
     sendMessageToExtension({ type: MessageType.ForgotPassword, forgotPasswordArgs: args }).then((res: AxiosRes) => {
       if (!res.success) {
@@ -72,26 +72,24 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
             autoFocus={true}
             value={forgotPasswordInput}
             onChange={handleForgotPasswordInput}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleForgotPasswordSubmit()}}
           />
         </div>
       </div>
       <div className='TbdAuth__ButtonWrapper'>
+        <button
+          className='Trove__Button'
+          onClick={handleForgotPasswordSubmit}
+        >
+          {loading && <div className='TbdAuth__Loading'><LoadingOutlined /></div> }
+          Submit
+        </button>
         <button
           className='Trove__Button--secondary'
           onClick={goToLogin}
         >
           Cancel
         </button>
-        {!loading ? (
-          <button
-            className='Trove__Button'
-            onClick={handleForgotPasswordSubmit}
-          >
-            Submit
-          </button>
-        ) : (
-          <div className='TbdAuth__Loading'><LoadingOutlined /></div>
-        )}
       </div>
       <div className={`TbdAuth__Error ${errorMessage 
           ? 'TbdAuth__Error--show' 

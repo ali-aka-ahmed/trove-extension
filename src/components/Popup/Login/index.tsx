@@ -79,6 +79,7 @@ export default function Login({}: LoginProps) {
             type='password'
             value={password}
             className='TbdAuth__Input'
+            onKeyDown={(e) => { if (e.key === 'Enter') handleLogin()}}
           />
         </div>
         <div className='TbdLogin__ForgotPassword' onClick={() => setShowForgotPassword(true)}>
@@ -86,21 +87,16 @@ export default function Login({}: LoginProps) {
         </div>
       </div>
       <div className='TbdAuth__ButtonWrapper--login'>
-        {!loading ? (
-          <>
-            <button
-              className='Trove__Button'
-              onClick={handleLogin}
-            >
-              Login
-            </button>
-            <div className='TbdLogin__SignupHere' onClick={goToSignup}>
-              or signup here
-            </div>
-          </>
-        ) : (
-          <div className='TbdAuth__Loading'><LoadingOutlined /></div>
-        )}
+      <button
+        className='Trove__Button'
+        onClick={handleLogin}
+      >
+        {loading && <div className='TbdAuth__Loading'><LoadingOutlined /></div>}
+        Login
+      </button>
+      <div className='TbdLogin__SignupHere' onClick={goToSignup}>
+        or signup here
+      </div>
       </div>
       <div className={`TbdAuth__Error ${errorMessage 
           ? 'TbdAuth__Error--show' 

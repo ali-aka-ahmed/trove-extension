@@ -48,18 +48,13 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
         <Switch onClick={(checked) => handleOnOff(checked)} checked={isExtensionOn} />
       </div>
       <div className='TbdPopupContainer__ButtonWrapper'>
-        {!logoutLoading ? (
-          <button
-            className='Trove__Button'
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        ) : (
-          <div className='TbdPopupContainer__Loading'>
-            <LoadingOutlined />
-          </div>
-        )}
+        <button
+          className='Trove__Button'
+          onClick={handleLogout}
+        >
+          {logoutLoading && <div className='TbdPopupContainer__Loading'><LoadingOutlined /></div>}
+          Logout
+        </button>
       </div>
     </div>
   );
