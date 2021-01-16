@@ -23,8 +23,8 @@ export enum WebsiteOrigins {
 /**
  * SET THESE 👇
  */
-export const FRONTEND: Environments = Environments.LOCAL;
-export const BACKEND: Environments = Environments.LOCAL;
+export const FRONTEND: Environments = Environments.DEVELOPMENT;
+export const BACKEND: Environments = Environments.DEVELOPMENT;
 export const LOGGING: boolean = true;
 
 export let BACKEND_URL: BackendURLs;
@@ -33,7 +33,7 @@ export let ORIGIN: WebsiteOrigins;
 //@ts-ignore
 if (FRONTEND === Environments.DEVELOPMENT) {
   ORIGIN = WebsiteOrigins.DEVELOPMENT;
-//@ts-ignore
+  //@ts-ignore
 } else if (FRONTEND === Environments.LOCAL) {
   ORIGIN = WebsiteOrigins.LOCAL;
 }
@@ -41,7 +41,7 @@ if (FRONTEND === Environments.DEVELOPMENT) {
 //@ts-ignore
 if (BACKEND === Environments.DEVELOPMENT) {
   BACKEND_URL = BackendURLs.DEVELOPMENT;
-//@ts-ignore
+  //@ts-ignore
 } else if (BACKEND === Environments.LOCAL) {
   BACKEND_URL = BackendURLs.LOCAL;
 }

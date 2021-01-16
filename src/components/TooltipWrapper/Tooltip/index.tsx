@@ -40,6 +40,7 @@ export default function Tooltip(props: TooltipProps) {
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
+  const [selectionRects, setSelectionRects] = useState<DOMRectList | null>(null);
   const [tempHighlight, setTempHighlight] = useState<HighlightParam | null>(null);
   const [tempHighlightId, setTempHighlightId] = useState('');
   const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
@@ -82,7 +83,7 @@ export default function Tooltip(props: TooltipProps) {
     const selection = getSelection()!;
     if (selectionExists(selection)) {
       retRange = selection.getRangeAt(0);
-      setIsSelectionVisible(true);
+      // setIsSelectionVisible(true);
       return retRange;
     }
 
@@ -108,19 +109,6 @@ export default function Tooltip(props: TooltipProps) {
       setPosition(new Point(rect.left + window.scrollX, rect.bottom + window.scrollY));
     }
   }, [getTooltipRange]);
-
-  const onDocumentMouseUp = useCallback((event: MouseEvent) => {
-    if ((event.target as HTMLElement).id === 'TroveTooltipWrapper') {
-      return;
-    }
-
-    positionTooltip();
-  }, [positionTooltip]);
-
-  useEffect(() => {
-    document.addEventListener('mouseup', onDocumentMouseUp);
-    return () => document.removeEventListener('mouseup', onDocumentMouseUp);
-  }, [onDocumentMouseUp]);
 
   useEffect(() => {
     window.addEventListener('resize', () => positionTooltip());
@@ -272,6 +260,8 @@ export default function Tooltip(props: TooltipProps) {
     if (!selectionExists(selection)) {
       setIsSelectionVisible(false);
     }
+
+    setSelectionRects(selection!.getRangeAt(0).getClientRects());
   }
 
   useEffect(() => {
@@ -304,6 +294,50 @@ export default function Tooltip(props: TooltipProps) {
 
     return () => document.removeEventListener('mousedown', onMouseDownPage);
   }, [isTempHighlightVisible, isSelectionVisible, onMouseDownPage]);
+
+  const onDocumentMouseUp = useCallback((e: MouseEvent) => {
+    if ((e.target as HTMLElement).id === 'TroveTooltipWrapper') {
+      return;
+    }
+    console.log('test')
+    positionTooltip();
+  }, [positionTooltip]);
+
+  useEffect(() => {
+    document.addEventListener('mouseup', onDocumentMouseUp);
+    return () => document.removeEventListener('mouseup', onDocumentMouseUp);
+  }, [onDocumentMouseUp]);
+
+  const onMouseMovePage = useCallback((e: MouseEvent) => {
+    if (selectionRects) {
+      console.log('hi')
+      for (let i = 0; i < selectionRects.length; i++) {
+        if (
+          e.pageX >= selectionRects[i].left
+          && e.pageX <= selectionRects[i].right
+          && e.pageY >= selectionRects[i].top
+          && e.pageY <= selectionRects[i].bottom
+        ) {
+          console.log('inside')
+          setIsSelectionVisible(true);
+        } else {
+          setIsSelectionVisible(false);
+        }
+      }
+    } else {
+      console.log('wat')
+    }
+  }, [selectionRects]);
+
+  useEffect(() => {
+    // if (isSelectionVisible) {
+    document.addEventListener('mousemove', onMouseMovePage);
+    // } else {
+    //   document.removeEventListener('mousemove', onMouseMovePage);
+    // }
+
+    return () => document.removeEventListener('mousemove', onMouseMovePage);
+  }, [onMouseMovePage]);
 
   const addTopic = (topic: Partial<ITopic>) => {
     if (topics.some((t) => t.text?.toLowerCase() === topic.text?.toLowerCase())) return;
