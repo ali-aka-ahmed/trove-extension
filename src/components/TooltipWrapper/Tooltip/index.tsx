@@ -28,7 +28,6 @@ interface TooltipProps {
 }
 
 export default function Tooltip(props: TooltipProps) {
-  const [clickedPost, setClickedPost] = useState<Post | null>(null);
   const [didInitialGetPosts, setDidInitialGetPosts] = useState(false);
   const [editorValue, setEditorValue] = useState('');
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
@@ -66,16 +65,6 @@ export default function Tooltip(props: TooltipProps) {
       if (retRange) return retRange;
     }
 
-    if (clickedPost && clickedPost.highlight) {
-      try {
-        retRange = getRangeFromTextRange(clickedPost.highlight.textRange);
-      } catch (e) {
-        retRange = null;
-      }
-
-      if (retRange) return retRange;
-    }
-
     if (tempHighlightRange) {
       return tempHighlightRange;
     }
@@ -88,7 +77,7 @@ export default function Tooltip(props: TooltipProps) {
     }
 
     return null;
-  }, [clickedPost, hoveredPostBuffer, tempHighlightRange]);
+  }, [hoveredPostBuffer, tempHighlightRange]);
 
   /**
    * Position and display tooltip according to change in selection.
@@ -134,15 +123,6 @@ export default function Tooltip(props: TooltipProps) {
     positionTooltip();
     setHoveredPost(hoveredPostBuffer);
   }, [hoveredPostBuffer]);
-
-  // const onHighlightClick = useCallback((e: MouseEvent, post: Post) => {
-  //   console.log('click')
-  //   if (!post.highlight) return;
-  //   highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
-  //   highlighter.modifyHighlightTemp(HighlightType.Default);
-  //   positionTooltip(e);
-  //   setClickedPost(post);
-  // }, [positionTooltip]);
 
   // Can we put these useeffects in a for loop?
   useEffect(() => {
