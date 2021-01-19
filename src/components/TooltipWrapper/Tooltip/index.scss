@@ -35,11 +35,11 @@ $tooltip-padding: 10px;
 }
 
 .TbdTooltip__TopicList {
-  margin-top: 7px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   width: 155px;
+  margin-bottom: 2px;
 }
 
 .TbdTooltip__ButtonList {
@@ -81,6 +81,7 @@ $tooltip-padding: 10px;
   align-items: center;
   justify-content: flex-start;
   width: 155px;
+  margin-bottom: 7px;
 }
 
 .TroveTooltip__ProfileImg {
