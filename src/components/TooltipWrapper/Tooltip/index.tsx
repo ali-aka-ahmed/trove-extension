@@ -239,9 +239,9 @@ export default function Tooltip(props: TooltipProps) {
     const selection = getSelection();
     if (!selectionExists(selection)) {
       setIsSelectionVisible(false);
+    } else {
+      setSelectionRects(selection!.getRangeAt(0).getClientRects());
     }
-
-    setSelectionRects(selection!.getRangeAt(0).getClientRects());
   }
 
   useEffect(() => {
@@ -290,7 +290,6 @@ export default function Tooltip(props: TooltipProps) {
 
   const onMouseMovePage = useCallback((e: MouseEvent) => {
     if (selectionRects) {
-      console.log('hi')
       for (let i = 0; i < selectionRects.length; i++) {
         if (
           e.pageX >= selectionRects[i].left
@@ -298,14 +297,11 @@ export default function Tooltip(props: TooltipProps) {
           && e.pageY >= selectionRects[i].top
           && e.pageY <= selectionRects[i].bottom
         ) {
-          console.log('inside')
           setIsSelectionVisible(true);
         } else {
           setIsSelectionVisible(false);
         }
       }
-    } else {
-      console.log('wat')
     }
   }, [selectionRects]);
 
@@ -464,59 +460,71 @@ export default function Tooltip(props: TooltipProps) {
     }
   }
 
-  return (
-    <>
-      {hoveredPost ? (
-        <div
-          className={classNames('TbdTooltip', {
-            'TbdTooltip--position-above': positionEdge === Edge.Top,
-            'TbdTooltip--position-below': positionEdge === Edge.Bottom,
-            'TbdTooltip--readonly': true
-          })}
-          style={{
-            transform: `translate3d(${position.x}px, ${position.y}px, 0px)`,
-            display: !hoveredPost.content && hoveredPost.topics.length === 0
-              ? 'flex'
-              : undefined
-          }}
-        >
-          {renderUserInfo()}
-          {renderTopics(hoveredPost)}
-          {hoveredPost.content && (
-            <ReactQuill
-              className="TroveTooltip__Editor TroveTooltip__Editor--readonly"
-              theme="bubble"
-              value={hoveredPost.content}
-              readOnly={true}
-            />
-          )}
-          {/* <div className="TbdTooltip__ButtonList">
-            <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
-          </div> */}
-        </div>
-      ) : (
-          (isSelectionVisible || isTempHighlightVisible) && (
-            <div
-              className={classNames('TbdTooltip', {
-                'TbdTooltip--position-above': positionEdge === Edge.Top,
-                'TbdTooltip--position-below': positionEdge === Edge.Bottom
-              })}
-              onMouseDown={onMouseDownTooltip}
-              style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-            >
-              {renderTopics()}
-              <ReactQuill
-                className="TroveTooltip__Editor"
-                theme="bubble"
-                value={editorValue}
-                onChange={onEditorChange}
-                placeholder="Add note"
-                ref={quill}
-              />
-              <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
-            </div>
-          )
+  if (hoveredPost) {
+    return (
+      <div
+        className={classNames('TbdTooltip', {
+          'TbdTooltip--position-above': positionEdge === Edge.Top,
+          'TbdTooltip--position-below': positionEdge === Edge.Bottom,
+          'TbdTooltip--readonly': true
+        })}
+        style={{
+          transform: `translate3d(${position.x}px, ${position.y}px, 0px)`,
+          display: !hoveredPost.content && hoveredPost.topics.length === 0
+            ? 'flex'
+            : undefined
+        }}
+      >
+        {renderUserInfo()}
+        {renderTopics(hoveredPost)}
+        {hoveredPost.content && (
+          <ReactQuill
+            className="TroveTooltip__Editor TroveTooltip__Editor--readonly"
+            theme="bubble"
+            value={hoveredPost.content}
+            readOnly={true}
+          />
         )}
-    </>
-  );
+        {/* <div className="TbdTooltip__ButtonList">
+          <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
+        </div> */}
+      </div>
+    );
+  } else if (isSelectionVisible || isTempHighlightVisible) {
+    return (
+      <div
+        className={classNames('TroveMiniTooltip', {
+          'TbdTooltip--position-above': positionEdge === Edge.Top,
+          'TbdTooltip--position-below': positionEdge === Edge.Bottom
+        })}
+        // onMouseDown={onMouseDownTooltip}
+        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+      >
+        alt+f
+      </div>
+    );
+    return (
+      <div
+        className={classNames('TbdTooltip', {
+          'TbdTooltip--position-above': positionEdge === Edge.Top,
+          'TbdTooltip--position-below': positionEdge === Edge.Bottom
+        })}
+        onMouseDown={onMouseDownTooltip}
+        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+      >
+        {renderTopics()}
+        <ReactQuill
+          className="TroveTooltip__Editor"
+          theme="bubble"
+          value={editorValue}
+          onChange={onEditorChange}
+          placeholder="Add note"
+          ref={quill}
+        />
+        <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
+      </div>
+    );
+  } else {
+    return null;
+  }
 }
