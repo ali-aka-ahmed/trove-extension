@@ -239,6 +239,7 @@ export default function Tooltip(props: TooltipProps) {
     const selection = getSelection();
     if (!selectionExists(selection)) {
       setIsSelectionVisible(false);
+      setSelectionRects(null);
     } else {
       setSelectionRects(selection!.getRangeAt(0).getClientRects());
     }
