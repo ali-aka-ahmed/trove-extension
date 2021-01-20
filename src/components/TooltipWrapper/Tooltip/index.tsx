@@ -47,6 +47,7 @@ export default function Tooltip(props: TooltipProps) {
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
   const [isSelectionVisible, setIsSelectionVisible] = useState(false);
+  const [isSelectionHovered, setIsSelectionHovered] = useState(false);
   const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
   const tooltip = useRef<HTMLDivElement>(null);
@@ -124,7 +125,7 @@ export default function Tooltip(props: TooltipProps) {
     return () => window.removeEventListener('resize', () => positionTooltip());
   }, [positionTooltip]);
 
-  // TODO: maybe move active highlight logic to highlighter?
+  // TODO: Maybe move active highlight logic to highlighter?
   const onHighlightMouseEnter = useCallback(
     (e: MouseEvent, post: Post) => {
       if (!post.highlight) return;
@@ -150,7 +151,7 @@ export default function Tooltip(props: TooltipProps) {
     setHoveredPost(hoveredPostBuffer);
   }, [hoveredPostBuffer]);
 
-  // Can we put these useeffects in a for loop?
+  // TODO: Can we put these useeffects in a for loop by event?
   useEffect(() => {
     highlighter.highlights.forEach((highlight, id) => {
       const onMouseEnter = (e: MouseEvent) => onHighlightMouseEnter(e, highlight.post);
@@ -316,9 +317,7 @@ export default function Tooltip(props: TooltipProps) {
         isSelectionVisible &&
         !!selectionRect &&
         !!tooltipRect &&
-        (isMouseBetweenRects(e, selectionRect, tooltipRect) ||
-          isMouseInRect(e, tooltipRect) ||
-          isMouseInRect(e, selectionRect))
+        (isMouseBetweenRects(e, selectionRect, tooltipRect) || isMouseInRect(e, selectionRect))
       ) {
         // Do nothing
       } else if (

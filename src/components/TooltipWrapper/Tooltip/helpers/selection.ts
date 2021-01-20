@@ -26,10 +26,17 @@ export const isMouseInRect = (e: MouseEvent, rect: DOMRect): boolean => {
   );
 };
 
+/**
+ * Computes the if the mouse is contained within the quadrilateral defined by the bottom corners
+ * of both given rects.
+ * @param e
+ * @param r1 The higher rect on the page
+ * @param r2 The lower rect on the page
+ */
 export const isMouseBetweenRects = (e: MouseEvent, r1: DOMRect, r2: DOMRect): boolean => {
-  if (r1.bottom > e.pageY || e.pageY > r2.top) return false;
-  const ratio = (e.pageY - r1.bottom) / (r2.top - r1.bottom);
-  const xL = ratio * (r1.left - r2.left) + r1.left;
-  const xR = ratio * (r1.right - r2.right) + r2.right;
+  if (r1.bottom > e.pageY || e.pageY > r2.bottom) return false;
+  const ratio = (e.pageY - r1.bottom) / (r2.bottom - r1.bottom);
+  const xL = r1.left - ratio * (r1.left - r2.left);
+  const xR = r1.right - ratio * (r1.right - r2.right);
   return xL <= e.pageX && e.pageX <= xR;
 };
