@@ -17,7 +17,7 @@ import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
-import { getHoveredRect, selectionExists } from './helpers/selection';
+import { getHoveredRect, isMouseBetweenRects, selectionExists } from './helpers/selection';
 import InputPill from './inputPill';
 import Pill from './pill';
 
@@ -42,8 +42,9 @@ export default function Tooltip(props: TooltipProps) {
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
   const [isSelectionVisible, setIsSelectionVisible] = useState(false);
-  const [selectionRects, setSelectionRects] = useState<DOMRectList | null>(null);
-  const [tooltipRect, setTooltipRect] = useState<DOMRectList | null>(null);
+  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
+  const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
+  const tooltip = useRef<HTMLDivElement>(null);
 
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
@@ -52,7 +53,7 @@ export default function Tooltip(props: TooltipProps) {
   const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
 
   const [editorValue, setEditorValue] = useState('');
-  const quill = useRef<ReactQuill>(null!);
+  const quill = useRef<ReactQuill>(null);
 
   // TODO: maybe assign this to a range state var
   const getTooltipRange = useCallback(
@@ -249,9 +250,6 @@ export default function Tooltip(props: TooltipProps) {
     const selection = getSelection();
     if (!selectionExists(selection)) {
       setIsSelectionVisible(false);
-      setSelectionRects(null);
-    } else {
-      setSelectionRects(selection!.getRangeAt(0).getClientRects());
     }
   };
 
@@ -307,10 +305,30 @@ export default function Tooltip(props: TooltipProps) {
 
   const onMouseMovePage = useCallback(
     (e: MouseEvent) => {
-      const hoveredRect = getHoveredRect(e, selectionRects);
-      setIsSelectionVisible(!!hoveredRect);
+      const selection = getSelection()!;
+      let rect;
+      if (
+        isSelectionVisible &&
+        !!selectionRect &&
+        !!tooltipRect &&
+        isMouseBetweenRects(e, selectionRect, tooltipRect)
+      ) {
+        // Do nothing
+        console.log(1);
+      } else if (
+        selectionExists(selection) &&
+        !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
+      ) {
+        setIsSelectionVisible(true);
+        setTooltipRect(tooltip.current!.getBoundingClientRect());
+        setSelectionRect(rect);
+        console.log(2);
+      } else {
+        setIsSelectionVisible(false);
+        console.log(3);
+      }
     },
-    [selectionRects],
+    [isSelectionVisible, selectionRect, tooltipRect],
   );
 
   useEffect(() => {
@@ -418,6 +436,8 @@ export default function Tooltip(props: TooltipProps) {
 
       // Hide tooltip
       setIsSelectionVisible(false);
+      setSelectionRect(null);
+      setTooltipRect(null);
       setIsTempHighlightVisible(false);
 
       // Reset tooltip state
@@ -476,6 +496,7 @@ export default function Tooltip(props: TooltipProps) {
         })}
         // onMouseDown={onMouseDownTooltip}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+        ref={tooltip}
       >
         alt+f
       </div>
