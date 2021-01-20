@@ -22,6 +22,7 @@
     "file-loader": "^6.0.0",
     "log4javascript": "^1.4.15",
     "node-sass": "^4.14.1",
+    "prettier": "2.2.1",
     "sass-loader": "^6.0.7",
     "style-loader": "^0.20.3",
     "to-string-loader": "^1.1.6",
