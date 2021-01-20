@@ -17,6 +17,7 @@ import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
+import { getHoveredRect, selectionExists } from './helpers/selection';
 import InputPill from './inputPill';
 import Pill from './pill';
 
@@ -29,23 +30,28 @@ interface TooltipProps {
 
 export default function Tooltip(props: TooltipProps) {
   const [didInitialGetPosts, setDidInitialGetPosts] = useState(false);
-  const [editorValue, setEditorValue] = useState('');
-  const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
-  const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(false);
-  const [isSelectionVisible, setIsSelectionVisible] = useState(false);
-  const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
+
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
+  const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+
+  const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
+  const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
+  const [isSelectionVisible, setIsSelectionVisible] = useState(false);
   const [selectionRects, setSelectionRects] = useState<DOMRectList | null>(null);
+  const [tooltipRect, setTooltipRect] = useState<DOMRectList | null>(null);
+
+  const [highlighter, setHighlighter] = useState(new Highlighter());
+  const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
   const [tempHighlight, setTempHighlight] = useState<HighlightParam | null>(null);
   const [tempHighlightId, setTempHighlightId] = useState('');
   const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
-  const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
-  const [user, setUser] = useState<User | null>(null);
-  const [highlighter, setHighlighter] = useState(new Highlighter());
+
+  const [editorValue, setEditorValue] = useState('');
   const quill = useRef<ReactQuill>(null!);
 
   // TODO: maybe assign this to a range state var
@@ -225,14 +231,6 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [hoveredPost]);
 
-  const selectionExists = (selection: Selection | null) => {
-    return !!selection
-      && selection.rangeCount > 0
-      && !selection.isCollapsed
-      && selection.toString().length > 0
-      && !selection.toString().match(/^\n+$/i);
-  }
-
   const onSelectionChange = () => {
     // Don't set isSelectionVisible to true here because we only want tooltip to appear after 
     // user has finished dragging selection. We set this in positionTooltip instead.
@@ -280,7 +278,7 @@ export default function Tooltip(props: TooltipProps) {
     if ((e.target as HTMLElement).id === 'TroveTooltipWrapper') {
       return;
     }
-    console.log('test')
+
     positionTooltip();
   }, [positionTooltip]);
 
@@ -290,20 +288,8 @@ export default function Tooltip(props: TooltipProps) {
   }, [onDocumentMouseUp]);
 
   const onMouseMovePage = useCallback((e: MouseEvent) => {
-    if (selectionRects) {
-      for (let i = 0; i < selectionRects.length; i++) {
-        if (
-          e.pageX >= selectionRects[i].left
-          && e.pageX <= selectionRects[i].right
-          && e.pageY >= selectionRects[i].top
-          && e.pageY <= selectionRects[i].bottom
-        ) {
-          setIsSelectionVisible(true);
-        } else {
-          setIsSelectionVisible(false);
-        }
-      }
-    }
+    const hoveredRect = getHoveredRect(e, selectionRects);
+    setIsSelectionVisible(!!hoveredRect);
   }, [selectionRects]);
 
   useEffect(() => {
