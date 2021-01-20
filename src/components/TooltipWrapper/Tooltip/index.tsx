@@ -368,7 +368,11 @@ export default function Tooltip(props: TooltipProps) {
       ));
 
       return (
-        <div className="TbdTooltip__TopicList">
+        <div
+          className={`${
+            post && (!post.topics || post.topics.length === 0) ? '' : 'TbdTooltip__TopicList'
+          }`}
+        >
           {!post && <InputPill onSubmit={addTopic} style={{ marginBottom: '3px' }} />}
           {pills}
         </div>

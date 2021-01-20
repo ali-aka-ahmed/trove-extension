@@ -10,9 +10,9 @@ export const createErrorReport = async (args: ErrorReqBody): Promise<AxiosRes> =
  */
 export interface ErrorReqBody {
   origin: ErrorOrigin;
-  message: string;
   error: IExtensionError | Error;
   componentStack: string;
+  message?: string;
   userId?: string;
   url?: string;
 }
