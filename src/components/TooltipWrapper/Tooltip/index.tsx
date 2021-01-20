@@ -17,7 +17,12 @@ import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
-import { getHoveredRect, isMouseBetweenRects, selectionExists } from './helpers/selection';
+import {
+  getHoveredRect,
+  isMouseBetweenRects,
+  isMouseInRect,
+  selectionExists,
+} from './helpers/selection';
 import InputPill from './inputPill';
 import Pill from './pill';
 
@@ -311,10 +316,11 @@ export default function Tooltip(props: TooltipProps) {
         isSelectionVisible &&
         !!selectionRect &&
         !!tooltipRect &&
-        isMouseBetweenRects(e, selectionRect, tooltipRect)
+        (isMouseBetweenRects(e, selectionRect, tooltipRect) ||
+          isMouseInRect(e, tooltipRect) ||
+          isMouseInRect(e, selectionRect))
       ) {
         // Do nothing
-        console.log(1);
       } else if (
         selectionExists(selection) &&
         !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
@@ -322,10 +328,8 @@ export default function Tooltip(props: TooltipProps) {
         setIsSelectionVisible(true);
         setTooltipRect(tooltip.current!.getBoundingClientRect());
         setSelectionRect(rect);
-        console.log(2);
       } else {
         setIsSelectionVisible(false);
-        console.log(3);
       }
     },
     [isSelectionVisible, selectionRect, tooltipRect],

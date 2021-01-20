@@ -1,5 +1,3 @@
-import classifyPoint from 'robust-point-in-polygon';
-
 export const selectionExists = (selection: Selection | null) => {
   return (
     !!selection &&
@@ -29,17 +27,9 @@ export const isMouseInRect = (e: MouseEvent, rect: DOMRect): boolean => {
 };
 
 export const isMouseBetweenRects = (e: MouseEvent, r1: DOMRect, r2: DOMRect): boolean => {
-  const polygon = [
-    [r1.left, r1.bottom],
-    [r1.right, r1.bottom],
-    [r2.left, r2.top],
-    [r2.right, r2.top],
-  ];
-  console.log(
-    'classify point:',
-    polygon,
-    [e.pageX, e.pageY],
-    classifyPoint(polygon, [e.pageX, e.pageY]),
-  );
-  return classifyPoint(polygon, [e.pageX, e.pageY]) !== 1;
+  if (r1.bottom > e.pageY || e.pageY > r2.top) return false;
+  const ratio = (e.pageY - r1.bottom) / (r2.top - r1.bottom);
+  const xL = ratio * (r1.left - r2.left) + r1.left;
+  const xR = ratio * (r1.right - r2.right) + r2.right;
+  return xL <= e.pageX && e.pageX <= xR;
 };
