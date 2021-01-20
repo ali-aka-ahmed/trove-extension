@@ -128,7 +128,17 @@ $tooltip-padding: 10px;
   background-color: #fff;
   color: #454545;
   border-radius: 3px;
-  padding: 4px 8px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 30px;
+  height: 32px;
+}
+
+.TroveMiniTooltip__NewPostButton {
+  border: none;
+  outline: none;
   cursor: pointer;
+  height: 100%;
+  width: 100%;
+  background-color: #fff;
+  padding: 4px 8px;
+  border-radius: 3px;
 }

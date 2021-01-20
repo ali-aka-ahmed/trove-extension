@@ -502,7 +502,7 @@ export default function Tooltip(props: TooltipProps) {
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         ref={tooltip}
       >
-        alt+f
+        <button className="TroveMiniTooltip__NewPostButton">alt+f</button>
       </div>
     );
     return (
