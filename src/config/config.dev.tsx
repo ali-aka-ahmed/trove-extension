@@ -6,7 +6,7 @@
  */
 export enum Environments {
   DEVELOPMENT,
-  LOCAL
+  LOCAL,
 }
 
 export enum BackendURLs {
@@ -46,8 +46,4 @@ if (BACKEND === Environments.DEVELOPMENT) {
   BACKEND_URL = BackendURLs.LOCAL;
 }
 
-export const VALID_DOMAINS = [
-  'development.trove.so',
-  'demo.trove.so',
-  'localhost',
-]
+export const VALID_DOMAINS = ['development.trove.so', 'demo.trove.so', 'localhost'];

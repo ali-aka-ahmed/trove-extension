@@ -21,7 +21,7 @@ export const getTextRangeFromRange = (range: Range): TextRange => {
   const ss2 = new SelectionStore().saveSelection();
   const pageText = getPageText();
 
-  // In case the selected text isn't unique on the current page, we grab context before and after 
+  // In case the selected text isn't unique on the current page, we grab context before and after
   // such that we have a unique string
   let uniqueText: string = text;
   let uniqueTextOffset = 0;
@@ -49,10 +49,10 @@ export const getTextRangeFromRange = (range: Range): TextRange => {
   const context = s.toString();
   ss1.restoreSelection();
   return { context, contextStartIdx, text, uniqueTextStartIdx, uniqueText };
-}
+};
 
 /**
- * Deserialize stored selection. 
+ * Deserialize stored selection.
  * TODO: account for case where selection is no longer unique upon deserialization.
  */
 export const getRangeFromTextRange = (tr: TextRange) => {
@@ -66,7 +66,7 @@ export const getRangeFromTextRange = (tr: TextRange) => {
   const textPrefixReduced = tr.uniqueText.slice(0, tr.uniqueTextStartIdx).replace('\n\n', '\n');
 
   // Since window.line breaks on new line characters, we use it to find the longest line instead
-  const line = uniqueTextReduced.split('\n').reduce((s1, s2) => s1.length >= s2.length ? s1 : s2);
+  const line = uniqueTextReduced.split('\n').reduce((s1, s2) => (s1.length >= s2.length ? s1 : s2));
   const s = getSelection()!;
   s.removeAllRanges();
   const ss2 = new SelectionStore();
@@ -107,22 +107,24 @@ export const getRangeFromTextRange = (tr: TextRange) => {
   console.error("Couldn't find Range corresponding to text:", tr.text);
   ss1.restoreSelection();
   return null;
-}
+};
 
 /**
  * Compare two TextRanges and return whether or not they describe the same Range.
- * @param tr1 
- * @param tr2 
+ * @param tr1
+ * @param tr2
  */
 export const areTextRangesEqual = (tr1: TextRange, tr2: TextRange): boolean => {
-  return tr1.uniqueText === tr2.uniqueText
-    && tr1.uniqueTextStartIdx === tr2.uniqueTextStartIdx
-    && tr1.text === tr2.text;
-}
+  return (
+    tr1.uniqueText === tr2.uniqueText &&
+    tr1.uniqueTextStartIdx === tr2.uniqueTextStartIdx &&
+    tr1.text === tr2.text
+  );
+};
 
 /**
  * Determine if given text is unique on current page.
- * @param text 
+ * @param text
  * @param memoPageText
  * @returns -1 if text is not found
  *           0 if text is found multiple times
@@ -134,11 +136,11 @@ const isTextUnique = (text: string, memoPageText?: string): number => {
   let isUnique = -1;
   if (idx1 !== -1) {
     const idx2 = pageText.lastIndexOf(text);
-    isUnique = (idx1 === idx2) ? 1 : 0;
+    isUnique = idx1 === idx2 ? 1 : 0;
   }
 
   return isUnique;
-}
+};
 
 /**
  * Get all text on the current page.
@@ -151,7 +153,7 @@ export const getPageText = () => {
   selection.removeAllRanges();
   selection.addRange(range);
   return selection.toString();
-}
+};
 
 /**
  * Simple class to save and restore selections.
@@ -166,7 +168,7 @@ class SelectionStore {
     }
 
     return this;
-  }
+  };
 
   restoreSelection = () => {
     const s = getSelection()!;
@@ -175,5 +177,5 @@ class SelectionStore {
     if (!this.range) return null;
     s.addRange(this.range);
     return this.range;
-  }
+  };
 }

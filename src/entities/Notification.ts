@@ -38,15 +38,15 @@ export default class Notification implements INotification {
   }
 
   get time(): string {
-    return displayRelativeTime(this.creationDatetime)
-  };
+    return displayRelativeTime(this.creationDatetime);
+  }
 
   get displayUrl(): string | null {
     if (!this.url) return null;
     let hostname = new URL(this.url).hostname;
     if (hostname.slice(0, 4) === 'www.') hostname = hostname.slice(4);
     let path = new URL(this.url).pathname;
-    if (path.slice(-1) === '/') path = path.slice(0, -1)
-    return `${hostname}${path}`
+    if (path.slice(-1) === '/') path = path.slice(0, -1);
+    return `${hostname}${path}`;
   }
-};
+}

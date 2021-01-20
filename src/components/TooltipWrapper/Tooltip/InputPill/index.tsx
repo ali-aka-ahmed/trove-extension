@@ -12,7 +12,7 @@ interface InputPillProps {
   style?: object;
 }
 
-export default function InputPill({ onSubmit, style={} }: InputPillProps) {
+export default function InputPill({ onSubmit, style = {} }: InputPillProps) {
   const [newTopic, setNewTopic] = useState<ITopic | null>(null);
   const [color, setNewColor] = useState(DEFAULT_TOPIC_COLOR);
   const [suggestedTopics, setSuggestedTopics] = useState<ITopic[]>([]);
@@ -23,8 +23,8 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
 
   const onClickTopic = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setIsInput(true);
-    setNewColor(DEFAULT_TOPIC_COLOR)
-  }
+    setNewColor(DEFAULT_TOPIC_COLOR);
+  };
 
   useEffect(() => {
     if (isInput) {
@@ -35,12 +35,12 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
   const onBlur = () => {
     const val = content.trim();
     if (val === '') setIsInput(false);
-  }
+  };
 
   const onKeyDownContent = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     // console.log(e.key)
     e.stopPropagation();
-    const showSuggestedTopics = suggestedTopics.length > 0 || newTopic !== null
+    const showSuggestedTopics = suggestedTopics.length > 0 || newTopic !== null;
     switch (e.key) {
       case 'ArrowUp': {
         if (showSuggestedTopics) {
@@ -59,7 +59,7 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
 
         break;
       }
-      case 'Enter': 
+      case 'Enter':
       case 'Tab': {
         if (showSuggestedTopics) {
           e.preventDefault();
@@ -79,41 +79,43 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
         break;
       }
     }
-  }
+  };
 
   const selectSuggestedTopic = async (topic: ITopic) => {
     await onSubmit(topic);
     setContent('');
-    setNewTopic(null)
+    setNewTopic(null);
     setSuggestedTopics([]);
     setSuggestedTopicsIdx(-1);
     setNewColor(DEFAULT_TOPIC_COLOR);
     setIsInput(false);
-  }
+  };
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setContent(e.target.value);
     if (e.target.value === '') {
-      setNewTopic(null)
-      setSuggestedTopicsIdx(-1)
-      setSuggestedTopics([])
-      setNewColor(DEFAULT_TOPIC_COLOR)
+      setNewTopic(null);
+      setSuggestedTopicsIdx(-1);
+      setSuggestedTopics([]);
+      setNewColor(DEFAULT_TOPIC_COLOR);
     } else await suggestTopics(e.target.value);
-  }
+  };
 
   const suggestTopics = async (text: string) => {
     const debouncedSuggestTopics = debounce(async (text) => {
-      await sendMessageToExtension({ type: MessageType.HandleTopicSearch, text: text.trim() }).then((res: ITopicsRes) => {
-        if (!res.success) return;
-        const normalizedText = text.trim().toLowerCase();
-        const existingTopics = res.topics!;
-        setSuggestedTopics(existingTopics);
-        if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
-        if (existingTopics.some((topic) => topic.normalizedText === normalizedText)) {
-          setNewTopic(null);
-          if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
-        }
-      });    
+      await sendMessageToExtension({ type: MessageType.HandleTopicSearch, text: text.trim() }).then(
+        (res: ITopicsRes) => {
+          if (!res.success) return;
+          const normalizedText = text.trim().toLowerCase();
+          const existingTopics = res.topics!;
+          setSuggestedTopics(existingTopics);
+          if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
+          if (existingTopics.some((topic) => topic.normalizedText === normalizedText)) {
+            setNewTopic(null);
+            if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
+          }
+        },
+      );
     }, 0);
 
     await debouncedSuggestTopics(text);
@@ -123,49 +125,40 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
       setNewTopic(null);
       if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
     } else {
-      const newTopic: ITopic = { 
+      const newTopic: ITopic = {
         color,
         creationDatetime: Date.now(),
         lastEdited: Date.now(),
         id: uuid(),
         text: text.trim(),
-        normalizedText, 
+        normalizedText,
       };
-      setNewTopic(newTopic) 
+      setNewTopic(newTopic);
     }
-  }
+  };
 
   const renderSuggestedTopics = () => {
     const renderTopic = (topic: ITopic, idx: number, showCreate: boolean = false) => {
       return (
         <button
-          className={`TbdSuggestedTopicList__SuggestedTopic ${suggestedTopicsIdx === idx 
-            ? 'TbdSuggestedTopicList__SuggestedTopic--selected' 
-            : ''}`
-          }
+          className={`TbdSuggestedTopicList__SuggestedTopic ${
+            suggestedTopicsIdx === idx ? 'TbdSuggestedTopicList__SuggestedTopic--selected' : ''
+          }`}
           key={topic.id}
           onMouseDown={() => setSuggestedTopicsIdx(idx)}
           onClick={() => selectSuggestedTopic(topic)}
         >
-          {showCreate && (
-            <div className="TbdSuggestedTopicList__FirstTopic">
-              Create:
-            </div>
-          )}
-          <Pill
-            color={topic.color}
-            text={topic.text}
-            showClose={false}
-          />
+          {showCreate && <div className="TbdSuggestedTopicList__FirstTopic">Create:</div>}
+          <Pill color={topic.color} text={topic.text} showClose={false} />
         </button>
-      )
-    }
+      );
+    };
     return (
       <div className="TbdNewPost__SuggestedTopicList">
         {newTopic && renderTopic(newTopic, -1, true)}
         {suggestedTopics.map((topic, idx) => renderTopic(topic, idx))}
       </div>
-    )
+    );
   };
 
   if (!isInput) {
@@ -173,18 +166,18 @@ export default function InputPill({ onSubmit, style={} }: InputPillProps) {
       <button className="TbdInputPill TbdInputPill--button" onClick={onClickTopic}>
         + Topic
       </button>
-    )
+    );
   } else {
     return (
       <div className="TbdInputPill__Wrapper" style={style}>
         <input
           value={content}
           className="TbdInputPill TbdInputPill--input"
-          style={{width: `${(content.length+1)*8}px`}}
+          style={{ width: `${(content.length + 1) * 8}px` }}
           onChange={handleInputChange}
           onBlur={onBlur}
           onKeyDown={onKeyDownContent}
-          ref={inputRef} 
+          ref={inputRef}
         />
         {(suggestedTopics.length > 0 || newTopic !== null) && renderSuggestedTopics()}
       </div>

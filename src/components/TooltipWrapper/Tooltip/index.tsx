@@ -311,6 +311,12 @@ export default function Tooltip(props: TooltipProps) {
 
   const onMouseMovePage = useCallback(
     (e: MouseEvent) => {
+      // Don't want to show mini-tooltip when dragging selection or it will repeatedly disappear
+      // and appear
+      if (e.buttons === 1) {
+        return;
+      }
+
       const selection = getSelection()!;
       let rect;
       if (

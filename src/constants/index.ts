@@ -16,4 +16,4 @@ export const EXCLUDED_HOSTNAMES = [
   'trove.so',
   'www.trove.so',
   'localhost',
-]
+];

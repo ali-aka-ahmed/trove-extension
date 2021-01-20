@@ -1,4 +1,4 @@
-declare interface Window { 
+declare interface Window {
   // http://help.dottoro.com/ljkjvqqo.php
   find(
     textToFind: string,
@@ -7,6 +7,6 @@ declare interface Window {
     wrapAround?: boolean,
     wholeWord?: boolean,
     searchInFrames?: boolean,
-    showDialog?: boolean
+    showDialog?: boolean,
   ): boolean;
 }

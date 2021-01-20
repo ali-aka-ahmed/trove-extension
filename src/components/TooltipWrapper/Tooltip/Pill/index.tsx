@@ -16,17 +16,17 @@ interface PillProps {
 export default function Pill({
   text,
   color,
-  faded=false,
-  filter=false,
-  onClick=( () => {} ),
-  onClose=( () => {} ),
-  showClose=false,
-  style={},
+  faded = false,
+  filter = false,
+  onClick = () => {},
+  onClose = () => {},
+  showClose = false,
+  style = {},
 }: PillProps) {
   const customStyle = {
     ...style,
-    backgroundColor: hexToRgba(color, faded ? 0.5 : 1) || '#DDDDDD'
-  }
+    backgroundColor: hexToRgba(color, faded ? 0.5 : 1) || '#DDDDDD',
+  };
 
   return (
     <div
@@ -34,14 +34,11 @@ export default function Pill({
       style={customStyle}
       onClick={onClick}
     >
-      <div 
-        className="TbdPill__Text"
-        style={{ color: Color(color).isLight() ? 'black' : 'white' }}
-      >
+      <div className="TbdPill__Text" style={{ color: Color(color).isLight() ? 'black' : 'white' }}>
         {text}
       </div>
       {showClose && (
-        <button 
+        <button
           className={`TbdPill__CloseButton 
             ${Color(color).isLight() ? 'TbdPill__CloseButton--inverted' : ''}
           `}

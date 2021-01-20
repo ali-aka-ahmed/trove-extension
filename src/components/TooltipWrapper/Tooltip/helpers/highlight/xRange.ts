@@ -8,18 +8,18 @@ export interface XRange {
 
 /**
  * Convert Range to XRange. Useful for serialization.
- * @param range 
+ * @param range
  */
 export const getXRangeFromRange = (range: Range): XRange => ({
   startContainerPath: getXPathFromNode(range.startContainer),
-  endContainerPath:   getXPathFromNode(range.endContainer),
-  startOffset:        range.startOffset,
-  endOffset:          range.endOffset
+  endContainerPath: getXPathFromNode(range.endContainer),
+  startOffset: range.startOffset,
+  endOffset: range.endOffset,
 });
 
 /**
  * Convert XRange to Range.
- * @param xRange 
+ * @param xRange
  */
 export const getRangeFromXRange = (xRange: XRange): Range | null => {
   // console.log(xRange)
@@ -34,12 +34,14 @@ export const getRangeFromXRange = (xRange: XRange): Range | null => {
   range.setStart(startContainer, xRange.startOffset);
   range.setEnd(endContainer, xRange.endOffset);
   return range;
-}
+};
 
 export const areRangesEqual = (r1: Range, r2: Range): boolean => {
-  return r1.compareBoundaryPoints(Range.START_TO_START, r2) === 0
-      && r1.compareBoundaryPoints(Range.END_TO_END, r2) === 0;
-}
+  return (
+    r1.compareBoundaryPoints(Range.START_TO_START, r2) === 0 &&
+    r1.compareBoundaryPoints(Range.END_TO_END, r2) === 0
+  );
+};
 
 /**
  * Get XPath for given node.
@@ -48,12 +50,12 @@ export const areRangesEqual = (r1: Range, r2: Range): boolean => {
 const getXPathFromNode = (node: Node): string => {
   const paths: string[] = [];
   for (
-    let n: Node | null = node; 
-    n && (n.nodeType === Node.ELEMENT_NODE || n.nodeType === Node.TEXT_NODE); 
+    let n: Node | null = node;
+    n && (n.nodeType === Node.ELEMENT_NODE || n.nodeType === Node.TEXT_NODE);
     n = n.parentNode
   ) {
     let nodeId: string;
-    const tagName = (n.nodeType === Node.ELEMENT_NODE) ? n.nodeName.toLowerCase() : 'text()';
+    const tagName = n.nodeType === Node.ELEMENT_NODE ? n.nodeName.toLowerCase() : 'text()';
     if (n.nodeType === Node.ELEMENT_NODE && (nodeId = (n as Element).id)) {
       // Use id as root if it is globally unique
       if (n.ownerDocument?.querySelectorAll(`#${nodeId}`).length === 1) {
@@ -63,8 +65,8 @@ const getXPathFromNode = (node: Node): string => {
 
       // If not, use id as predicate if it is unique amongst siblings
       if (
-        n.parentNode 
-        && !Array.from(n.parentNode.children).some(child => child !== n && child.id === nodeId)
+        n.parentNode &&
+        !Array.from(n.parentNode.children).some((child) => child !== n && child.id === nodeId)
       ) {
         paths.push(`${tagName}[@id="${nodeId}"]`);
         continue;
@@ -80,22 +82,22 @@ const getXPathFromNode = (node: Node): string => {
     paths.push(`/${tagName}[${idx}]`);
   }
 
-  paths.reverse();  //console.log(node, paths)
+  paths.reverse(); //console.log(node, paths)
   return paths.length > 0 ? `/${paths.join('/')}` : '';
-}
+};
 
 /**
  * Evaluate given XPath to a node.
- * @param xpath 
+ * @param xpath
  */
 const getNodeFromXPath = (xpath: string): Node | null => {
   const evaluator = new XPathEvaluator();
   const result = evaluator.evaluate(
-    xpath, 
+    xpath,
     document.documentElement,
     null,
     XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null
+    null,
   );
   return result.singleNodeValue;
-}
+};

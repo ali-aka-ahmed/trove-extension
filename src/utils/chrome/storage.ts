@@ -1,4 +1,3 @@
-
 /**
  * Key to type mapping. For the love of god can Typescript implement negated types? Merge CS and
  * TabSettings when they do.
@@ -22,25 +21,25 @@
 type AreaName = 'local' | 'sync' | 'managed';
 
 /**
- * Get values corresponding to given keys from chrome storage. This method takes in a single key, 
+ * Get values corresponding to given keys from chrome storage. This method takes in a single key,
  * a list of keys, or an object containing the keys mapped to their default values, and returns a
- * promise which returns an object containing the key-value pairs retrieved from storage. `null` 
+ * promise which returns an object containing the key-value pairs retrieved from storage. `null`
  * can be passed in to retrieve all stored key-value pairs.
- * 
+ *
  * Sample usage:
  * ```
  * get('key').then(items => items.key);
  * get({ key: 'hello' }).then(items => items.key);
  * get(null).then(allItems => allItems.someKey);
  * ```
- * 
+ *
  * @param key
  * @param area
  */
 export function get(
-  key: null | string | string[] | {[key: string]: any}, 
-  area: AreaName='local'
-): Promise<{[key: string]: any}> {
+  key: null | string | string[] | { [key: string]: any },
+  area: AreaName = 'local',
+): Promise<{ [key: string]: any }> {
   return new Promise((resolve, reject) => {
     chrome.storage[area].get(key, (items) => {
       const err = chrome.runtime.lastError;
@@ -56,8 +55,8 @@ export function get(
 
 /**
  * Get value corresponding to given key.
- * @param key 
- * @param area 
+ * @param key
+ * @param area
  */
 export function get1(key: string, area?: AreaName): any {
   return get(key, area).then((items) => items[key]);
@@ -67,9 +66,9 @@ export function get1(key: string, area?: AreaName): any {
  * Set given key-value pairs in chrome storage.
  * TODO: typing isn't perfect, can pair keyof CS with value of TabSetting
  * @param items
- * @param area 
+ * @param area
  */
-export function set(items: {[key: string]: any}, area: AreaName='local'): Promise<void> {
+export function set(items: { [key: string]: any }, area: AreaName = 'local'): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.storage[area].set(items, () => {
       const err = chrome.runtime.lastError;
@@ -87,9 +86,9 @@ export function set(items: {[key: string]: any}, area: AreaName='local'): Promis
  * Remove given key or list of keys from chrome storage.
  * TODO: remove string from key type when we can combine CS and TabSettings
  * @param keys
- * @param area 
+ * @param area
  */
-export function remove(keys: string | string[], area: AreaName='local'): Promise<void> {
+export function remove(keys: string | string[], area: AreaName = 'local'): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.storage[area].remove(keys, () => {
       const err = chrome.runtime.lastError;
@@ -105,9 +104,9 @@ export function remove(keys: string | string[], area: AreaName='local'): Promise
 
 /**
  * Clear chrome storage.
- * @param area 
+ * @param area
  */
-export function clear(area: AreaName='local'): Promise<void> {
+export function clear(area: AreaName = 'local'): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.storage[area].clear(() => {
       const err = chrome.runtime.lastError;
@@ -123,9 +122,9 @@ export function clear(area: AreaName='local'): Promise<void> {
 
 /**
  * Get key for given tab and property.
- * @param tabId 
- * @param prop 
+ * @param tabId
+ * @param prop
  */
 export const key = (tabId: string, prop: string): string => {
   return tabId + '.' + prop;
-}
+};

@@ -15,15 +15,17 @@ import './style.scss';
 interface LoginProps {}
 
 export default function Login({}: LoginProps) {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const handleUsernameInput = (e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
-  const handlePasswordInput = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
+  const handleUsernameInput = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setUsername(e.target.value);
+  const handlePasswordInput = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setPassword(e.target.value);
 
   const handleLogin = () => {
     if (username === '') return setErrorMessage('Enter your phone number, email or username');
@@ -44,66 +46,67 @@ export default function Login({}: LoginProps) {
         user: new User(res.user!),
         token: res.token,
         isExtensionOn: true,
-        notificationDisplayIcon: 0
+        notificationDisplayIcon: 0,
       }).then(() => set({ isAuthenticated: true }));
-    })
-  }
+    });
+  };
 
-  const goToSignup = () => chrome.tabs.update({url: ORIGIN});
+  const goToSignup = () => chrome.tabs.update({ url: ORIGIN });
 
   if (showForgotPassword) {
-    return <ForgotPassword goToLogin={() => setShowForgotPassword(false)} />
-  } else return (
-    <div className='TbdAuth'>
-      <div className='TbdAuth__FieldWrapper'>
-        <div className='TbdAuth__Label'>
-          Email or username
+    return <ForgotPassword goToLogin={() => setShowForgotPassword(false)} />;
+  } else
+    return (
+      <div className="TbdAuth">
+        <div className="TbdAuth__FieldWrapper">
+          <div className="TbdAuth__Label">Email or username</div>
+          <div className="TbdAuth__InputWrapper">
+            <input
+              className="TbdAuth__Input"
+              type="text"
+              autoFocus={true}
+              value={username}
+              onChange={handleUsernameInput}
+            />
+          </div>
         </div>
-        <div className='TbdAuth__InputWrapper'>
-          <input
-            className='TbdAuth__Input'
-            type='text'
-            autoFocus={true}
-            value={username}
-            onChange={handleUsernameInput}
-          />
+        <div className="TbdAuth__FieldWrapper">
+          <div className="TbdAuth__Label">Password</div>
+          <div className="TbdAuth__InputWrapper">
+            <input
+              onChange={handlePasswordInput}
+              type="password"
+              value={password}
+              className="TbdAuth__Input"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleLogin();
+              }}
+            />
+          </div>
+          <div className="TbdLogin__ForgotPassword" onClick={() => setShowForgotPassword(true)}>
+            Forgot password?
+          </div>
+        </div>
+        <div className="TbdAuth__ButtonWrapper--login">
+          <button className="Trove__Button" onClick={handleLogin}>
+            {loading && (
+              <div className="TbdAuth__Loading">
+                <LoadingOutlined />
+              </div>
+            )}
+            Login
+          </button>
+          <div className="TbdLogin__SignupHere" onClick={goToSignup}>
+            or signup here
+          </div>
+        </div>
+        <div
+          className={`TbdAuth__Error ${
+            errorMessage ? 'TbdAuth__Error--show' : 'TbdAuth__Error--hide'
+          }`}
+        >
+          <Alert showIcon message={errorMessage} type="error" className="TbdAuth__Alert" />
         </div>
       </div>
-      <div className='TbdAuth__FieldWrapper'>
-        <div className='TbdAuth__Label'>
-          Password
-        </div>
-        <div className='TbdAuth__InputWrapper'>
-          <input
-            onChange={handlePasswordInput}
-            type='password'
-            value={password}
-            className='TbdAuth__Input'
-            onKeyDown={(e) => { if (e.key === 'Enter') handleLogin()}}
-          />
-        </div>
-        <div className='TbdLogin__ForgotPassword' onClick={() => setShowForgotPassword(true)}>
-          Forgot password?
-        </div>
-      </div>
-      <div className='TbdAuth__ButtonWrapper--login'>
-      <button
-        className='Trove__Button'
-        onClick={handleLogin}
-      >
-        {loading && <div className='TbdAuth__Loading'><LoadingOutlined /></div>}
-        Login
-      </button>
-      <div className='TbdLogin__SignupHere' onClick={goToSignup}>
-        or signup here
-      </div>
-      </div>
-      <div className={`TbdAuth__Error ${errorMessage 
-          ? 'TbdAuth__Error--show' 
-          : 'TbdAuth__Error--hide'}`}
-      >
-        <Alert showIcon message={errorMessage} type='error' className='TbdAuth__Alert' />
-      </div>
-    </div>
-  );
-};
+    );
+}

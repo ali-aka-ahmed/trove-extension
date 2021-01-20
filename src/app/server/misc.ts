@@ -3,7 +3,7 @@ import IExtensionError from '../../models/IExtensionError';
 
 export const createErrorReport = async (args: ErrorReqBody): Promise<AxiosRes> => {
   return await api.post('/error', args);
-}
+};
 
 /**
  * POST /error

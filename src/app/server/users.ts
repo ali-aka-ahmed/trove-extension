@@ -6,19 +6,19 @@ export type IUsersRes = UsersRes & AxiosRes;
 export type IUserRes = UserRes & AxiosRes;
 
 export const handleUserSearch = async (searchText: string): Promise<IUsersRes> => {
-  const args: GetUsersReqBody = { text: searchText }
+  const args: GetUsersReqBody = { text: searchText };
   return await api.post(`/users`, args);
-}
+};
 
 export const getUser = async (id: string): Promise<IUserRes> => {
-  const params: UserReqParams = { id }
+  const params: UserReqParams = { id };
   return await api.get(`/users/${params.id}`);
-}
+};
 
 export const updateUser = async (args: UpdateUserReqBody): Promise<IUserRes> => {
   const params: UserReqParams = { id: (await get('user')).user.id };
   return await api.post(`/users/${params.id}/update`, args);
-}
+};
 
 /**
  * POST /users/

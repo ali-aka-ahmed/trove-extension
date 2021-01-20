@@ -38,7 +38,7 @@ export default class Post implements IPost {
     this.liked = p.liked;
     if (p.highlight) this.highlight = new Highlight(p.highlight);
     if (p.comments) this.comments = p.comments.map((p) => new Post(p));
-    if (p.parentPostId) this.parentPostId = p.parentPostId
+    if (p.parentPostId) this.parentPostId = p.parentPostId;
   }
 
   get timeAgo() {
@@ -46,15 +46,15 @@ export default class Post implements IPost {
     const timeAgo = new TimeAgo('en-US');
     return timeAgo.format(this.creationDatetime, 'twitter');
     // return displayRelativeTime(this.creationDatetime)
-  };
+  }
 
   get isTopOfThread() {
-    return !this.parentPostId
-  };
-  
+    return !this.parentPostId;
+  }
+
   get isComment() {
-    return !!this.parentPostId
-  };
+    return !!this.parentPostId;
+  }
 
   get isLikedByCurrentUser() {
     return this.liked;
@@ -64,35 +64,35 @@ export default class Post implements IPost {
     let hostname = new URL(this.url).hostname;
     if (hostname.slice(0, 4) === 'www.') hostname = hostname.slice(4);
     let path = new URL(this.url).pathname;
-    if (path.slice(-1) === '/') path = path.slice(0, -1)
-    return `${hostname}${path}`
+    if (path.slice(-1) === '/') path = path.slice(0, -1);
+    return `${hostname}${path}`;
   }
 
   removeTopic = (topicId: string) => {
-    this.topics = this.topics.filter((t) => t.id !== topicId)
-  }
+    this.topics = this.topics.filter((t) => t.id !== topicId);
+  };
 
   addTopic = (newTopic: ITopic) => {
     this.topics.unshift(new Topic(newTopic));
-  }
+  };
 
   likePost = () => {
     return sendMessageToExtension({
       type: MessageType.LikePost,
-      id: this.id
+      id: this.id,
     }).then((res: AxiosRes) => {
-      if (res.success) this.numLikes += 1
-      return res
-    })
-  }
+      if (res.success) this.numLikes += 1;
+      return res;
+    });
+  };
 
   unlikePost = () => {
     return sendMessageToExtension({
       type: MessageType.UnlikePost,
-      id: this.id
+      id: this.id,
     }).then((res: AxiosRes) => {
-      if (res.success) this.numLikes -= 1
-      return res
-    })
-  }
-};
+      if (res.success) this.numLikes -= 1;
+      return res;
+    });
+  };
+}
