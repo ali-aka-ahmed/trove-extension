@@ -341,7 +341,8 @@ export default function Tooltip(props: TooltipProps) {
           style={{
             backgroundColor: hoveredPost.creator.color,
             color: Color(hoveredPost.creator.color).isLight() ? 'black' : 'white',
-          }}            >
+          }}
+        >
           {hoveredPost.creator.displayName[0]}
         </div>
         <div className="TroveTooltip__ProfileInfo">
