@@ -46,7 +46,6 @@ export default function Tooltip(props: TooltipProps) {
 
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
-  const [isSelectionVisible, setIsSelectionVisible] = useState(false);
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
   const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
@@ -255,7 +254,7 @@ export default function Tooltip(props: TooltipProps) {
     // user has finished dragging selection. We set this in positionTooltip instead.
     const selection = getSelection();
     if (!selectionExists(selection)) {
-      setIsSelectionVisible(false);
+      setIsSelectionHovered(false);
     }
   };
 
@@ -284,14 +283,14 @@ export default function Tooltip(props: TooltipProps) {
   );
 
   useEffect(() => {
-    if (isTempHighlightVisible || isSelectionVisible) {
+    if (isTempHighlightVisible || isSelectionHovered) {
       document.addEventListener('mousedown', onMouseDownPage);
     } else {
       document.removeEventListener('mousedown', onMouseDownPage);
     }
 
     return () => document.removeEventListener('mousedown', onMouseDownPage);
-  }, [isTempHighlightVisible, isSelectionVisible, onMouseDownPage]);
+  }, [isTempHighlightVisible, isSelectionHovered, onMouseDownPage]);
 
   const onDocumentMouseUp = useCallback(
     (e: MouseEvent) => {
@@ -311,8 +310,8 @@ export default function Tooltip(props: TooltipProps) {
 
   const onMouseMovePage = useCallback(
     (e: MouseEvent) => {
-      // Don't want to show mini-tooltip when dragging selection or it will repeatedly disappear
-      // and appear
+      // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
+      // as cursor enters and leaves selection
       if (e.buttons === 1) {
         return;
       }
@@ -320,7 +319,7 @@ export default function Tooltip(props: TooltipProps) {
       const selection = getSelection()!;
       let rect;
       if (
-        isSelectionVisible &&
+        isSelectionHovered &&
         !!selectionRect &&
         !!tooltipRect &&
         (isMouseBetweenRects(e, selectionRect, tooltipRect) || isMouseInRect(e, selectionRect))
@@ -330,14 +329,14 @@ export default function Tooltip(props: TooltipProps) {
         selectionExists(selection) &&
         !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
       ) {
-        setIsSelectionVisible(true);
+        setIsSelectionHovered(true);
         setTooltipRect(tooltip.current!.getBoundingClientRect());
         setSelectionRect(rect);
       } else {
-        setIsSelectionVisible(false);
+        setIsSelectionHovered(false);
       }
     },
-    [isSelectionVisible, selectionRect, tooltipRect],
+    [isSelectionHovered, selectionRect, tooltipRect],
   );
 
   useEffect(() => {
@@ -448,7 +447,7 @@ export default function Tooltip(props: TooltipProps) {
       };
 
       // Hide tooltip
-      setIsSelectionVisible(false);
+      setIsSelectionHovered(false);
       setSelectionRect(null);
       setTooltipRect(null);
       setIsTempHighlightVisible(false);
@@ -500,7 +499,7 @@ export default function Tooltip(props: TooltipProps) {
         </div> */}
       </div>
     );
-  } else if (isSelectionVisible || isTempHighlightVisible) {
+  } else if (isSelectionHovered || isTempHighlightVisible) {
     return (
       <div
         className={classNames('TroveMiniTooltip', {
