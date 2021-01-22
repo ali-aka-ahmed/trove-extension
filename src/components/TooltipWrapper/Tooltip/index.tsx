@@ -87,7 +87,6 @@ export default function Tooltip(props: TooltipProps) {
       const selection = getSelection()!;
       if (selectionExists(selection)) {
         retRange = selection.getRangeAt(0);
-        // setIsSelectionVisible(true);
         return retRange;
       }
 
@@ -230,8 +229,13 @@ export default function Tooltip(props: TooltipProps) {
   const resetTooltip = () => {
     removeTempHighlight();
     setWasMiniTooltipClicked(false);
+    setMiniTooltipRect(null);
     setTopics([]); //? Do we want to reset topics every time?
     setEditorValue('');
+
+    // Making the assumption that whenever we want to reset tooltip, we are also resetting selection
+    setIsSelectionHovered(false);
+    setSelectionRect(null);
   };
 
   useEffect(() => {
@@ -289,24 +293,21 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('selectionchange', onSelectionChange);
   }, [onSelectionChange]);
 
-  const onMouseDownPage = useCallback(
-    (e: MouseEvent) => {
-      // Do nothing if selection exists, let onSelectionChange take care of it
-      if (selectionExists(getSelection())) {
-        return;
-      }
+  const onMouseDownPage = useCallback((e: MouseEvent) => {
+    // Do nothing if selection exists, let onSelectionChange take care of it
+    if (selectionExists(getSelection())) {
+      return;
+    }
 
-      // Do nothing if user clicks Trove tooltip
-      const target = e.target as HTMLElement;
-      if (target.id === 'TroveTooltipWrapper') {
-        return;
-      }
+    // Do nothing if user clicks Trove tooltip
+    const target = e.target as HTMLElement;
+    if (target.id === 'TroveTooltipWrapper') {
+      return;
+    }
 
-      // Remove temp highlight if it exists
-      removeTempHighlight();
-    },
-    [removeTempHighlight],
-  );
+    // Remove temp highlight if it exists
+    resetTooltip();
+  }, []);
 
   useEffect(() => {
     if (isTempHighlightVisible || isSelectionHovered) {
@@ -386,14 +387,7 @@ export default function Tooltip(props: TooltipProps) {
       };
 
       // Hide tooltip
-      setIsSelectionHovered(false);
-      setSelectionRect(null);
-      setMiniTooltipRect(null);
-      setIsTempHighlightVisible(false);
-
-      // Reset tooltip state
-      setEditorValue('');
-      setTopics([]);
+      resetTooltip();
 
       // Show actual highlight when we get response from server
       sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
@@ -433,6 +427,7 @@ export default function Tooltip(props: TooltipProps) {
     // Force Quill to focus editor on render
     if (wasMiniTooltipClicked || !hoveredPost) {
       quill.current?.getEditor().focus();
+      quill.current?.getEditor().setSelection(editorValue.length - 1, 0);
     }
   }, [hoveredPost, wasMiniTooltipClicked]);
 
@@ -532,7 +527,6 @@ export default function Tooltip(props: TooltipProps) {
           onClick={() => {
             addTempHighlight();
             setWasMiniTooltipClicked(true);
-            quill.current?.getEditor().focus();
           }}
         >
           alt+f
