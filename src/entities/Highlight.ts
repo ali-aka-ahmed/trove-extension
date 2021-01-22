@@ -10,7 +10,7 @@ export default class Highlight implements IHighlight {
   public type: HighlightType;
   public url: string;
 
-  constructor(h: IHighlight, type: HighlightType=HighlightType.Default) {
+  constructor(h: IHighlight, type: HighlightType = HighlightType.Default) {
     this.id = h.id;
     this.creationDatetime = h.creationDatetime;
     this.textRange = h.textRange;
@@ -18,4 +18,4 @@ export default class Highlight implements IHighlight {
     this.type = type;
     this.url = h.url;
   }
-};
+}

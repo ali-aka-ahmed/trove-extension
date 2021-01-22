@@ -16,4 +16,4 @@ export default class Topic implements ITopic {
     this.normalizedText = t.normalizedText;
     this.color = t.color;
   }
-};
+}

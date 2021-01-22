@@ -6,7 +6,7 @@
  */
 export enum Environments {
   DEVELOPMENT,
-  LOCAL
+  LOCAL,
 }
 
 export enum BackendURLs {
@@ -33,7 +33,7 @@ export let ORIGIN: WebsiteOrigins;
 //@ts-ignore
 if (FRONTEND === Environments.DEVELOPMENT) {
   ORIGIN = WebsiteOrigins.DEVELOPMENT;
-//@ts-ignore
+  //@ts-ignore
 } else if (FRONTEND === Environments.LOCAL) {
   ORIGIN = WebsiteOrigins.LOCAL;
 }
@@ -41,13 +41,9 @@ if (FRONTEND === Environments.DEVELOPMENT) {
 //@ts-ignore
 if (BACKEND === Environments.DEVELOPMENT) {
   BACKEND_URL = BackendURLs.DEVELOPMENT;
-//@ts-ignore
+  //@ts-ignore
 } else if (BACKEND === Environments.LOCAL) {
   BACKEND_URL = BackendURLs.LOCAL;
 }
 
-export const VALID_DOMAINS = [
-  'development.trove.so',
-  'demo.trove.so',
-  'localhost',
-]
+export const VALID_DOMAINS = ['development.trove.so', 'demo.trove.so', 'localhost'];

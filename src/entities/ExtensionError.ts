@@ -12,7 +12,7 @@ export default class ExtensionError implements IExtensionError {
   constructor(errorMessage: string, readableMessage?: string, stack?: string) {
     this.id = uuid();
     this.name = 'ExtensionError';
-    this.creationDatetime = Date.now();    
+    this.creationDatetime = Date.now();
     this.message = errorMessage;
     this.readableMessage = readableMessage || errorMessage;
     // Maintains proper stack trace for where our error was thrown

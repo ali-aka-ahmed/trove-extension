@@ -9,16 +9,13 @@ interface NotificationsProps {
 
 export default function Notifications({ notifications }: NotificationsProps) {
   if (notifications.length === 0) {
+    return <div className="TroveNotifications__Empty">No new notifications 🤟</div>;
+  } else
     return (
-      <div className="TroveNotifications__Empty">
-        No new notifications 🤟
+      <div className="TroveNotificationWrapper">
+        {notifications.map((n) => (
+          <Notification key={n.id} notification={n} />
+        ))}
       </div>
-    )
-  } else return (
-    <div className="TroveNotificationWrapper">
-      {notifications.map(n => (
-        <Notification key={n.id} notification={n} />
-      ))}
-    </div>
-  )
-};
+    );
+}

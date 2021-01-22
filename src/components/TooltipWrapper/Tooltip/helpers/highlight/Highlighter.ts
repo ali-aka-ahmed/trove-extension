@@ -1,13 +1,13 @@
-import Color from "color";
-import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from ".";
-import Post from "../../../../../entities/Post";
-import { getRangeFromTextRange } from "./textRange";
+import Color from 'color';
+import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from '.';
+import Post from '../../../../../entities/Post';
+import { getRangeFromTextRange } from './textRange';
 
 interface HighlightData {
   marks: HTMLElement[];
   post: Post;
   type: HighlightType;
-  handlers: { [event: string]: (e: MouseEvent) => void }
+  handlers: { [event: string]: (e: MouseEvent) => void };
 }
 
 interface HighlightTempData {
@@ -18,7 +18,7 @@ interface HighlightTempData {
 
 export enum HighlightType {
   Default,
-  Active // Click, hover, new post
+  Active, // Click, hover, new post
 }
 
 export default class Highlighter {
@@ -59,7 +59,7 @@ export default class Highlighter {
     const marks = addDOMHighlight(range, color);
     const highlightData = { marks, post, type, handlers: {} };
     this.highlights.set(id, highlightData);
-  }
+  };
 
   public modifyHighlight = (id: string, type: HighlightType) => {
     const highlight = this.highlights.get(id);
@@ -70,7 +70,7 @@ export default class Highlighter {
     } else {
       console.error('Attempted to modify nonexistent highlight. id: ' + id);
     }
-  }
+  };
 
   public removeHighlight = (id: string) => {
     const highlight = this.highlights.get(id);
@@ -78,7 +78,7 @@ export default class Highlighter {
       removeDOMHighlight(highlight.marks);
       this.highlights.delete(id);
     }
-  }
+  };
 
   public addHighlightTemp = (range: Range, color: string = 'yellow', type: HighlightType) => {
     const id = 'temp';
@@ -88,7 +88,7 @@ export default class Highlighter {
     const marks = addDOMHighlight(range, color);
     const highlightData = { color, marks, type };
     this.highlightTemp = highlightData;
-  }
+  };
 
   public modifyHighlightTemp = (type: HighlightType, color?: string) => {
     if (this.highlightTemp) {
@@ -97,19 +97,19 @@ export default class Highlighter {
       modifyDOMHighlight(this.highlightTemp.marks!, 'backgroundColor', color);
       this.highlightTemp = { ...this.highlightTemp, type };
     }
-  }
+  };
 
   public removeHighlightTemp = () => {
     if (this.highlightTemp) {
       removeDOMHighlight(this.highlightTemp.marks!);
       this.highlightTemp = null;
     }
-  }
+  };
 
   private getColor = (colorStr: string, type: HighlightType): string => {
     const color = Color(colorStr);
     const rgba = (c: Color<string>, o: number) => `rgba(${c.red()},${c.green()},${c.blue()},${o})`;
     if (type === HighlightType.Default) return rgba(color, 0.25);
     return rgba(color, 0.65);
-  }
+  };
 }

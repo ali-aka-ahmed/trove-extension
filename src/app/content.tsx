@@ -6,14 +6,13 @@ import { get } from '../utils/chrome/storage';
 // Render tooltip
 let isAuthenticated: boolean = false;
 let isExtensionOn: boolean = false;
-get(['isAuthenticated', 'isExtensionOn'])
-  .then((data) => {
-    isAuthenticated = data.isAuthenticated || false;
-    isExtensionOn = data.isExtensionOn || false;
-    if (isAuthenticated && isExtensionOn) {
-      renderTooltip();
-    }
-  });
+get(['isAuthenticated', 'isExtensionOn']).then((data) => {
+  isAuthenticated = data.isAuthenticated || false;
+  isExtensionOn = data.isExtensionOn || false;
+  if (isAuthenticated && isExtensionOn) {
+    renderTooltip();
+  }
+});
 
 chrome.storage.onChanged.addListener((change) => {
   let isChanged = false;
@@ -43,11 +42,11 @@ const renderTooltip = () => {
 
   const tooltipShadowRoot = tooltipContainer.attachShadow({ mode: 'open' });
   ReactDOM.render(<TooltipWrapper root={tooltipShadowRoot} />, tooltipShadowRoot);
-}
+};
 
 const removeTooltip = () => {
   const tooltipContainer = document.getElementById('TroveTooltipWrapper');
   if (tooltipContainer) {
     tooltipContainer.remove();
   }
-}
+};

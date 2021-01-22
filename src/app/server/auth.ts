@@ -5,11 +5,11 @@ export type IAuthRes = AuthRes & AxiosRes;
 
 export const login = async (args: LoginReqBody): Promise<IAuthRes> => {
   return await api.post('/auth/login', args);
-}
+};
 
 export const forgotPassword = async (args: ForgotReqBody): Promise<AxiosRes> => {
-  return await api.post('/auth/forgot', args)
-}
+  return await api.post('/auth/forgot', args);
+};
 
 /**
  * POST /auth/login

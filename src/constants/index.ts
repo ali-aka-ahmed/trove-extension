@@ -12,4 +12,4 @@ export const DEFAULT_TOPIC_COLORS = [
 ];
 export const EXCLUDED_HOSTNAMES = [
   'localhost',
-]
+];

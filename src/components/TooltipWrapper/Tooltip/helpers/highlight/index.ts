@@ -1,4 +1,3 @@
-
 const MARK_CLASS_NAME = 'TroveMark';
 
 export const addDOMHighlight = (range: Range, color: string = 'yellow') => {
@@ -40,12 +39,13 @@ export const addDOMHighlight = (range: Range, color: string = 'yellow') => {
 
   // This is where the magic happens
   const marks: HTMLElement[] = [];
-  for (let done = false, node = start; !done || !node;) { //console.log(node, start)
+  for (let done = false, node = start; !done || !node; ) {
+    //console.log(node, start)
     if (
-      hasContent
-      && node.nodeType === Node.TEXT_NODE
-      && /\S/.test(node.nodeValue || '')
-      && !isTable(node)
+      hasContent &&
+      node.nodeType === Node.TEXT_NODE &&
+      /\S/.test(node.nodeValue || '') &&
+      !isTable(node)
     ) {
       let wrapper = node.previousSibling;
       if (!wrapper || marks.length === 0 || wrapper !== marks[marks.length - 1]) {
@@ -89,7 +89,7 @@ export const addDOMHighlight = (range: Range, color: string = 'yellow') => {
   }
 
   return marks;
-}
+};
 
 export const removeDOMHighlight = (marks: HTMLElement[]) => {
   for (const mark of marks) {
@@ -105,37 +105,33 @@ export const removeDOMHighlight = (marks: HTMLElement[]) => {
     const prevSibling = mark.previousSibling;
     mark.parentNode?.removeChild(mark);
     if (prevSibling && prevSibling.nodeType === Node.TEXT_NODE) {
-      mergeTextNodes(prevSibling)
+      mergeTextNodes(prevSibling);
     }
   }
 
   return marks;
-}
+};
 
 export const modifyDOMHighlight = (marks: HTMLElement[], style: string, value: string) => {
   for (const mark of marks) {
     mark.style[style] = value;
   }
-}
+};
 
 const isTable = (node: Node) => {
   const types = [
     HTMLTableElement,
     HTMLTableRowElement,
     HTMLTableColElement,
-    HTMLTableSectionElement
+    HTMLTableSectionElement,
   ];
-  return types.some(type => node && node.parentNode instanceof type);
-}
+  return types.some((type) => node && node.parentNode instanceof type);
+};
 
 const isTerminal = (node: Node) => {
-  const types = [
-    HTMLScriptElement,
-    HTMLStyleElement,
-    HTMLSelectElement
-  ];
-  return types.some(type => node instanceof type);
-}
+  const types = [HTMLScriptElement, HTMLStyleElement, HTMLSelectElement];
+  return types.some((type) => node instanceof type);
+};
 
 const mergeTextNodes = (node: Node) => {
   if (node.nodeType !== Node.TEXT_NODE) return;
@@ -153,4 +149,4 @@ const mergeTextNodes = (node: Node) => {
     prevNode.textContent = (prevNode.textContent || '') + (node.textContent || '');
     node.parentNode?.removeChild(node);
   }
-}
+};

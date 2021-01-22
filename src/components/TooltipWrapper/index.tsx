@@ -16,19 +16,20 @@ interface TooltipWrapperProps {
 }
 
 export default function TooltipWrapper(props: TooltipWrapperProps) {
-  const url = new URL(window.location.href)
-  if (EXCLUDED_HOSTNAMES.includes(url.hostname)) return <div/>;
-  else return (
-    <>
-      <ErrorBoundary origin={ErrorOrigin.ContentScript}>
-        <Tooltip root={props.root} />
-      </ErrorBoundary>
-      <style type="text/css">{antdStyles}</style>
-      <style type="text/css">{quillStyles}</style>
-      <style type="text/css">{editorStyles}</style>
-      <style type="text/css">{tooltipStyles}</style>
-      <style type="text/css">{pillStyles}</style>
-      <style type="text/css">{inputPillStyles}</style>
-    </>
-  );
+  const url = new URL(window.location.href);
+  if (EXCLUDED_HOSTNAMES.includes(url.hostname)) return <div />;
+  else
+    return (
+      <>
+        <ErrorBoundary origin={ErrorOrigin.ContentScript}>
+          <Tooltip root={props.root} />
+        </ErrorBoundary>
+        <style type="text/css">{antdStyles}</style>
+        <style type="text/css">{quillStyles}</style>
+        <style type="text/css">{editorStyles}</style>
+        <style type="text/css">{tooltipStyles}</style>
+        <style type="text/css">{pillStyles}</style>
+        <style type="text/css">{inputPillStyles}</style>
+      </>
+    );
 }

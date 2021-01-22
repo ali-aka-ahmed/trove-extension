@@ -14,9 +14,11 @@ interface NotificationProps {
 }
 
 export default function Notification({ notification }: NotificationProps) {
-
   const handleClick = async () => {
-    sendMessageToExtension({ type: SocketMessageType.ReadNotification, notificationId: notification.id });
+    sendMessageToExtension({
+      type: SocketMessageType.ReadNotification,
+      notificationId: notification.id
+    });
     const ns: NotificationObject[] = await get1('notifications')
     const i = ns.findIndex((n) => n.id === notification.id)
     notification.read = true
@@ -30,12 +32,12 @@ export default function Notification({ notification }: NotificationProps) {
   }
 	return (
     <div
-      className={`TbdNotificationWrapper ${!notification.read && 'TbdNotificationWrapper--unread'}`} 
+      className={`TbdNotificationWrapper ${!notification.read && 'TbdNotificationWrapper--unread'}`}
       onClick={handleClick}
     >
       <div className="TbdNotificationWrapper__HeaderWrapper">
-        <div 
-          className="TbdProfile__Img" 
+        <div
+          className="TbdProfile__Img"
           style={{
             backgroundColor: notification.sender.color,
             color: Color(notification.sender.color).isLight() ? 'black' : 'white',
@@ -48,18 +50,18 @@ export default function Notification({ notification }: NotificationProps) {
             <span className="TbdNotificationWrapper__DisplayName">
               {`${notification.sender.displayName} `}
             </span>
-            <span className="TbdNotificationWrapper__Action">
-              {notification.action}
-            </span>
+            <span className="TbdNotificationWrapper__Action">{notification.action}</span>
           </div>
           <div className="TbdNotificationWrapper__NotificationDetails">
-            {`${notification.time} ${notification.displayUrl ? `· ${notification.domain}${notification.path}` : ''}`}
+            {`${notification.time} ${
+              notification.displayUrl ? `· ${notification.domain}${notification.path}` : ''
+            }`}
           </div>
         </div>
       </div>
       {notification.content && (
         <div className="TbdNotificationWrapper__Content">
-          <ReactQuill 
+          <ReactQuill
             className="TroveTooltip__Editor TroveTooltip__Editor--read-only"
             theme="bubble"
             value={notification.content}
@@ -68,5 +70,5 @@ export default function Notification({ notification }: NotificationProps) {
         </div>
       )}
     </div>
-	)
-};
+  );
+}

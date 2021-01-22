@@ -17,7 +17,9 @@ interface ProfileProps {
 }
 
 export default function Profile({ user }: ProfileProps) {
-  const [showEditIcon, setShowEditIcon] = useState<'displayName' | 'username' | 'color' | null>(null);
+  const [showEditIcon, setShowEditIcon] = useState<'displayName' | 'username' | 'color' | null>(
+    null,
+  );
   const [editable, setEditable] = useState<'displayName' | 'username' | 'color' | null>(null);
   const [loading, setLoading] = useState<'displayName' | 'username' | 'color' | null>(null);
 
@@ -29,9 +31,9 @@ export default function Profile({ user }: ProfileProps) {
 
   const handleEditProperty = (property: 'displayName' | 'username' | 'color') => {
     if (editable !== null) return;
-    setEditable(property); 
+    setEditable(property);
     setShowEditIcon(null);
-  }
+  };
 
   const updateProfile = async (args: {
     color?: string;
@@ -43,9 +45,10 @@ export default function Profile({ user }: ProfileProps) {
     else if (args.username) argString = 'username';
     else if (args.displayName) argString = 'displayName';
 
-    if (args.color === user.color
-      || args.username === user.username
-      || args.displayName === user.displayName
+    if (
+      args.color === user.color ||
+      args.username === user.username ||
+      args.displayName === user.displayName
     ) {
       setEditable(null);
       setShowError(null);
@@ -54,7 +57,7 @@ export default function Profile({ user }: ProfileProps) {
     setLoading(argString);
 
     if (args.username || args.displayName) {
-      const vRes = args.username ? validateUsername(username) : validateDisplayName(displayName)
+      const vRes = args.username ? validateUsername(username) : validateDisplayName(displayName);
       if (!vRes.success) {
         setShowError(argString);
         setErrorMessage(vRes.message || 'Invalid. Try again!');
@@ -65,29 +68,26 @@ export default function Profile({ user }: ProfileProps) {
 
     sendMessageToExtension({
       type: MessageType.UpdateUser,
-      updateUserArgs: args
+      updateUserArgs: args,
     }).then((res: IUserRes) => {
       if (res.success) {
         set({ user: res.user }).then(() => {
           setEditable(null);
           setShowError(null);
         });
-        sendMessageToWebsite({ type: EMessageType.UpdateProfile, user: res.user })
+        sendMessageToWebsite({ type: EMessageType.UpdateProfile, user: res.user });
       } else {
         setShowError(argString);
         setErrorMessage(res.message);
       }
-    })
+    });
     setLoading(null);
-  }
+  };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    onPressEnterFn: ( () => void ),
-  ) => {
-    if (e.key === 'Enter') onPressEnterFn()
-  }
-  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, onPressEnterFn: () => void) => {
+    if (e.key === 'Enter') onPressEnterFn();
+  };
+
   return (
     <div className="TbdProfile__Wrapper">
       <div className="TbdProfile__Header">
@@ -105,16 +105,15 @@ export default function Profile({ user }: ProfileProps) {
             <div className="TbdProfile__EditDisplayName EditProp">
               <input
                 autoFocus
-                style={{width: `${(displayName.length+1)*8}px`}}
+                style={{ width: `${(displayName.length + 1) * 8}px` }}
                 className="TbdProfile__Input TbdProfile__Input--display-name"
-                value={displayName} 
-                onChange={(e) => { setDisplayName(e.target.value) }}
+                value={displayName}
+                onChange={(e) => {
+                  setDisplayName(e.target.value);
+                }}
                 onKeyDown={(e) => handleKeyDown(e, () => updateProfile({ displayName }))}
               />
-              <div 
-                className="TbdProfile__Icon"
-                onClick={() => updateProfile({ displayName })}
-              >
+              <div className="TbdProfile__Icon" onClick={() => updateProfile({ displayName })}>
                 {loading === 'displayName' ? <LoadingOutlined /> : <SaveOutlined />}
               </div>
               <div
@@ -122,17 +121,23 @@ export default function Profile({ user }: ProfileProps) {
                 onClick={() => setEditable(null)}
               >
                 {loading !== 'displayName' && <CloseOutlined />}
-              </div>              
+              </div>
             </div>
           ) : (
-            <div 
-              onClick={() => { handleEditProperty('displayName') }}
-              onMouseEnter={() => { setShowEditIcon('displayName') }}
-              onMouseLeave={() => { setShowEditIcon(null) }}
+            <div
+              onClick={() => {
+                handleEditProperty('displayName');
+              }}
+              onMouseEnter={() => {
+                setShowEditIcon('displayName');
+              }}
+              onMouseLeave={() => {
+                setShowEditIcon(null);
+              }}
               className="TbdProfile__DisplayName"
             >
               {displayName}
-              <div 
+              <div
                 className="TbdProfile__Icon"
                 style={showEditIcon !== 'displayName' ? { opacity: 0 } : {}}
               >
@@ -142,19 +147,20 @@ export default function Profile({ user }: ProfileProps) {
           )}
           {editable === 'username' ? (
             <div className="TbdProfile__EditUsername EditProp">
-              <div className="TbdProfile__InputPrefix" style={{ color: user.color }}>@</div>
+              <div className="TbdProfile__InputPrefix" style={{ color: user.color }}>
+                @
+              </div>
               <input
                 autoFocus
-                style={{ width: `${(username.length+1)*8}px`, color: user.color }}
+                style={{ width: `${(username.length + 1) * 8}px`, color: user.color }}
                 className="TbdProfile__Input TbdProfile__Input--username"
                 value={username}
-                onChange={(e) => { setUsername(e.target.value) }}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                }}
                 onKeyDown={(e) => handleKeyDown(e, () => updateProfile({ username }))}
               />
-              <div 
-                className="TbdProfile__Icon"
-                onClick={() => updateProfile({ username })}
-              >
+              <div className="TbdProfile__Icon" onClick={() => updateProfile({ username })}>
                 {loading === 'username' ? <LoadingOutlined /> : <SaveOutlined />}
               </div>
               <div
@@ -166,14 +172,20 @@ export default function Profile({ user }: ProfileProps) {
             </div>
           ) : (
             <div
-              onClick={() => { handleEditProperty('username') }}
-              onMouseEnter={() => { setShowEditIcon('username') }} 
-              onMouseLeave={() => { setShowEditIcon(null) }}
+              onClick={() => {
+                handleEditProperty('username');
+              }}
+              onMouseEnter={() => {
+                setShowEditIcon('username');
+              }}
+              onMouseLeave={() => {
+                setShowEditIcon(null);
+              }}
               style={{ color: user.color }}
               className="TbdProfile__Username"
             >
               {`@${username}`}
-              <div 
+              <div
                 className="TbdProfile__Icon"
                 style={showEditIcon !== 'username' ? { opacity: 0 } : {}}
               >
@@ -187,32 +199,40 @@ export default function Profile({ user }: ProfileProps) {
         <div className="TbdProfile__Color TbdProfile__EditColor EditProp">
           <div className="TbdProfile__ColorText">
             Accent Color
-            {loading === 'color' && <div className="TbdProfile__Loading"><LoadingOutlined /></div>}
+            {loading === 'color' && (
+              <div className="TbdProfile__Loading">
+                <LoadingOutlined />
+              </div>
+            )}
           </div>
           <ColorPicker onSelect={(color) => updateProfile({ color })} defaultColor={user.color} />
         </div>
       ) : (
         <div
-          onClick={() => { handleEditProperty('color') }}
-          onMouseEnter={() => { setShowEditIcon('color') }} 
-          onMouseLeave={() => { setShowEditIcon(null) }}
+          onClick={() => {
+            handleEditProperty('color');
+          }}
+          onMouseEnter={() => {
+            setShowEditIcon('color');
+          }}
+          onMouseLeave={() => {
+            setShowEditIcon(null);
+          }}
           className="TbdProfile__Color"
         >
           <div className="TbdProfile__ColorText">Accent Color</div>
           <div className="TbdProfile__ColorPreview" style={{ backgroundColor: user.color }} />
-          <div 
-            className="TbdProfile__Icon"
-            style={showEditIcon !== 'color' ? { opacity: 0 } : {}} 
-          >
+          <div className="TbdProfile__Icon" style={showEditIcon !== 'color' ? { opacity: 0 } : {}}>
             <EditOutlined />
           </div>
         </div>
       )}
-      <div className={`TbdProfile__Error ${showError 
-        ? 'TbdProfile__Error--show'
-        : 'TbdProfile__Error--hide'}`}
+      <div
+        className={`TbdProfile__Error ${
+          showError ? 'TbdProfile__Error--show' : 'TbdProfile__Error--hide'
+        }`}
       >
-        <Alert showIcon message={errorMessage} type='error' className='TbdProfile__Alert' />
+        <Alert showIcon message={errorMessage} type="error" className="TbdProfile__Alert" />
       </div>
     </div>
   );

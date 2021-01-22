@@ -2,9 +2,9 @@ import IUser from '../models/IUser';
 
 export default class User implements IUser {
   public id: string;
-  public displayName: string
+  public displayName: string;
   public username: string; // alphanum and underscores, 3 < username < 20 characters
-  public creationDatetime: number
+  public creationDatetime: number;
   public color: string; // Hex code
   public followers?: number;
   public following?: number;
@@ -27,9 +27,9 @@ export default class User implements IUser {
 
   decrementLikes = () => {
     if (this.likes !== undefined) this.likes -= 1;
-  }
+  };
 
   incrementLikes = () => {
     if (this.likes !== undefined) this.likes += 1;
-  }
-};
+  };
+}
