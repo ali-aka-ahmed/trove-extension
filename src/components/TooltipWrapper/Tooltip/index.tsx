@@ -221,6 +221,13 @@ export default function Tooltip(props: TooltipProps) {
     setWasMiniTooltipClicked(false);
   }, [tempHighlightId]);
 
+  const addTopic = (topic: Partial<ITopic>) => {
+    if (topics.some((t) => t.text?.toLowerCase() === topic.text?.toLowerCase())) return;
+    const newTopics = topics.slice().filter((t) => t.id !== topic.id);
+    newTopics.unshift(topic);
+    setTopics(newTopics);
+  };
+
   useEffect(() => {
     // Get user object
     get(['user', 'isAuthenticated', 'isExtensionOn']).then((data) => {
@@ -261,16 +268,6 @@ export default function Tooltip(props: TooltipProps) {
       removePosts(posts);
     }
   }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts]);
-
-  useEffect(() => {
-    // Workaround to force Quill placeholder to change dynamically
-    const editor = props.root.querySelector('.ql-editor');
-    if (!!hoveredPost) {
-      editor?.setAttribute('data-placeholder', 'No added note');
-    } else {
-      editor?.setAttribute('data-placeholder', 'Add note');
-    }
-  }, [hoveredPost]);
 
   const onSelectionChange = useCallback(() => {
     // Don't set isSelectionVisible to true here because we only want tooltip to appear after
@@ -372,12 +369,66 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mousemove', onMouseMovePage);
   }, [onMouseMovePage]);
 
-  const addTopic = (topic: Partial<ITopic>) => {
-    if (topics.some((t) => t.text?.toLowerCase() === topic.text?.toLowerCase())) return;
-    const newTopics = topics.slice().filter((t) => t.id !== topic.id);
-    newTopics.unshift(topic);
-    setTopics(newTopics);
+  const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (tempHighlight) {
+      const postReq = {
+        content: editorValue,
+        url: window.location.href,
+        taggedUserIds: [],
+        highlight: tempHighlight,
+        topics: topics,
+      };
+
+      // Hide tooltip
+      setIsSelectionHovered(false);
+      setSelectionRect(null);
+      setMiniTooltipRect(null);
+      setIsTempHighlightVisible(false);
+
+      // Reset tooltip state
+      setEditorValue('');
+      setTopics([]);
+
+      // Show actual highlight when we get response from server
+      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
+        (res: IPostRes) => {
+          if (res.success && res.post) {
+            removeTempHighlight();
+            addPosts(new Post(res.post), HighlightType.Default);
+          } else {
+            // Show that highlighting failed
+            throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
+          }
+        },
+      );
+    }
   };
+
+  const onEditorChange = (
+    content: string,
+    delta: Delta,
+    source: Sources,
+    editor: UnprivilegedEditor,
+  ) => {
+    setEditorValue(content);
+  };
+
+  useEffect(() => {
+    // Workaround to force Quill placeholder to change dynamically
+    const editor = props.root.querySelector('.ql-editor');
+    if (!!hoveredPost) {
+      editor?.setAttribute('data-placeholder', 'No added note');
+    } else {
+      editor?.setAttribute('data-placeholder', 'Add note');
+    }
+  }, [hoveredPost]);
+
+  useEffect(() => {
+    // Force Quill to focus editor on render
+    if (wasMiniTooltipClicked) {
+      quill.current?.getEditor().focus();
+    }
+  }, [wasMiniTooltipClicked]);
 
   const renderTopics = useCallback(
     (post?: Post) => {
@@ -430,50 +481,6 @@ export default function Tooltip(props: TooltipProps) {
     ) : null;
   };
 
-  const onEditorChange = (
-    content: string,
-    delta: Delta,
-    source: Sources,
-    editor: UnprivilegedEditor,
-  ) => {
-    setEditorValue(content);
-  };
-
-  const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    if (tempHighlight) {
-      const postReq = {
-        content: editorValue,
-        url: window.location.href,
-        taggedUserIds: [],
-        highlight: tempHighlight,
-        topics: topics,
-      };
-
-      // Hide tooltip
-      setIsSelectionHovered(false);
-      setSelectionRect(null);
-      setMiniTooltipRect(null);
-      setIsTempHighlightVisible(false);
-
-      // Reset tooltip state
-      setEditorValue('');
-      setTopics([]);
-
-      // Show actual highlight when we get response from server
-      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
-        (res: IPostRes) => {
-          if (res.success && res.post) {
-            removeTempHighlight();
-            addPosts(new Post(res.post), HighlightType.Default);
-          } else {
-            // Show that highlighting failed
-            throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
-          }
-        },
-      );
-    }
-  };
-
   if (hoveredPost) {
     // Readonly post
     return (
@@ -519,6 +526,7 @@ export default function Tooltip(props: TooltipProps) {
           onClick={() => {
             addTempHighlight();
             setWasMiniTooltipClicked(true);
+            quill.current?.getEditor().focus();
           }}
         >
           alt+f
