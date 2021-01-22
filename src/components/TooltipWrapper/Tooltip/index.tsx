@@ -48,8 +48,10 @@ export default function Tooltip(props: TooltipProps) {
   const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
   const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
-  const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
-  const tooltip = useRef<HTMLDivElement>(null);
+
+  const [miniTooltipRect, setMiniTooltipRect] = useState<DOMRect | null>(null);
+  const [wasMiniTooltipClicked, setWasMiniTooltipClicked] = useState(false);
+  const miniTooltip = useRef<HTMLDivElement>(null);
 
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
@@ -190,12 +192,33 @@ export default function Tooltip(props: TooltipProps) {
     dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
   };
 
+  // TODO: Store temp highlight stuff inside highlighter
+  const addTempHighlight = () => {
+    const selection = getSelection();
+    if (selection?.toString()) {
+      const range = selection.getRangeAt(0);
+      const textRange = getTextRangeFromRange(range);
+      setTempHighlight({
+        textRange: textRange,
+        url: window.location.href,
+      });
+
+      const id = uuid();
+      setTempHighlightId(id);
+      setTempHighlightRange(range.cloneRange());
+      setIsTempHighlightVisible(true);
+      highlighter.addHighlightTemp(range, user?.color, HighlightType.Active);
+      selection.removeAllRanges();
+    }
+  };
+
   const removeTempHighlight = useCallback(() => {
     highlighter.removeHighlightTemp();
     setTempHighlight(null);
     setTempHighlightId('');
     setTempHighlightRange(null);
     setIsTempHighlightVisible(false);
+    setWasMiniTooltipClicked(false);
   }, [tempHighlightId]);
 
   useEffect(() => {
@@ -249,14 +272,14 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [hoveredPost]);
 
-  const onSelectionChange = () => {
+  const onSelectionChange = useCallback(() => {
     // Don't set isSelectionVisible to true here because we only want tooltip to appear after
     // user has finished dragging selection. We set this in positionTooltip instead.
     const selection = getSelection();
     if (!selectionExists(selection)) {
       setIsSelectionHovered(false);
     }
-  };
+  }, [tempHighlightRange]);
 
   useEffect(() => {
     document.addEventListener('selectionchange', onSelectionChange);
@@ -312,7 +335,7 @@ export default function Tooltip(props: TooltipProps) {
     (e: MouseEvent) => {
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
       // as cursor enters and leaves selection
-      if (e.buttons === 1) {
+      if (e.buttons === 1 || wasMiniTooltipClicked) {
         return;
       }
 
@@ -321,8 +344,8 @@ export default function Tooltip(props: TooltipProps) {
       if (
         isSelectionHovered &&
         !!selectionRect &&
-        !!tooltipRect &&
-        (isMouseBetweenRects(e, selectionRect, tooltipRect) || isMouseInRect(e, selectionRect))
+        !!miniTooltipRect &&
+        (isMouseBetweenRects(e, selectionRect, miniTooltipRect) || isMouseInRect(e, selectionRect))
       ) {
         // Do nothing
       } else if (
@@ -330,13 +353,13 @@ export default function Tooltip(props: TooltipProps) {
         !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
       ) {
         setIsSelectionHovered(true);
-        setTooltipRect(tooltip.current!.getBoundingClientRect());
+        setMiniTooltipRect(miniTooltip.current!.getBoundingClientRect());
         setSelectionRect(rect);
       } else {
         setIsSelectionHovered(false);
       }
     },
-    [isSelectionHovered, selectionRect, tooltipRect],
+    [isSelectionHovered, selectionRect, miniTooltipRect, wasMiniTooltipClicked],
   );
 
   useEffect(() => {
@@ -407,26 +430,6 @@ export default function Tooltip(props: TooltipProps) {
     ) : null;
   };
 
-  // TODO: Store temp highlight stuff inside highlighter
-  const onMouseDownTooltip = () => {
-    const selection = getSelection();
-    if (selection?.toString()) {
-      const range = selection.getRangeAt(0);
-      const textRange = getTextRangeFromRange(range);
-      setTempHighlight({
-        textRange: textRange,
-        url: window.location.href,
-      });
-
-      const id = uuid();
-      setTempHighlightId(id);
-      setTempHighlightRange(range.cloneRange());
-      setIsTempHighlightVisible(true);
-      highlighter.addHighlightTemp(range, user?.color, HighlightType.Active);
-      selection.removeAllRanges();
-    }
-  };
-
   const onEditorChange = (
     content: string,
     delta: Delta,
@@ -449,7 +452,7 @@ export default function Tooltip(props: TooltipProps) {
       // Hide tooltip
       setIsSelectionHovered(false);
       setSelectionRect(null);
-      setTooltipRect(null);
+      setMiniTooltipRect(null);
       setIsTempHighlightVisible(false);
 
       // Reset tooltip state
@@ -472,6 +475,7 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   if (hoveredPost) {
+    // Readonly post
     return (
       <div
         className={classNames('TbdTooltip', {
@@ -500,26 +504,32 @@ export default function Tooltip(props: TooltipProps) {
       </div>
     );
   } else if (isSelectionHovered || isTempHighlightVisible) {
-    return (
+    // Mini-tooltip/tooltip editor
+    return !wasMiniTooltipClicked ? (
       <div
         className={classNames('TroveMiniTooltip', {
           'TbdTooltip--position-above': positionEdge === Edge.Top,
           'TbdTooltip--position-below': positionEdge === Edge.Bottom,
         })}
-        // onMouseDown={onMouseDownTooltip}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-        ref={tooltip}
+        ref={miniTooltip}
       >
-        <button className="TroveMiniTooltip__NewPostButton">alt+f</button>
+        <button
+          className="TroveMiniTooltip__NewPostButton"
+          onClick={() => {
+            addTempHighlight();
+            setWasMiniTooltipClicked(true);
+          }}
+        >
+          alt+f
+        </button>
       </div>
-    );
-    return (
+    ) : (
       <div
         className={classNames('TbdTooltip', {
           'TbdTooltip--position-above': positionEdge === Edge.Top,
           'TbdTooltip--position-below': positionEdge === Edge.Bottom,
         })}
-        onMouseDown={onMouseDownTooltip}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
       >
         {renderTopics()}
