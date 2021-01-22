@@ -34,7 +34,7 @@ export default function Popup() {
       notifications: [],
     }).then((items) => {
       setIsAuthenticated(items.isAuthenticated);
-      if (items.isAuthenticated) {
+      if (items.isAuthenticated && items.user) {
         setNotifications(items.notifications.map((n: INotification) => new Notification(n)));
         setIsExtensionOn(items.isExtensionOn);
         setUser(new User(items.user));

@@ -23,6 +23,8 @@ socket.on('connect', () => {
 });
 
 socket.on(SocketMessageType.Notifications, (notifications: INotification[], notificationDisplayIcon: number) => {
+  console.log("notifications", notifications)
+  console.log("notificationDisplayIcon", notificationDisplayIcon)
   set({ 
     notifications,
     notificationDisplayIcon
@@ -30,11 +32,14 @@ socket.on(SocketMessageType.Notifications, (notifications: INotification[], noti
 });
 
 socket.on(SocketMessageType.Notification, (n: Notification) => {
-  get(['notifications', 'notificationDisplayIcon']).then((vals) => {
-    const newNotifications = [n].concat(vals['notifications'])
+  get({
+    notifications: [],
+    notificationDisplayIcon: 0,
+  }).then((vals) => {
+    const newNotifications = [n].concat(vals.notifications)
     const popupOpen = chrome.extension.getViews({ type: "popup" }).length !== 0;
     if (!popupOpen) {
-      const notificationDisplayIcon = vals['notificationDisplayIcon'] + 1
+      const notificationDisplayIcon = vals.notificationDisplayIcon + 1
       set({
         notifications: newNotifications,
         notificationDisplayIcon,
@@ -161,7 +166,7 @@ chrome.runtime.onMessageExternal.addListener((
 ) => {
   switch (message.type) {
     case EMessageType.Exists: {
-      sendResponse(true);
+      sendResponse({ success: true });
       break;
     }
     case EMessageType.Login: {

@@ -94,9 +94,9 @@ export default function Login({}: LoginProps) {
         {loading && <div className='TbdAuth__Loading'><LoadingOutlined /></div>}
         Login
       </button>
-      <div className='TbdLogin__SignupHere' onClick={goToSignup}>
+      {/* <div className='TbdLogin__SignupHere' onClick={goToSignup}>
         or signup here
-      </div>
+      </div> */}
       </div>
       <div className={`TbdAuth__Error ${errorMessage 
           ? 'TbdAuth__Error--show' 

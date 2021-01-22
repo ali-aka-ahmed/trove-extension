@@ -1,6 +1,7 @@
 import Color from 'color';
 import React from 'react';
 import ReactQuill from 'react-quill';
+import { ORIGIN } from '../../../../config';
 import NotificationObject from '../../../../entities/Notification';
 import { get1, set } from '../../../../utils/chrome/storage';
 import { sendMessageToExtension, SocketMessageType } from '../../../../utils/chrome/tabs';
@@ -21,7 +22,11 @@ export default function Notification({ notification }: NotificationProps) {
     notification.read = true
     ns[i] = notification
     await set({ notifications: ns })
-    if (notification.url) chrome.tabs.create({url: notification.url});
+    if (notification.url) {
+      chrome.tabs.create({url: notification.url});
+    } else {
+      chrome.tabs.create({url: `${ORIGIN}/${notification.sender.username}`});
+    }
   }
 	return (
     <div
