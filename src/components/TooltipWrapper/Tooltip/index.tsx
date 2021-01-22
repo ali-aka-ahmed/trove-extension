@@ -105,12 +105,12 @@ export default function Tooltip(props: TooltipProps) {
       if (!tooltipRange) return;
 
       const rect = tooltipRange.getBoundingClientRect();
-      if (rect.bottom + TOOLTIP_HEIGHT > document.documentElement.clientHeight) {
+      if (rect.bottom + rect.height > document.documentElement.clientHeight) {
         setPositionEdge(Edge.Top);
         setPosition(
           new Point(
             rect.left + window.scrollX,
-            rect.top + window.scrollY - TOOLTIP_HEIGHT - TOOLTIP_MARGIN,
+            rect.top + window.scrollY - rect.height - TOOLTIP_MARGIN,
           ),
         );
       } else {
@@ -218,7 +218,6 @@ export default function Tooltip(props: TooltipProps) {
     setTempHighlightId('');
     setTempHighlightRange(null);
     setIsTempHighlightVisible(false);
-    setWasMiniTooltipClicked(false);
   }, [tempHighlightId]);
 
   const addTopic = (topic: Partial<ITopic>) => {
@@ -226,6 +225,13 @@ export default function Tooltip(props: TooltipProps) {
     const newTopics = topics.slice().filter((t) => t.id !== topic.id);
     newTopics.unshift(topic);
     setTopics(newTopics);
+  };
+
+  const resetTooltip = () => {
+    removeTempHighlight();
+    setWasMiniTooltipClicked(false);
+    setTopics([]); //? Do we want to reset topics every time?
+    setEditorValue('');
   };
 
   useEffect(() => {
@@ -425,10 +431,10 @@ export default function Tooltip(props: TooltipProps) {
 
   useEffect(() => {
     // Force Quill to focus editor on render
-    if (wasMiniTooltipClicked) {
+    if (wasMiniTooltipClicked || !hoveredPost) {
       quill.current?.getEditor().focus();
     }
-  }, [wasMiniTooltipClicked]);
+  }, [hoveredPost, wasMiniTooltipClicked]);
 
   const renderTopics = useCallback(
     (post?: Post) => {
