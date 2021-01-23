@@ -17,12 +17,7 @@ import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
-import {
-  getHoveredRect,
-  isMouseBetweenRects,
-  isMouseInRect,
-  selectionExists,
-} from './helpers/selection';
+import { getHoveredRect, isMouseBetweenRects, selectionExists } from './helpers/selection';
 import InputPill from './inputPill';
 import Pill from './pill';
 
@@ -120,10 +115,12 @@ export default function Tooltip(props: TooltipProps) {
     [getTooltipRange],
   );
 
-  useEffect(() => {
-    window.addEventListener('resize', () => positionTooltip());
-    return () => window.removeEventListener('resize', () => positionTooltip());
-  }, [positionTooltip]);
+  const updateRects = () => {
+    const selection = getSelection()!;
+    if (selectionExists(selection)) {
+      // setSelectionRect(selection.getRangeAt(0).getClientRects)
+    }
+  };
 
   // TODO: Maybe move active highlight logic to highlighter?
   const onHighlightMouseEnter = useCallback(
@@ -233,7 +230,7 @@ export default function Tooltip(props: TooltipProps) {
     setTopics([]); //? Do we want to reset topics every time?
     setEditorValue('');
 
-    // Making the assumption that whenever we want to reset tooltip, we are also resetting selection
+    // Making the assumption that whenever we reset tooltip, we are also resetting selection
     setIsSelectionHovered(false);
     setSelectionRect(null);
   };
@@ -278,6 +275,22 @@ export default function Tooltip(props: TooltipProps) {
       removePosts(posts);
     }
   }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts]);
+
+  const onScroll = () => {
+    setIsSelectionHovered(false);
+    setMiniTooltipRect(null);
+    setSelectionRect(null);
+  };
+
+  useEffect(() => {
+    document.addEventListener('scroll', onScroll);
+    return () => document.removeEventListener('scroll', onScroll);
+  }, [positionTooltip]);
+
+  useEffect(() => {
+    window.addEventListener('resize', () => positionTooltip());
+    return () => window.removeEventListener('resize', () => positionTooltip());
+  }, [positionTooltip]);
 
   const onSelectionChange = useCallback(() => {
     // Don't set isSelectionVisible to true here because we only want tooltip to appear after
@@ -335,6 +348,17 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mouseup', onDocumentMouseUp);
   }, [onDocumentMouseUp]);
 
+  const stringifyRect = (rect: DOMRect) => {
+    return `(top=${rect.top}, bottom=${rect.bottom}, x=${rect.x}, y=${rect.y})`;
+  };
+
+  const stringifyRectList = (rectList: DOMRectList) => {
+    let str = '';
+    for (let i = 0; i < rectList.length; i++) {
+      str += stringifyRect(rectList[i]);
+    }
+    return str;
+  };
   const onMouseMovePage = useCallback(
     (e: MouseEvent) => {
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
@@ -343,15 +367,21 @@ export default function Tooltip(props: TooltipProps) {
         return;
       }
 
+      // console.log(e.pageX, e.pageY, selectionRect)
       const selection = getSelection()!;
       let rect;
       if (
         isSelectionHovered &&
         !!selectionRect &&
         !!miniTooltipRect &&
-        (isMouseBetweenRects(e, selectionRect, miniTooltipRect) || isMouseInRect(e, selectionRect))
+        isMouseBetweenRects(e, selectionRect, miniTooltipRect)
       ) {
         // Do nothing
+        console.log(
+          e.pageY,
+          stringifyRect(selectionRect),
+          stringifyRectList(selection.getRangeAt(0).getClientRects()),
+        );
       } else if (
         selectionExists(selection) &&
         !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
@@ -361,6 +391,8 @@ export default function Tooltip(props: TooltipProps) {
         setSelectionRect(rect);
       } else {
         setIsSelectionHovered(false);
+        setMiniTooltipRect(null);
+        setSelectionRect(null);
       }
     },
     [isSelectionHovered, selectionRect, miniTooltipRect, wasMiniTooltipClicked],
