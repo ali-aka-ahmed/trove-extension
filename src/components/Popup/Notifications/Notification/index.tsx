@@ -1,6 +1,7 @@
 import Color from 'color';
 import React from 'react';
 import ReactQuill from 'react-quill';
+import { ORIGIN } from '../../../../config';
 import NotificationObject from '../../../../entities/Notification';
 import { get1, set } from '../../../../utils/chrome/storage';
 import { sendMessageToExtension, SocketMessageType } from '../../../../utils/chrome/tabs';
@@ -16,16 +17,20 @@ export default function Notification({ notification }: NotificationProps) {
   const handleClick = async () => {
     sendMessageToExtension({
       type: SocketMessageType.ReadNotification,
-      notificationId: notification.id,
+      notificationId: notification.id
     });
-    const ns: NotificationObject[] = await get1('notifications');
-    const i = ns.findIndex((n) => n.id === notification.id);
-    notification.read = true;
-    ns[i] = notification;
-    await set({ notifications: ns });
-    if (notification.url) chrome.tabs.create({ url: notification.url });
-  };
-  return (
+    const ns: NotificationObject[] = await get1('notifications')
+    const i = ns.findIndex((n) => n.id === notification.id)
+    notification.read = true
+    ns[i] = notification
+    await set({ notifications: ns })
+    if (notification.url) {
+      chrome.tabs.create({url: notification.url});
+    } else {
+      chrome.tabs.create({url: `${ORIGIN}/${notification.sender.username}`});
+    }
+  }
+	return (
     <div
       className={`TbdNotificationWrapper ${!notification.read && 'TbdNotificationWrapper--unread'}`}
       onClick={handleClick}
