@@ -15,6 +15,7 @@ import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs'
 import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
+import { getOS, OS } from './helpers/os';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
 import { getHoveredRect, isMouseBetweenRects, selectionExists } from './helpers/selection';
@@ -554,6 +555,7 @@ export default function Tooltip(props: TooltipProps) {
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         ref={miniTooltip}
       >
+        <div className="TroveMiniTooltip__Logo"></div>
         <button
           className="TroveMiniTooltip__NewPostButton"
           onClick={() => {
@@ -561,7 +563,10 @@ export default function Tooltip(props: TooltipProps) {
             setWasMiniTooltipClicked(true);
           }}
         >
-          alt+f
+          <p className="TroveMiniTooltip__NewPostButton__PrimaryText">New post</p>
+          <p className="TroveMiniTooltip__NewPostButton__SecondaryText">{`(${
+            getOS() === OS.Windows ? 'ctrl' : 'cmd'
+          }+d)`}</p>
         </button>
       </div>
     ) : (

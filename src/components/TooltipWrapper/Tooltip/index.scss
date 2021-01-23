@@ -131,6 +131,23 @@ $tooltip-padding: 10px;
   border-radius: 3px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 30px;
   height: 32px;
+  width: fit-content;
+  display: flex;
+  flex-direction: row;
+}
+
+.TroveMiniTooltip:hover {
+  background-color: #F7FAFE;
+}
+
+.TroveMiniTooltip__Logo {
+  height: 32px;
+  width: 32px;
+  background-color: transparent;
+  background-image: url('../../../../public/images/logo.svg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
 }
 
 .TroveMiniTooltip__NewPostButton {
@@ -138,13 +155,24 @@ $tooltip-padding: 10px;
   outline: none;
   cursor: pointer;
   height: 100%;
-  width: 100%;
-  background-color: #fff;
-  padding: 4px 8px;
+  background-color: transparent;
+  padding: 4px 10px;
   border-radius: 3px;
+  display: flex;
+  flex-direction: row;
+  margin-left: -12px;
+  line-height: 24px;
 }
 
-.TroveMiniTooltip__NewPostButton:hover {
-  background-color: #0d77e2;
-  color: #fff;
+.TroveMiniTooltip__NewPostButton__PrimaryText {
+  color: #000;
+  font-size: 14px;
+  width: 60px;
+}
+
+.TroveMiniTooltip__NewPostButton__SecondaryText {
+  color: #ababab;
+  letter-spacing: 0.3px;
+  font-size: 12px;
+  margin-left: 6px;
 }
