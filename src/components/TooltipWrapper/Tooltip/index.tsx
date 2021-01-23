@@ -305,7 +305,7 @@ export default function Tooltip(props: TooltipProps) {
     if (!selectionExists(selection)) {
       setIsSelectionHovered(false);
     }
-  }, [tempHighlightRange]);
+  }, []);
 
   useEffect(() => {
     document.addEventListener('selectionchange', onSelectionChange);
@@ -427,9 +427,17 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   const onKeyDownPage = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectionExists(getSelection())) {
-      e.preventDefault();
-      miniTooltipToTooltip();
+    if (getOS() === OS.Mac) {
+      if (e.metaKey && e.key === 'd' && selectionExists(getSelection())) {
+        e.preventDefault();
+        miniTooltipToTooltip();
+      }
+    } else {
+      // Assume Windows
+      if (e.ctrlKey && e.key === 'd' && selectionExists(getSelection())) {
+        e.preventDefault();
+        miniTooltipToTooltip();
+      }
     }
   };
 
