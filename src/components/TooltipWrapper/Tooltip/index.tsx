@@ -395,12 +395,7 @@ export default function Tooltip(props: TooltipProps) {
   );
 
   useEffect(() => {
-    // if (isSelectionVisible) {
     document.addEventListener('mousemove', onMouseMovePage);
-    // } else {
-    //   document.removeEventListener('mousemove', onMouseMovePage);
-    // }
-
     return () => document.removeEventListener('mousemove', onMouseMovePage);
   }, [onMouseMovePage]);
 
