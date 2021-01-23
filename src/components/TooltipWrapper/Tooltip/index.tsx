@@ -277,6 +277,11 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts]);
 
+  const miniTooltipToTooltip = () => {
+    addTempHighlight();
+    setWasMiniTooltipClicked(true);
+  };
+
   const onScroll = () => {
     setIsSelectionHovered(false);
     setMiniTooltipRect(null);
@@ -349,17 +354,6 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mouseup', onDocumentMouseUp);
   }, [onDocumentMouseUp]);
 
-  const stringifyRect = (rect: DOMRect) => {
-    return `(top=${rect.top}, bottom=${rect.bottom}, x=${rect.x}, y=${rect.y})`;
-  };
-
-  const stringifyRectList = (rectList: DOMRectList) => {
-    let str = '';
-    for (let i = 0; i < rectList.length; i++) {
-      str += stringifyRect(rectList[i]);
-    }
-    return str;
-  };
   const onMouseMovePage = useCallback(
     (e: MouseEvent) => {
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
@@ -378,11 +372,6 @@ export default function Tooltip(props: TooltipProps) {
         isMouseBetweenRects(e, selectionRect, miniTooltipRect)
       ) {
         // Do nothing
-        console.log(
-          e.pageY,
-          stringifyRect(selectionRect),
-          stringifyRectList(selection.getRangeAt(0).getClientRects()),
-        );
       } else if (
         selectionExists(selection) &&
         !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
@@ -436,6 +425,18 @@ export default function Tooltip(props: TooltipProps) {
       );
     }
   };
+
+  const onKeyDownPage = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectionExists(getSelection())) {
+      e.preventDefault();
+      miniTooltipToTooltip();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', onKeyDownPage);
+    return () => document.removeEventListener('keydown', onKeyDownPage);
+  }, [onKeyDownPage]);
 
   const onEditorChange = (
     content: string,
@@ -556,13 +557,7 @@ export default function Tooltip(props: TooltipProps) {
         ref={miniTooltip}
       >
         <div className="TroveMiniTooltip__Logo"></div>
-        <button
-          className="TroveMiniTooltip__NewPostButton"
-          onClick={() => {
-            addTempHighlight();
-            setWasMiniTooltipClicked(true);
-          }}
-        >
+        <button className="TroveMiniTooltip__NewPostButton" onClick={miniTooltipToTooltip}>
           <p className="TroveMiniTooltip__NewPostButton__PrimaryText">New post</p>
           <p className="TroveMiniTooltip__NewPostButton__SecondaryText">{`(${
             getOS() === OS.Windows ? 'ctrl' : 'cmd'
