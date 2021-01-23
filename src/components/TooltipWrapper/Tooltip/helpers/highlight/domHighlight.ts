@@ -26,7 +26,6 @@ export const addDOMHighlight = (range: Range, color: string = 'yellow') => {
       hasContent = false;
     } else if (range.startOffset > 0) {
       start = (start as Text).splitText(range.startOffset);
-
       if (end === start.previousSibling) {
         end = start;
       }

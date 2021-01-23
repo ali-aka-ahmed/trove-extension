@@ -8,6 +8,27 @@ export const selectionExists = (selection: Selection | null) => {
   );
 };
 
+export const isSelectionInEditableElement = () => {
+  const selection = getSelection()!;
+  if (selectionExists(selection)) {
+    const range = selection.getRangeAt(0);
+    for (
+      let container: Node | null = range.commonAncestorContainer;
+      container !== null;
+      container = container.parentNode
+    ) {
+      if (container.nodeType !== Node.ELEMENT_NODE) continue;
+      const element = container as HTMLElement;
+      const name = element.tagName.toLowerCase();
+      if (name === 'input' || name === 'textarea' || element.isContentEditable) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
 export const getHoveredRect = (e: MouseEvent, rects: DOMRectList | null) => {
   if (rects) {
     for (let i = 0; i < rects.length; i++) {
@@ -32,6 +53,7 @@ export const isMouseInRect = (e: MouseEvent, rect: DOMRect): boolean => {
 /**
  * Computes the if the mouse is contained within the polygon defined by the three furthest
  * corners on both given rectangles.
+ * TODO: make this work when r1 is lower than r2 (otherwise tooltip on top wont work)
  * @param e
  * @param r1 The higher rect on the page
  * @param r2 The lower rect on the page

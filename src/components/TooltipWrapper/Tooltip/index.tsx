@@ -18,12 +18,18 @@ import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highligh
 import { getOS, OS } from './helpers/os';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
-import { getHoveredRect, isMouseBetweenRects, selectionExists } from './helpers/selection';
+import {
+  getHoveredRect,
+  isMouseBetweenRects,
+  isSelectionInEditableElement,
+  selectionExists,
+} from './helpers/selection';
 import InputPill from './inputPill';
 import Pill from './pill';
 
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
+const MINI_TOOLTIP_HEIGHT = 32;
 
 interface TooltipProps {
   root: ShadowRoot;
@@ -93,6 +99,7 @@ export default function Tooltip(props: TooltipProps) {
 
   /**
    * Position and display tooltip according to change in selection.
+   * TODO: need to call this when mini-tooltip => tooltip, and make height variable between the two
    */
   const positionTooltip = useCallback(
     (range?: Range) => {
@@ -105,7 +112,7 @@ export default function Tooltip(props: TooltipProps) {
         setPosition(
           new Point(
             rect.left + window.scrollX,
-            rect.top + window.scrollY - rect.height - TOOLTIP_MARGIN,
+            rect.top + window.scrollY - MINI_TOOLTIP_HEIGHT - TOOLTIP_MARGIN,
           ),
         );
       } else {
@@ -358,11 +365,10 @@ export default function Tooltip(props: TooltipProps) {
     (e: MouseEvent) => {
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
       // as cursor enters and leaves selection
-      if (e.buttons === 1 || wasMiniTooltipClicked) {
+      if (e.buttons === 1 || wasMiniTooltipClicked || isSelectionInEditableElement()) {
         return;
       }
 
-      // console.log(e.pageX, e.pageY, selectionRect)
       const selection = getSelection()!;
       let rect;
       if (

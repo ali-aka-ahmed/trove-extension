@@ -1,6 +1,6 @@
 import Color from 'color';
-import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from '.';
 import Post from '../../../../../entities/Post';
+import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from './domHighlight';
 import { getRangeFromTextRange } from './textRange';
 
 interface HighlightData {
