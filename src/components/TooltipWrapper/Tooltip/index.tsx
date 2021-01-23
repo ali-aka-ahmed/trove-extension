@@ -53,7 +53,7 @@ export default function Tooltip(props: TooltipProps) {
 
   const [miniTooltipRect, setMiniTooltipRect] = useState<DOMRect | null>(null);
   const [wasMiniTooltipClicked, setWasMiniTooltipClicked] = useState(false);
-  const miniTooltip = useRef<HTMLDivElement>(null);
+  const tooltip = useRef<HTMLDivElement>(null);
 
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
@@ -99,7 +99,6 @@ export default function Tooltip(props: TooltipProps) {
 
   /**
    * Position and display tooltip according to change in selection.
-   * TODO: need to call this when mini-tooltip => tooltip, and make height variable between the two
    */
   const positionTooltip = useCallback(
     (range?: Range) => {
@@ -107,12 +106,13 @@ export default function Tooltip(props: TooltipProps) {
       if (!tooltipRange) return;
 
       const rect = tooltipRange.getBoundingClientRect();
-      if (rect.bottom + rect.height > document.documentElement.clientHeight) {
+      const height = tooltip.current?.getBoundingClientRect().height || MINI_TOOLTIP_HEIGHT;
+      if (rect.bottom + height > document.documentElement.clientHeight) {
         setPositionEdge(Edge.Top);
         setPosition(
           new Point(
             rect.left + window.scrollX,
-            rect.top + window.scrollY - MINI_TOOLTIP_HEIGHT - TOOLTIP_MARGIN,
+            rect.top + window.scrollY - height - TOOLTIP_MARGIN,
           ),
         );
       } else {
@@ -120,15 +120,21 @@ export default function Tooltip(props: TooltipProps) {
         setPosition(new Point(rect.left + window.scrollX, rect.bottom + window.scrollY));
       }
     },
-    [getTooltipRange],
+    [tooltip, getTooltipRange],
   );
 
-  const updateRects = () => {
-    const selection = getSelection()!;
-    if (selectionExists(selection)) {
-      // setSelectionRect(selection.getRangeAt(0).getClientRects)
+  useEffect(() => {
+    // Reposition tooltip after clicking mini-tooltip to account for possible shift due to change
+    // in size
+    if (wasMiniTooltipClicked) {
+      positionTooltip();
     }
-  };
+  }, [wasMiniTooltipClicked]);
+
+  useEffect(() => {
+    positionTooltip();
+    setHoveredPost(hoveredPostBuffer);
+  }, [hoveredPostBuffer]);
 
   // TODO: Maybe move active highlight logic to highlighter?
   const onHighlightMouseEnter = useCallback(
@@ -138,7 +144,7 @@ export default function Tooltip(props: TooltipProps) {
       highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
       setHoveredPostBuffer(post);
     },
-    [highlighter, positionTooltip],
+    [highlighter],
   );
 
   const onHighlightMouseLeave = useCallback(
@@ -148,13 +154,8 @@ export default function Tooltip(props: TooltipProps) {
       highlighter.modifyHighlightTemp(HighlightType.Active);
       setHoveredPostBuffer(null);
     },
-    [highlighter, positionTooltip],
+    [highlighter],
   );
-
-  useEffect(() => {
-    positionTooltip();
-    setHoveredPost(hoveredPostBuffer);
-  }, [hoveredPostBuffer]);
 
   // TODO: Can we put these useeffects in a for loop by event?
   useEffect(() => {
@@ -222,7 +223,7 @@ export default function Tooltip(props: TooltipProps) {
     setTempHighlightId('');
     setTempHighlightRange(null);
     setIsTempHighlightVisible(false);
-  }, [tempHighlightId]);
+  }, []);
 
   const addTopic = (topic: Partial<ITopic>) => {
     if (topics.some((t) => t.text?.toLowerCase() === topic.text?.toLowerCase())) return;
@@ -289,21 +290,25 @@ export default function Tooltip(props: TooltipProps) {
     setWasMiniTooltipClicked(true);
   };
 
-  const onScroll = () => {
+  const onScroll = useCallback(() => {
     setIsSelectionHovered(false);
     setMiniTooltipRect(null);
     setSelectionRect(null);
-  };
+  }, []);
 
   useEffect(() => {
     document.addEventListener('scroll', onScroll);
     return () => document.removeEventListener('scroll', onScroll);
+  }, [onScroll]);
+
+  const onResize = useCallback(() => {
+    positionTooltip();
   }, [positionTooltip]);
 
   useEffect(() => {
-    window.addEventListener('resize', () => positionTooltip());
-    return () => window.removeEventListener('resize', () => positionTooltip());
-  }, [positionTooltip]);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [onResize]);
 
   const onSelectionChange = useCallback(() => {
     // Don't set isSelectionVisible to true here because we only want tooltip to appear after
@@ -383,7 +388,7 @@ export default function Tooltip(props: TooltipProps) {
         !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
       ) {
         setIsSelectionHovered(true);
-        setMiniTooltipRect(miniTooltip.current!.getBoundingClientRect());
+        setMiniTooltipRect(tooltip.current!.getBoundingClientRect());
         setSelectionRect(rect);
       } else {
         setIsSelectionHovered(false);
@@ -563,7 +568,7 @@ export default function Tooltip(props: TooltipProps) {
           'TbdTooltip--position-below': positionEdge === Edge.Bottom,
         })}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-        ref={miniTooltip}
+        ref={tooltip}
       >
         <div className="TroveMiniTooltip__Logo"></div>
         <button className="TroveMiniTooltip__NewPostButton" onClick={miniTooltipToTooltip}>
@@ -580,6 +585,7 @@ export default function Tooltip(props: TooltipProps) {
           'TbdTooltip--position-below': positionEdge === Edge.Bottom,
         })}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+        ref={tooltip}
       >
         {renderTopics()}
         <ReactQuill

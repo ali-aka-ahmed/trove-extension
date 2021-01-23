@@ -53,13 +53,18 @@ export const isMouseInRect = (e: MouseEvent, rect: DOMRect): boolean => {
 /**
  * Computes the if the mouse is contained within the polygon defined by the three furthest
  * corners on both given rectangles.
- * TODO: make this work when r1 is lower than r2 (otherwise tooltip on top wont work)
  * @param e
- * @param r1 The higher rect on the page
- * @param r2 The lower rect on the page
+ * @param r1
+ * @param r2
  */
 export const isMouseBetweenRects = (e: MouseEvent, r1: DOMRect, r2: DOMRect): boolean => {
-  // const x = e.
+  // Ensure that r1 is always the higher rect and r2 is the lower rect
+  if (r2.bottom < r1.bottom) {
+    const temp = r1;
+    r1 = r2;
+    r2 = temp;
+  }
+
   if (
     e.clientY < r1.top ||
     e.clientY > r2.bottom ||
