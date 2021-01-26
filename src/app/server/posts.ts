@@ -9,43 +9,46 @@ export type IPostsRes = PostsRes & AxiosRes;
 export type IPostRes = PostRes & AxiosRes;
 
 export const getPosts = async (url: string): Promise<IPostsRes | IUserRes> => {
-  const args: GetPostsReqBody = { url }
+  const args: GetPostsReqBody = { url };
   return await api.post('/posts/', args);
-}
+};
 
 export const getPost = async (postId: string): Promise<IPostRes> => {
   const params: BaseParams = { id: postId };
   return await api.get(`/posts/${params.id}`);
-}
+};
 
 export const createPost = async (args: CreatePostReqBody): Promise<IPostRes> => {
   return await api.post('/posts/create', args);
-}
+};
 
-export const createReply = async (parentPostId: string, args: CreateCommentReqBody): Promise<IPostRes> => {
+export const createReply = async (
+  parentPostId: string,
+  args: CreateCommentReqBody,
+): Promise<IPostRes> => {
   const params: BaseParams = { id: parentPostId };
   return await api.post(`/posts/${params.id}/comment/create`, args);
-}
+};
 
 export const deletePostAndChildren = async (postId: string): Promise<AxiosRes> => {
   const params: BaseParams = { id: postId };
   return await api.get(`/posts/${params.id}/delete`);
-}
+};
 
 export const editPost = async (postId: string, args: EditPostReqBody): Promise<AxiosRes> => {
   const params: BaseParams = { id: postId };
   return await api.post(`/posts/${params.id}/update`, args);
-}
+};
 
 export const likePost = async (postId: string): Promise<AxiosRes> => {
   const params: BaseParams = { id: postId };
   return await api.get(`/posts/${params.id}/like/create`);
-}
+};
 
 export const unlikePost = async (postId: string): Promise<AxiosRes> => {
   const params: BaseParams = { id: postId };
   return await api.get(`/posts/${params.id}/like/delete`);
-}
+};
 
 /**
  * POST /posts/
@@ -58,7 +61,7 @@ type GetPostsReqBody = {
   url?: string;
   userId?: string;
   username?: string; // same filtering effect as above, if you want to search by username
-}
+};
 
 /**
  * POST /posts/create

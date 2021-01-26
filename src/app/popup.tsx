@@ -7,8 +7,8 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tab) => {
 });
 
 // chrome.runtime.onMessage.addListener((
-//   message: Message, 
-//   sender: chrome.runtime.MessageSender, 
+//   message: Message,
+//   sender: chrome.runtime.MessageSender,
 //   sendResponse: (response: any) => void
 // ) => {
 //   if (message.type === MessageType.GetTabId) {

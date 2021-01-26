@@ -3,11 +3,11 @@ import 'antd/dist/antd.css';
 import React, { useEffect, useState } from 'react';
 import 'react-quill/dist/quill.bubble.css';
 import { ErrorOrigin } from '../../app/server/misc';
-import { socket } from '../../app/socket';
 import Notification from '../../entities/Notification';
 import User from '../../entities/User';
 import INotification from '../../models/INotification';
 import { get, set } from '../../utils/chrome/storage';
+import { sendMessageToExtension, SocketMessageType } from '../../utils/chrome/tabs';
 import ErrorBoundary from '../errorBoundary/index';
 import BottomBar from './BottomBar';
 import Login from './Login';
@@ -16,8 +16,8 @@ import Profile from './Profile';
 import './style.scss';
 
 export default function Popup() {
-  const [tabKey, setTabKey] = useState("1");
-  
+  const [tabKey, setTabKey] = useState('1');
+
   /**
    * Global state.
    */
@@ -34,7 +34,7 @@ export default function Popup() {
       notifications: [],
     }).then((items) => {
       setIsAuthenticated(items.isAuthenticated);
-      if (items.isAuthenticated) {
+      if (items.isAuthenticated && items.user) {
         setNotifications(items.notifications.map((n: INotification) => new Notification(n)));
         setIsExtensionOn(items.isExtensionOn);
         setUser(new User(items.user));
@@ -43,34 +43,38 @@ export default function Popup() {
 
     chrome.storage.onChanged.addListener((change) => {
       if (change.isExtensionOn !== undefined) {
-        if (change.isExtensionOn.newValue !== undefined) setIsExtensionOn(change.isExtensionOn.newValue);
+        if (change.isExtensionOn.newValue !== undefined)
+          setIsExtensionOn(change.isExtensionOn.newValue);
         else setIsExtensionOn(false);
       }
       if (change.isAuthenticated !== undefined) {
-        if (change.isAuthenticated.newValue !== undefined) setIsAuthenticated(change.isAuthenticated.newValue);
+        if (change.isAuthenticated.newValue !== undefined)
+          setIsAuthenticated(change.isAuthenticated.newValue);
         else setIsAuthenticated(false);
       }
       if (change.user !== undefined) {
         if (change.user.newValue !== undefined) setUser(new User(change.user.newValue));
-        else setUser(null)
+        else setUser(null);
       }
       if (change.notifications !== undefined) {
-        if (change.notifications.newValue !== undefined) setNotifications(change.notifications.newValue.map((n: INotification) => new Notification(n)));
-        else setNotifications([])
+        if (change.notifications.newValue !== undefined)
+          setNotifications(
+            change.notifications.newValue.map((n: INotification) => new Notification(n)),
+          );
+        else setNotifications([]);
       }
     });
   }, []);
 
   useEffect(() => {
     const zeroNotificationDisplayIcon = async () => {
-      if (tabKey === "1" && user?.id) {
-        await set({ notificationDisplayIcon: 0 })
-        socket.emit('opened notification tray', user.id)
+      if (tabKey === '1' && user?.id) {
+        await set({ notificationDisplayIcon: 0 });
+        sendMessageToExtension({ type: SocketMessageType.NotificationTrayOpened, userId: user.id });
       }
     };
     zeroNotificationDisplayIcon();
-  }, [tabKey, user])
-
+  }, [tabKey, user]);
 
   return (
     <ErrorBoundary origin={ErrorOrigin.Popup}>
@@ -97,4 +101,4 @@ export default function Popup() {
       </div>
     </ErrorBoundary>
   );
-};
+}

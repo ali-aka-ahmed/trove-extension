@@ -35,33 +35,6 @@ body, html {
   overflow-y: auto;
 }
 
-.TbdPopupContainer__BottomWrapper {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 5px 15px;
-  position: fixed;
-  background-color: #F7F6F3;
-  width: 100%;
-  height: $footer-height;
-  bottom: 0;
-  border-top: 1px solid #e0e0e0;
-}
-
-.TbdPopupContainer__OnOffTextWrapper {
-  display: flex;
-}
-
-.TbdPopupContainer__OnOff {
-  margin-left: 5px;
-  margin-right: 7px;
-}
-
-.TbdPopupContainer__OnOff--bold {
-  font-weight: 700;
-}
-
-
 // Shared
 .TbdProfile__Img {
   border-radius: 100px;
@@ -79,23 +52,60 @@ body, html {
   width: 0px;
 }
 
-.TbdPopupContainer__Button {
-  @include TbdFont;
-  cursor: pointer;
-  margin-top: 15px;
-  transition: 150ms;
-}
-
 .TbdPopupContainer__Loading {
-  margin-top: 10px;
-  margin-left: 5px;
+  margin-right: 10px;
   font-size: 18px;
-  color: #0d77e2;
+  color: white;
 }
 
-.TbdPopupContainer__OnOffWrapper {
-  display: flex;
+.Trove__Button {
+  font-size: 13px;
+  font-weight: 400;
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  flex-shrink: 0;
+  white-space: nowrap;
+  height: 28px;
+  border-radius: 3px;
+  box-shadow: rgba(15, 15, 15, 0.1) 0px 0px 0px 1px inset, rgba(15, 15, 15, 0.1) 0px 1px 2px;
+  background: #0d77e2;
+  color: white;
+  fill: white;
+  line-height: 1.2;
+  padding-left: 12px;
+  padding-right: 12px;
+  border: 0;
+  outline: none;
+}
+
+.Trove__Button:hover {
+  background-color: rgba(13, 119, 226, 0.8);
+}
+
+.Trove__Button--secondary:hover {
+  background-color: rgba(55, 53, 47, 0.08);
+}
+
+.Trove__Button--secondary {
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  margin-left: 5px;
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: 3px;
+  height: 28px;
+  padding: 0px 12px;
+  line-height: 1.2;
+  border: 1px solid rgba(55, 53, 47, 0.16);
+  background-color: transparent;
+  outline: none;
 }

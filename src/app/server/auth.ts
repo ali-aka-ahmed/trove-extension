@@ -5,11 +5,11 @@ export type IAuthRes = AuthRes & AxiosRes;
 
 export const login = async (args: LoginReqBody): Promise<IAuthRes> => {
   return await api.post('/auth/login', args);
-}
+};
 
 export const forgotPassword = async (args: ForgotReqBody): Promise<AxiosRes> => {
-  return await api.post('/auth/forgot', args)
-}
+  return await api.post('/auth/forgot', args);
+};
 
 /**
  * POST /auth/login
@@ -28,10 +28,6 @@ export interface ForgotReqBody {
   email?: string; // email or phoneNumber
   phoneNumber?: string; // include country code ex. 13017872508
 }
-
-/** ************************* */
-/** ********** RES ********** */
-/** ************************* */
 
 /**
  * POST /auth/signup

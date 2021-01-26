@@ -5,21 +5,20 @@ module.exports = {
     background: path.join(__dirname, 'src/app/background.ts'),
     content: path.join(__dirname, 'src/app/content.tsx'),
     popup: path.join(__dirname, 'src/app/popup.tsx'),
-    socket: path.join(__dirname, 'src/app/socket.ts')
   },
   output: {
     path: path.join(__dirname, 'dist/js'),
-    filename: '[name].js'
+    filename: '[name].js',
   },
   node: {
-    fs: 'empty'
+    fs: 'empty',
   },
   module: {
     rules: [
       {
         exclude: /node_modules/,
         test: /\.tsx?$/,
-        use: 'ts-loader'
+        use: 'ts-loader',
       },
       {
         exclude: /node_modules/,
@@ -29,18 +28,18 @@ module.exports = {
             resourceQuery: /inject/,
             use: [
               'to-string-loader', // Back to string
-              'css-loader',       // Translates CSS into CommonJS
-              'sass-loader'       // Compiles Sass to CSS
-            ]
-          }, 
+              'css-loader', // Translates CSS into CommonJS
+              'sass-loader', // Compiles Sass to CSS
+            ],
+          },
           {
             use: [
               'style-loader', // Common JS to DOM node
-              'css-loader',   // Translates CSS into CommonJS
-              'sass-loader'   // Compiles Sass to CSS
-            ]    
-          }
-        ]
+              'css-loader', // Translates CSS into CommonJS
+              'sass-loader', // Compiles Sass to CSS
+            ],
+          },
+        ],
       },
       {
         test: /\.css$/,
@@ -49,16 +48,16 @@ module.exports = {
             resourceQuery: /inject/,
             use: [
               'to-string-loader', // Back to string
-              'css-loader',       // Translates CSS into CommonJS
-            ]
-          }, 
+              'css-loader', // Translates CSS into CommonJS
+            ],
+          },
           {
             use: [
               'style-loader', // Common JS to DOM node
-              'css-loader',   // Translates CSS into CommonJS
-            ]    
-          }
-        ]
+              'css-loader', // Translates CSS into CommonJS
+            ],
+          },
+        ],
       },
       {
         test: /\.(png|svg|jpg|gif)$/i,
@@ -67,21 +66,21 @@ module.exports = {
             loader: 'url-loader',
             options: {
               limit: 5000, // in bytes
-              name: '[name].[ext]'
-            }
-          }
-        ]
+              name: '[name].[ext]',
+            },
+          },
+        ],
       },
       {
         test: /\.(png|jpe?g|gif|jp2|webp)$/,
         loader: 'file-loader',
         options: {
-          name: 'images/[name].[ext]'
-        }
+          name: 'images/[name].[ext]',
+        },
       },
-    ]
+    ],
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js']
-  }
+    extensions: ['.ts', '.tsx', '.js'],
+  },
 };

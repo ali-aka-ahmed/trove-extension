@@ -10,30 +10,34 @@ export const api = axios.create({
 
 api.interceptors.request.use(async (config) => {
   const token = await get1('token');
-  token ? config.headers.Authorization = `bearer ${token}` : null;
+  token ? (config.headers.Authorization = `bearer ${token}`) : null;
   return config;
 });
 
-api.interceptors.response.use((response) => {
-  
-  response.data.success = true;
-  return response.data;
-}, (error) => {
-  if (!error.response) return error
-  error.response.data.success = false;
-  error.response.data.message = error.response.data.message || error.message;
-  return error.response.data;
-});
+api.interceptors.response.use(
+  (response) => {
+    response.data.success = true;
+    return response.data;
+  },
+  (error) => {
+    if (!error.response) return error;
+    error.response.data.success = false;
+    error.response.data.message = error.response.data.message || error.message;
+    return error.response.data;
+  },
+);
 
 /**
  * What we append onto the response object.
  */
-export type AxiosRes = {
-  success: true,
-} | {
-  success: false,
-  message: string; 
-};
+export type AxiosRes =
+  | {
+      success: true;
+    }
+  | {
+      success: false;
+      message: string;
+    };
 
 /**
  * Base response object.
@@ -41,7 +45,7 @@ export type AxiosRes = {
  */
 export type BaseRes = {
   message?: string;
-}
+};
 
 /**
  * Base params object. Copy of core.ParamsDictionary in express.

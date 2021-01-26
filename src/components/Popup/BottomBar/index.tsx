@@ -1,9 +1,10 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Switch } from 'antd';
 import React, { useState } from 'react';
-import { socket } from '../../../app/socket';
 import { MessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { get, remove, set } from '../../../utils/chrome/storage';
+import { sendMessageToExtension, SocketMessageType } from '../../../utils/chrome/tabs';
+import '../style.scss';
 import './style.scss';
 
 interface BottomBarProps {
@@ -19,11 +20,12 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
   const handleLogout = async () => {
     setLogoutLoading(true);
     const items = await get(null);
-    if (items?.user?.id) socket.emit('leave room', items.user.id);
+    if (items?.user?.id)
+      sendMessageToExtension({ type: SocketMessageType.LeaveRoom, userId: items.user.id });
     sendMessageToWebsite({ type: MessageType.Logout });
     await remove(Object.keys(items));
     await set({ isAuthenticated: false });
-  }
+  };
 
   /**
    * Turn extension on/off. Save to global state.
@@ -31,35 +33,33 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
    */
   const handleOnOff = async (checked: boolean) => {
     await set({ isExtensionOn: checked });
-  }
+  };
 
   return (
     <div className="TbdPopupContainer__BottomWrapper">
       <div className="TbdPopupContainer__OnOffWrapper">
         <div className="TbdPopupContainer__OnOffTextWrapper">
           {/* <div>Turn Trove</div> */}
-          <div 
-            className={`TbdPopupContainer__OnOff ${!isExtensionOn && "TbdPopupContainer__OnOff--bold"}`}
+          <div
+            className={`TbdPopupContainer__OnOff ${
+              !isExtensionOn && 'TbdPopupContainer__OnOff--bold'
+            }`}
           >
             {isExtensionOn ? 'On' : 'Off'}
           </div>
         </div>
         <Switch onClick={(checked) => handleOnOff(checked)} checked={isExtensionOn} />
       </div>
-      <div className='TbdPopupContainer__ButtonWrapper'>
-        {!logoutLoading ? (
-          <button
-            className='TbdPopupContainer__Button'
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        ) : (
-          <div className='TbdPopupContainer__Loading'>
-            <LoadingOutlined />
-          </div>
-        )}
+      <div className="TbdPopupContainer__ButtonWrapper">
+        <button className="Trove__Button" onClick={handleLogout}>
+          {logoutLoading && (
+            <div className="TbdPopupContainer__Loading">
+              <LoadingOutlined />
+            </div>
+          )}
+          Logout
+        </button>
       </div>
     </div>
   );
-};
+}

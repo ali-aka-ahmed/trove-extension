@@ -1,0 +1,12 @@
+.TroveNotifications__Empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.TroveNotificationWrapper:first-child {
+  border-top: 1px solid #c4c4c4;
+}
