@@ -496,9 +496,6 @@ export default function Tooltip(props: TooltipProps) {
     ));
 
     // if this is not our hovered post and there is no content
-    console.log('user', user)
-    console.log('post', post)
-    console.log('\n')
     const noMargin = post?.creator.id !== user?.id && post
       && (!post?.content || post?.content.replace(/<(.|\n)*?>/g, '').trim().length === 0)
 
