@@ -152,7 +152,7 @@ export default function Tooltip(props: TooltipProps) {
       if (!post.highlight) return;
       highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
       highlighter.modifyHighlightTemp(HighlightType.Active);
-      // setHoveredPostBuffer(null);
+      setHoveredPostBuffer(null);
     },
     [highlighter],
   );
