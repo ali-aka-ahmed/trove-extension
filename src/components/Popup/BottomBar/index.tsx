@@ -39,13 +39,12 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
     <div className="TbdPopupContainer__BottomWrapper">
       <div className="TbdPopupContainer__OnOffWrapper">
         <div className="TbdPopupContainer__OnOffTextWrapper">
-          {/* <div>Turn Trove</div> */}
           <div
             className={`TbdPopupContainer__OnOff ${
               !isExtensionOn && 'TbdPopupContainer__OnOff--bold'
             }`}
           >
-            {isExtensionOn ? 'On' : 'Off'}
+            {`Trove is ${isExtensionOn ? 'On' : 'Off'}`}
           </div>
         </div>
         <Switch onClick={(checked) => handleOnOff(checked)} checked={isExtensionOn} />
