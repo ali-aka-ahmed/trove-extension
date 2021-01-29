@@ -273,13 +273,15 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (isAuthenticated && isExtensionOn && !didInitialGetPosts) {
       const url = window.location.href;
-      sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
-        if (res.success) {
-          setDidInitialGetPosts(true);
-          const newPosts = res.posts!.map((p) => new Post(p));
-          addPosts(newPosts, HighlightType.Default);
-        }
-      });
+      sendMessageToExtension({ type: MessageType.GetPosts, url })
+        .then((res: IPostsRes) => {
+          if (res.success) {
+            setDidInitialGetPosts(true);
+            const newPosts = res.posts!.map((p) => new Post(p));
+            addPosts(newPosts, HighlightType.Default);
+          }
+        })
+        .catch((e) => console.error('Errored while getting posts:', e));
     } else if ((!isAuthenticated || !isExtensionOn) && posts.length > 0) {
       removePosts(posts);
     }
@@ -418,17 +420,21 @@ export default function Tooltip(props: TooltipProps) {
       resetTooltip();
 
       // Show actual highlight when we get response from server
-      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
-        (res: IPostRes) => {
+      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq })
+        .then((res: IPostRes) => {
           if (res.success && res.post) {
             removeTempHighlight();
             addPosts(new Post(res.post), HighlightType.Default);
           } else {
             // Show that highlighting failed
+            console.log('Failed to create post:', res.message);
             throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
           }
-        },
-      );
+        })
+        .catch((err) => {
+          console.error('Errored while creating post: ', err);
+          throw err;
+        });
     }
   };
 
