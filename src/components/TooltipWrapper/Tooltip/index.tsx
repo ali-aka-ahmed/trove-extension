@@ -26,6 +26,7 @@ import {
 } from './helpers/selection';
 import InputPill from './inputPill';
 import Pill from './pill';
+import TextareaEditor from './TextareaEditor';
 
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
@@ -62,7 +63,8 @@ export default function Tooltip(props: TooltipProps) {
   const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
 
   const [editorValue, setEditorValue] = useState('');
-  const quill = useRef<ReactQuill>(null);
+  const editor = useRef<HTMLTextAreaElement>();
+  const editor2 = useRef<ReactQuill>(null);
 
   // TODO: maybe assign this to a range state var
   const getTooltipRange = useCallback(
@@ -310,7 +312,7 @@ export default function Tooltip(props: TooltipProps) {
     return () => window.removeEventListener('resize', onResize);
   }, [onResize]);
 
-  const onSelectionChange = useCallback(() => {
+  const onSelectionChange = useCallback((e: Event) => {
     // Don't set isSelectionVisible to true here because we only want tooltip to appear after
     // user has finished dragging selection. We set this in positionTooltip instead.
     const selection = getSelection();
@@ -452,7 +454,11 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('keydown', onKeyDownPage);
   }, [onKeyDownPage]);
 
-  const onEditorChange = (
+  const onEditorChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditorValue(event.target.value);
+  };
+
+  const onEditorChange2 = (
     content: string,
     delta: Delta,
     source: Sources,
@@ -474,8 +480,8 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     // Force Quill to focus editor on render
     if (wasMiniTooltipClicked || !hoveredPost) {
-      quill.current?.getEditor().focus();
-      quill.current?.getEditor().setSelection(editorValue.length - 1, 0);
+      editor2.current?.getEditor().focus();
+      editor2.current?.getEditor().setSelection(editorValue.length - 1, 0);
     }
   }, [hoveredPost, wasMiniTooltipClicked]);
 
@@ -588,14 +594,18 @@ export default function Tooltip(props: TooltipProps) {
         ref={tooltip}
       >
         {renderTopics()}
-        <ReactQuill
-          className="TroveTooltip__Editor"
-          theme="bubble"
+        <TextareaEditor
           value={editorValue}
           onChange={onEditorChange}
-          placeholder="Add note"
-          ref={quill}
+          outsideRef={editor}
+          root={props.root}
         />
+        {/* <Editor
+          value={editorValue}
+          onChange={onEditorChange2}
+          outsideRef={editor2}
+          root={props.root}
+        /> */}
         <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
       </div>
     );
