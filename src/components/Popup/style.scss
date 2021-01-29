@@ -28,6 +28,14 @@ body, html {
   background-color: #F7F6F3;
 }
 
+.TbdPopupContainer--loading {
+  font-size: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 430px; // IF POPUP HEIGHT ADJUSTS, SO DOES THIS
+}
+
 .TbdPopupContainer__TabWrapper {
   margin-bottom: $footer-height;
   max-height: $popup-height;
@@ -45,11 +53,6 @@ body, html {
   justify-content: center;
   border: 2px solid rgba(0,0,0, 0.25);;
   @include TbdFont--large; 
-}
-
-.TbdPopupContainer--loading {
-  height: 0px;
-  width: 0px;
 }
 
 .TbdPopupContainer__Loading {

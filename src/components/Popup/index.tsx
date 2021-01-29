@@ -1,3 +1,4 @@
+import { LoadingOutlined } from '@ant-design/icons';
 import { Tabs } from 'antd';
 import 'antd/dist/antd.css';
 import React, { useEffect, useState } from 'react';
@@ -16,13 +17,14 @@ import Profile from './Profile';
 import './style.scss';
 
 export default function Popup() {
+  const [loading, setLoading] = useState(true);
   const [tabKey, setTabKey] = useState('1');
 
   /**
    * Global state.
    */
   const [isExtensionOn, setIsExtensionOn] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(null!);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [user, setUser] = useState<User | null>(null);
 
@@ -33,25 +35,15 @@ export default function Popup() {
       user: null,
       notifications: [],
     }).then((items) => {
-      setIsAuthenticated(items.isAuthenticated);
       if (items.isAuthenticated && items.user) {
         setNotifications(items.notifications.map((n: INotification) => new Notification(n)));
         setIsExtensionOn(items.isExtensionOn);
         setUser(new User(items.user));
-      }
+        setIsAuthenticated(items.isAuthenticated);
+      } else setIsAuthenticated(false);
     });
 
     chrome.storage.onChanged.addListener((change) => {
-      if (change.isExtensionOn !== undefined) {
-        if (change.isExtensionOn.newValue !== undefined)
-          setIsExtensionOn(change.isExtensionOn.newValue);
-        else setIsExtensionOn(false);
-      }
-      if (change.isAuthenticated !== undefined) {
-        if (change.isAuthenticated.newValue !== undefined)
-          setIsAuthenticated(change.isAuthenticated.newValue);
-        else setIsAuthenticated(false);
-      }
       if (change.user !== undefined) {
         if (change.user.newValue !== undefined) setUser(new User(change.user.newValue));
         else setUser(null);
@@ -62,6 +54,16 @@ export default function Popup() {
             change.notifications.newValue.map((n: INotification) => new Notification(n)),
           );
         else setNotifications([]);
+      }
+      if (change.isExtensionOn !== undefined) {
+        if (change.isExtensionOn.newValue !== undefined)
+          setIsExtensionOn(change.isExtensionOn.newValue);
+        else setIsExtensionOn(false);
+      }
+      if (change.isAuthenticated !== undefined) {
+        if (change.isAuthenticated.newValue !== undefined)
+          setIsAuthenticated(change.isAuthenticated.newValue);
+        else setIsAuthenticated(false);
       }
     });
   }, []);
@@ -76,6 +78,13 @@ export default function Popup() {
     zeroNotificationDisplayIcon();
   }, [tabKey, user]);
 
+  if (isAuthenticated === null) {
+    return (
+      <div className="TbdPopupContainer TbdPopupContainer--loading">
+        <LoadingOutlined />
+      </div>
+    )
+  }
   return (
     <ErrorBoundary origin={ErrorOrigin.Popup}>
       <div className="TbdPopupContainer">
