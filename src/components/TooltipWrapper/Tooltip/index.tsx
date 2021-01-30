@@ -410,7 +410,7 @@ export default function Tooltip(props: TooltipProps) {
   const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (tempHighlight) {
       const postReq = {
-        content: editorValue.replace(/<(.|\n)*?>/g, '').trim().length === 0 ? '' : editorValue,
+        content: editorValue,
         url: window.location.href,
         taggedUserIds: [],
         highlight: tempHighlight,
@@ -463,9 +463,13 @@ export default function Tooltip(props: TooltipProps) {
     setEditorValue(event.target.value);
   };
 
+  /**
+   * Render list of topics. A given post indicates we are rendering for a hovered post which is
+   * read-only and therefor doesn't need a input pill. No post indicates we must show topics for
+   * editor.
+   */
   const renderTopics = useCallback(
     (post?: Post) => {
-      console.log(post?.content);
       const pills = (post ? post.topics : topics).map((topic) => (
         <Pill
           key={topic.text}
@@ -479,35 +483,21 @@ export default function Tooltip(props: TooltipProps) {
         />
       ));
 
-      // if this is not our hovered post and there is no content
-      const noMargin =
-        post?.creator.id !== user?.id &&
-        post &&
-        (!post?.content || post?.content.replace(/<(.|\n)*?>/g, '').trim().length === 0);
-
-      return (
-        <div
-          className={`${
-            post && (!post.topics || post.topics.length === 0) ? '' : 'TbdTooltip__TopicList'
-          }`}
-          style={noMargin ? { marginBottom: '0' } : {}}
-        >
+      return post && (!post.topics || post.topics.length === 0) ? null : (
+        <div className="TbdTooltip__TopicList">
           {!post && <InputPill onSubmit={addTopic} style={{ marginBottom: '3px' }} />}
           {pills}
         </div>
       );
     },
-    [topics, user],
+    [topics],
   );
 
   const renderUserInfo = (post: Post) => {
-    const noTopics = !(post.topics?.length > 0);
-    const noContent = !post.content || post.content.replace(/<(.|\n)*?>/g, '').trim().length === 0;
+    const isEmpty =
+      (!post.content || post.content.length === 0) && (!post.topics || post.topics.length === 0);
     return post && post.creator.id !== user?.id ? (
-      <div
-        className="TroveTooltip__Profile"
-        style={noContent && noTopics ? { marginBottom: '0' } : {}}
-      >
+      <div className="TroveTooltip__Profile" style={isEmpty ? { marginBottom: '0' } : {}}>
         <div
           className="TroveTooltip__ProfileImg"
           style={{
@@ -540,14 +530,6 @@ export default function Tooltip(props: TooltipProps) {
       >
         {renderUserInfo(hoveredPost)}
         {renderTopics(hoveredPost)}
-
-        {/* <ReactQuill
-          className="TroveTooltip__Quill TroveTooltip__Quill--readonly"
-          theme="bubble"
-          value={hoveredPost.content}
-          placeholder="No added note"
-          readOnly={true}
-        /> */}
         {hoveredPost.content ? (
           <div className="TroveTooltip__TextContent">{hoveredPost.content}</div>
         ) : (
