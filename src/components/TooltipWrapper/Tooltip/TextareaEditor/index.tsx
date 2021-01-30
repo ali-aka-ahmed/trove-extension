@@ -26,6 +26,7 @@ export default function TextareaEditor(props: EditorProps) {
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
     props.onChange(e);
+    console.log(e.target.value);
     getSuggestedUsers(e.target).then((users) => setSuggestedUsers(users));
   };
 

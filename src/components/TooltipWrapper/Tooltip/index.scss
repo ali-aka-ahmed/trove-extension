@@ -123,6 +123,15 @@ $tooltip-padding: 10px;
   -webkit-line-clamp: 1;
 }
 
+.TroveTooltip__TextContent {
+  white-space: pre-wrap;
+}
+
+.TroveTooltip__EmptyContent {
+  color: #777;
+  font-style: italic;
+}
+
 .TroveMiniTooltip {
   position: absolute;
   top: 0px;

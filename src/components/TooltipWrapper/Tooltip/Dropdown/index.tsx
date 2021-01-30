@@ -58,9 +58,9 @@ export default function Dropdown(props: DropdownProps) {
 
     // Autocomplete logic
     const currWord = getCurrentWord(ta);
-    const text1 = ta.textContent.slice(0, ta.selectionStart); // Up to end of username prefix
+    const text1 = ta.value.slice(0, ta.selectionStart); // Up to end of username prefix
     const text2 = str.slice(currWord.length - 1); // Autocompleted username
-    const text3 = ta.textContent.slice(ta.selectionStart); // End of username to end of text
+    const text3 = ta.value.slice(ta.selectionStart); // End of username to end of text
     props.setText(text1 + text2 + text3);
 
     // Set cursor to correct position
