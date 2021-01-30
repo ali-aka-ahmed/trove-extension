@@ -13,7 +13,7 @@ import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs'
 import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
-import { getOS, OS } from './helpers/os';
+import { getOS, isOsKeyPressed, OS } from './helpers/os';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
 import {
@@ -42,7 +42,6 @@ export default function Tooltip(props: TooltipProps) {
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
 
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
-  const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const [user, setUser] = useState<User | null>(null);
 
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
@@ -61,6 +60,8 @@ export default function Tooltip(props: TooltipProps) {
   const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
 
   const [editorValue, setEditorValue] = useState('');
+  const [taggedUserIds, setTaggedUserIds] = useState([]);
+  const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const editor = useRef<HTMLTextAreaElement>();
 
   // TODO: maybe assign this to a range state var
@@ -407,7 +408,7 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mousemove', onMouseMovePage);
   }, [onMouseMovePage]);
 
-  const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onClickSubmit = async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (tempHighlight) {
       const postReq = {
         content: editorValue,
@@ -440,15 +441,10 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   const onKeyDownPage = (e: KeyboardEvent) => {
-    if (getOS() === OS.Mac) {
-      if (e.metaKey && e.key === 'd' && selectionExists(getSelection())) {
-        e.preventDefault();
-        miniTooltipToTooltip();
-      }
-    } else {
-      // Assume Windows
-      if (e.ctrlKey && e.key === 'd' && selectionExists(getSelection())) {
-        e.preventDefault();
+    if (isOsKeyPressed(e) && e.key === 'd') {
+      // New post on current selection
+      e.preventDefault();
+      if (selectionExists(getSelection())) {
         miniTooltipToTooltip();
       }
     }
@@ -555,7 +551,7 @@ export default function Tooltip(props: TooltipProps) {
         <button className="TroveMiniTooltip__NewPostButton" onClick={miniTooltipToTooltip}>
           <p className="TroveMiniTooltip__NewPostButton__PrimaryText">New post</p>
           <p className="TroveMiniTooltip__NewPostButton__SecondaryText">{`(${
-            getOS() === OS.Windows ? 'ctrl' : 'cmd'
+            getOS() === OS.Windows ? 'ctrl' : '⌘'
           }+d)`}</p>
         </button>
       </div>
@@ -574,6 +570,7 @@ export default function Tooltip(props: TooltipProps) {
           onChange={onEditorChange}
           outsideRef={editor}
           setText={setEditorValue}
+          submit={onClickSubmit}
           root={props.root}
         />
         <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />

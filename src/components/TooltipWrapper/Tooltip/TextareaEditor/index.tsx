@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import User from '../../../../entities/User';
 import Dropdown from '../Dropdown';
+import { isOsKeyPressed } from '../helpers/os';
 import { getSuggestedUsers } from './helpers';
 
 interface EditorProps {
@@ -9,6 +10,7 @@ interface EditorProps {
   outsideRef: React.MutableRefObject<HTMLTextAreaElement | undefined>;
   root: ShadowRoot;
   setText: React.Dispatch<React.SetStateAction<string>>;
+  submit: (e?: React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => Promise<void>;
   value: string;
 }
 
@@ -19,6 +21,10 @@ export default function TextareaEditor(props: EditorProps) {
     props.outsideRef.current?.focus();
   }, []);
 
+  // useEffect(() => {
+  //   console.log(props.submit);
+  // }, [props.submit]);
+
   const stopPropagation = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
   };
@@ -26,7 +32,6 @@ export default function TextareaEditor(props: EditorProps) {
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
     props.onChange(e);
-    console.log(e.target.value);
     getSuggestedUsers(e.target).then((users) => setSuggestedUsers(users));
   };
 
@@ -35,13 +40,26 @@ export default function TextareaEditor(props: EditorProps) {
     getSuggestedUsers(e.target as HTMLTextAreaElement).then((users) => setSuggestedUsers(users));
   };
 
+  const onKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    e.stopPropagation();
+    if (isOsKeyPressed(e) && (e.which === 13 || e.key === '\n')) {
+      // Submit current post
+      e.preventDefault();
+      props.submit();
+    }
+  };
+
+  // useEffect(() => {
+  //   console.log(onKeyDown);
+  // }, [onKeyDown]);
+
   return (
     <>
       <TextareaAutosize
         className="TroveTooltip__Editor"
         onChange={onChange}
         onClick={onClick}
-        onKeyPress={stopPropagation}
+        onKeyPress={onKeyPress}
         onKeyDown={stopPropagation}
         onKeyUp={stopPropagation}
         value={props.value}
