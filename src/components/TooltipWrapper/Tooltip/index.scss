@@ -198,6 +198,7 @@ $tooltip-padding: 10px;
     'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
   padding: 5px 10px;
+  border-radius: 3px;
 }
 
 .TroveHint__Content {
@@ -208,7 +209,7 @@ $tooltip-padding: 10px;
 .TroveHint__Content__PrimaryText {
   margin: 0;
   padding: 0;
-  font-size: 14px;
+  font-size: 13px;
   color: #fff;
 }
 
@@ -218,6 +219,6 @@ $tooltip-padding: 10px;
   font-size: 12px;
   letter-spacing: 0.3px;
   color: #ccc;
-  line-height: 18px;
+  line-height: 16px;
   margin-left: 5px;
 }
