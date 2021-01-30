@@ -1,6 +1,5 @@
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
-import { AxiosRes } from '../app/server';
 import IPost from '../models/IPost';
 import ITopic from '../models/ITopic';
 import { MessageType, sendMessageToExtension } from '../utils/chrome/tabs';
@@ -26,7 +25,9 @@ export default class Post implements IPost {
 
   public constructor(p: IPost) {
     this.id = p.id;
-    this.content = p.content;
+    if (p.content.replace(/<(.|\n)*?>/g, '').trim().length === 0) {
+      this.content = '';
+    } else this.content = p.content;
     this.creationDatetime = p.creationDatetime;
     this.creator = new User(p.creator);
     this.domain = p.domain;
@@ -64,8 +65,8 @@ export default class Post implements IPost {
     let hostname = new URL(this.url).hostname;
     if (hostname.slice(0, 4) === 'www.') hostname = hostname.slice(4);
     let path = new URL(this.url).pathname;
-    if (path.slice(-1) === '/') path = path.slice(0, -1);
-    return `${hostname}${path}`;
+    if (path.slice(-1) === '/') path = path.slice(0, -1)
+    return `${hostname}${path}`
   }
 
   removeTopic = (topicId: string) => {
@@ -77,22 +78,18 @@ export default class Post implements IPost {
   };
 
   likePost = () => {
+    this.numLikes += 1;
     return sendMessageToExtension({
       type: MessageType.LikePost,
       id: this.id,
-    }).then((res: AxiosRes) => {
-      if (res.success) this.numLikes += 1;
-      return res;
     });
   };
 
   unlikePost = () => {
+    this.numLikes -= 1;
     return sendMessageToExtension({
       type: MessageType.UnlikePost,
       id: this.id,
-    }).then((res: AxiosRes) => {
-      if (res.success) this.numLikes -= 1;
-      return res;
     });
   };
 }

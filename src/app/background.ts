@@ -2,7 +2,7 @@ import io from 'socket.io-client';
 import { BACKEND_URL } from '../config';
 import User from '../entities/User';
 import INotification from '../models/INotification';
-import { Message as EMessage, MessageType as EMessageType } from '../utils/chrome/external';
+import { Message as EMessage, MessageType as EMessageType, sendMessageToWebsite } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import {
   Message,
@@ -229,6 +229,7 @@ chrome.runtime.onStartup.addListener(() => {
       Promise.all([set({ isExtensionOn: false }), remove(['token', 'user'])]);
     }
   });
+  sendMessageToWebsite({ type: EMessageType.Exists });
 });
 
 // Extension installed or updated
@@ -238,6 +239,7 @@ chrome.runtime.onInstalled.addListener(() => {
       Promise.all([set({ isExtensionOn: false }), remove(['token', 'user'])]);
     }
   });
+  sendMessageToWebsite({ type: EMessageType.Exists });
 });
 
 // On tab create

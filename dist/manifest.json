@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Trove DEV",
   "description": "A hidden layer of the internet.",
-  "version": "0.0.2",
+  "version": "0.0.6",
   "browser_action": {
     "default_icon": "icon16.png",
     "default_popup": "popup.html"
@@ -32,6 +32,9 @@
     "storage",
     "tabs",
     "activeTab",
+    "http://localhost:3000/*",
+    "https://development.trove.so/*",
+    "https://demo.trove.so/*",
     "http://localhost:5000/*",
     "https://dev.trove.so/*"
   ],
@@ -41,6 +44,5 @@
       "https://development.trove.so/*",
       "https://demo.trove.so/*"
     ]
-  },
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5TagdpKSFisCCe+sD6ODt7G2DDeb2lOQLdooGmdhgP16RREYVdxy0p5txRnUsXRPkDqvOHp9hc4OcaA7ZSVyBLE+Dhrf//AM8XL7D934YeR+PR4oIArFI1fREp0xrWbL4M7Abm/Wci8sy2eBbJhaVPnd5W6Y7aceYWLldnwt+YRnx52m8SNr6wNJ/hRpYt5gj2NGAtf7rullQJnQ1SYGwHrjhPiyn8/iq3F2YR2j1SpowqAYCqalTTlZUGUz1qytMi4KUduN2VdBsszhfg7Sl/dpdpczJITTiJSmOLtqAQLe5biagaz4fplhjDo867505CBZ1anwb5CmQ3QlBNomLwIDAQAB"
+  }
 }

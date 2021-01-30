@@ -22,7 +22,7 @@ import {
   getHoveredRect,
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists,
+  selectionExists
 } from './helpers/selection';
 import InputPill from './inputPill';
 import Pill from './pill';
@@ -277,13 +277,15 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (isAuthenticated && isExtensionOn && !didInitialGetPosts) {
       const url = window.location.href;
-      sendMessageToExtension({ type: MessageType.GetPosts, url }).then((res: IPostsRes) => {
-        if (res.success) {
-          setDidInitialGetPosts(true);
-          const newPosts = res.posts!.map((p) => new Post(p));
-          addPosts(newPosts, HighlightType.Default);
-        }
-      });
+      sendMessageToExtension({ type: MessageType.GetPosts, url })
+        .then((res: IPostsRes) => {
+          if (res.success) {
+            setDidInitialGetPosts(true);
+            const newPosts = res.posts!.map((p) => new Post(p));
+            addPosts(newPosts, HighlightType.Default);
+          }
+        })
+        .catch((e) => console.error('Errored while getting posts:', e));
     } else if ((!isAuthenticated || !isExtensionOn) && posts.length > 0) {
       removePosts(posts);
     }
@@ -411,7 +413,7 @@ export default function Tooltip(props: TooltipProps) {
   const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (tempHighlight) {
       const postReq = {
-        content: editorValue,
+        content: editorValue.replace(/<(.|\n)*?>/g, '').trim().length === 0 ? '' : editorValue,
         url: window.location.href,
         taggedUserIds: [],
         highlight: tempHighlight,
@@ -422,17 +424,21 @@ export default function Tooltip(props: TooltipProps) {
       resetTooltip();
 
       // Show actual highlight when we get response from server
-      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
-        (res: IPostRes) => {
+      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq })
+        .then((res: IPostRes) => {
           if (res.success && res.post) {
             removeTempHighlight();
             addPosts(new Post(res.post), HighlightType.Default);
           } else {
             // Show that highlighting failed
+            console.log('Failed to create post:', res.message);
             throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
           }
-        },
-      );
+        })
+        .catch((err) => {
+          console.error('Errored while creating post: ', err);
+          throw err;
+        });
     }
   };
 
@@ -466,7 +472,9 @@ export default function Tooltip(props: TooltipProps) {
     source: Sources,
     editor: UnprivilegedEditor,
   ) => {
-    setEditorValue(content);
+    if (editor.getText() === '') {
+      setEditorValue('');
+    } else setEditorValue(content);
   };
 
   useEffect(() => {
@@ -487,56 +495,78 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [hoveredPost, wasMiniTooltipClicked]);
 
-  const renderTopics = useCallback(
-    (post?: Post) => {
-      const pills = (post ? post.topics : topics).map((topic) => (
-        <Pill
-          key={topic.text}
-          color={topic.color!}
-          text={topic.text!}
-          onClose={() => {
-            setTopics(topics.slice().filter((t) => t !== topic));
-          }}
-          showClose={!post}
-          style={{ marginBottom: '3px' }}
-        />
-      ));
+  const renderTopics = useCallback((post?: Post) => {
+    const pills = (post ? post.topics : topics).map((topic) => (
+      <Pill
+        key={topic.text}
+        color={topic.color!}
+        text={topic.text!}
+        onClose={() => {
+          setTopics(topics.slice().filter((t) => t !== topic));
+        }}
+        showClose={!post}
+        style={{ marginBottom: '3px' }}
+      />
+    ));
 
-      return (
-        <div
-          className={`${
-            post && (!post.topics || post.topics.length === 0) ? '' : 'TbdTooltip__TopicList'
-          }`}
-        >
-          {!post && <InputPill onSubmit={addTopic} style={{ marginBottom: '3px' }} />}
-          {pills}
-        </div>
-      );
-    },
-    [topics],
-  );
+    // if this is not our hovered post and there is no content
+    const noMargin = post?.creator.id !== user?.id && post
+      && (!post?.content || post?.content.replace(/<(.|\n)*?>/g, '').trim().length === 0)
 
-  const renderUserInfo = () => {
-    return hoveredPost && hoveredPost.creator.id !== user?.id ? (
-      <div className="TroveTooltip__Profile">
+    return (
+      <div
+        className={`${post && (!post.topics || post.topics.length === 0) ? '' : 'TbdTooltip__TopicList'}`}
+        style={noMargin ? { marginBottom: '0' } : {}}
+      >
+        {!post && <InputPill onSubmit={addTopic} style={{ marginBottom: '3px' }} />}
+        {pills}
+      </div>
+    );
+  }, [topics, user]);
+
+  const renderUserInfo = (post: Post) => {
+    const noTopics = !(post.topics?.length > 0)
+    const noContent = !post.content || post.content.replace(/<(.|\n)*?>/g, '').trim().length === 0
+    return (post && post.creator.id !== user?.id) ? (
+      <div className="TroveTooltip__Profile" style={noContent && noTopics ? { marginBottom: '0' } : {}}>
         <div
           className="TroveTooltip__ProfileImg"
           style={{
-            backgroundColor: hoveredPost.creator.color,
-            color: Color(hoveredPost.creator.color).isLight() ? 'black' : 'white',
+            backgroundColor: post.creator.color,
+            color: Color(post.creator.color).isLight() ? 'black' : 'white',
           }}
         >
-          {hoveredPost.creator.displayName[0]}
+          {post.creator.displayName[0]}
         </div>
         <div className="TroveTooltip__ProfileInfo">
-          <div className="TroveTooltip__DisplayName">{hoveredPost.creator.displayName}</div>
-          <div className="TroveTooltip__Username" style={{ color: hoveredPost.creator.color }}>
-            {`@${hoveredPost.creator.username}`}
+          <div className="TroveTooltip__DisplayName">{post.creator.displayName}</div>
+          <div className="TroveTooltip__Username" style={{ color: post.creator.color }}>
+            {`@${post.creator.username}`}
           </div>
         </div>
       </div>
     ) : null;
   };
+
+  const renderContent = (post: Post) => {
+    const content = post.content;
+    // if there is no content and this is not your note
+    if ((!content 
+        || content.replace(/<(.|\n)*?>/g, '').trim().length === 0
+      ) && post.creator.id !== user?.id
+    ) {
+      return null;
+    } else {
+      return (
+        <ReactQuill
+          className="TroveTooltip__Editor TroveTooltip__Editor--readonly"
+          theme="bubble"
+          value={post.content}
+          readOnly={true}
+        />
+      )
+    }
+  }
 
   if (hoveredPost) {
     // Readonly post
@@ -547,21 +577,11 @@ export default function Tooltip(props: TooltipProps) {
           'TbdTooltip--position-below': positionEdge === Edge.Bottom,
           'TbdTooltip--readonly': true,
         })}
-        style={{
-          transform: `translate3d(${position.x}px, ${position.y}px, 0px)`,
-          display: !hoveredPost.content && hoveredPost.topics.length === 0 ? 'flex' : undefined,
-        }}
+        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
       >
-        {renderUserInfo()}
+        {renderUserInfo(hoveredPost)}
         {renderTopics(hoveredPost)}
-        {hoveredPost.content && (
-          <ReactQuill
-            className="TroveTooltip__Editor TroveTooltip__Editor--readonly"
-            theme="bubble"
-            value={hoveredPost.content}
-            readOnly={true}
-          />
-        )}
+        {renderContent(hoveredPost)}
         {/* <div className="TbdTooltip__ButtonList">
           <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
         </div> */}
