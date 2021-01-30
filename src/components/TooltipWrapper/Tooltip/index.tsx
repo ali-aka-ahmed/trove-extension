@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import Color from 'color';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
 import { HighlightParam, IPostRes, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
@@ -13,7 +14,7 @@ import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs'
 import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
-import { getOS, isOsKeyPressed, OS } from './helpers/os';
+import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
 import {
@@ -247,6 +248,8 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   useEffect(() => {
+    ReactTooltip.rebuild();
+
     // Get user object
     get(['user', 'isAuthenticated', 'isExtensionOn']).then((data) => {
       setIsAuthenticated(data.isAuthenticated || false);
@@ -409,6 +412,8 @@ export default function Tooltip(props: TooltipProps) {
   }, [onMouseMovePage]);
 
   const onClickSubmit = async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    ReactTooltip.hide();
+
     if (tempHighlight) {
       const postReq = {
         content: editorValue,
@@ -550,31 +555,47 @@ export default function Tooltip(props: TooltipProps) {
         <div className="TroveMiniTooltip__Logo"></div>
         <button className="TroveMiniTooltip__NewPostButton" onClick={miniTooltipToTooltip}>
           <p className="TroveMiniTooltip__NewPostButton__PrimaryText">New post</p>
-          <p className="TroveMiniTooltip__NewPostButton__SecondaryText">{`(${
-            getOS() === OS.Windows ? 'ctrl' : '⌘'
-          }+d)`}</p>
+          <p className="TroveMiniTooltip__NewPostButton__SecondaryText">{`(${getOsKeyChar()}+d)`}</p>
         </button>
       </div>
     ) : (
-      <div
-        className={classNames('TbdTooltip', {
-          'TbdTooltip--position-above': positionEdge === Edge.Top,
-          'TbdTooltip--position-below': positionEdge === Edge.Bottom,
-        })}
-        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-        ref={tooltip}
-      >
-        {renderTopics()}
-        <TextareaEditor
-          value={editorValue}
-          onChange={onEditorChange}
-          outsideRef={editor}
-          setText={setEditorValue}
-          submit={onClickSubmit}
-          root={props.root}
+      <>
+        <div
+          className={classNames('TbdTooltip', {
+            'TbdTooltip--position-above': positionEdge === Edge.Top,
+            'TbdTooltip--position-below': positionEdge === Edge.Bottom,
+          })}
+          style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+          ref={tooltip}
+        >
+          {renderTopics()}
+          <TextareaEditor
+            value={editorValue}
+            onChange={onEditorChange}
+            outsideRef={editor}
+            setText={setEditorValue}
+            submit={onClickSubmit}
+            root={props.root}
+          />
+          <button
+            className="TroveTooltip__SubmitButton"
+            onClick={onClickSubmit}
+            data-tip={`
+              <div class="TroveHint__Content">
+                <p class="TroveHint__Content__PrimaryText">Submit</p>
+                <p class="TroveHint__Content__SecondaryText">(${getOsKeyChar()}+Enter)</p>
+              </div>
+            `}
+          />
+        </div>
+        <ReactTooltip
+          className="TroveTooltip__Hint"
+          effect="solid"
+          arrowColor="transparent"
+          html={true}
+          delayShow={750}
         />
-        <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
-      </div>
+      </>
     );
   } else {
     return null;

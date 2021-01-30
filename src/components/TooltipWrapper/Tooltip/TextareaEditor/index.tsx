@@ -21,10 +21,6 @@ export default function TextareaEditor(props: EditorProps) {
     props.outsideRef.current?.focus();
   }, []);
 
-  // useEffect(() => {
-  //   console.log(props.submit);
-  // }, [props.submit]);
-
   const stopPropagation = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
   };
@@ -48,10 +44,6 @@ export default function TextareaEditor(props: EditorProps) {
       props.submit();
     }
   };
-
-  // useEffect(() => {
-  //   console.log(onKeyDown);
-  // }, [onKeyDown]);
 
   return (
     <>
