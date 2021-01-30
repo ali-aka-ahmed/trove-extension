@@ -159,6 +159,8 @@ export default function Tooltip(props: TooltipProps) {
     [highlighter],
   );
 
+  const onHighlightMouseMove = useCallback(() => {}, []);
+
   // TODO: Can we put these useeffects in a for loop by event?
   useEffect(() => {
     highlighter.highlights.forEach((highlight, id) => {
@@ -598,6 +600,7 @@ export default function Tooltip(props: TooltipProps) {
           value={editorValue}
           onChange={onEditorChange}
           outsideRef={editor}
+          setText={setEditorValue}
           root={props.root}
         />
         {/* <Editor

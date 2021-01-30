@@ -5,7 +5,7 @@ import { EXCLUDED_HOSTNAMES } from '../../constants';
 import ErrorBoundary from '../errorBoundary/index';
 import './index.scss';
 import Tooltip from './Tooltip';
-import editorStyles1 from './Tooltip/Editor/index.scss?inject';
+import dropdownStyles from './Tooltip/Dropdown/index.scss?inject';
 import tooltipStyles from './Tooltip/index.scss?inject';
 import inputPillStyles from './Tooltip/InputPill/index.scss?inject';
 import pillStyles from './Tooltip/Pill/index.scss?inject';
@@ -26,7 +26,7 @@ export default function TooltipWrapper(props: TooltipWrapperProps) {
         </ErrorBoundary>
         <style type="text/css">{antdStyles}</style>
         <style type="text/css">{editorStyles}</style>
-        <style type="text/css">{editorStyles1}</style>
+        <style type="text/css">{dropdownStyles}</style>
         <style type="text/css">{tooltipStyles}</style>
         <style type="text/css">{pillStyles}</style>
         <style type="text/css">{inputPillStyles}</style>

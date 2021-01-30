@@ -17,6 +17,8 @@ export interface Message {
   updateUserArgs?: UpdateUserReqBody;
   userId?: string;
   notificationId?: string;
+  usernamePrefix?: string;
+  numResults?: number;
 }
 
 export enum MessageType {

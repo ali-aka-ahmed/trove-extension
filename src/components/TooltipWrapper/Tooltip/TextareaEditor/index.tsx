@@ -6,15 +6,13 @@ import { getSuggestedUsers } from './helpers';
 
 interface EditorProps {
   onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  value: string;
   outsideRef: React.MutableRefObject<HTMLTextAreaElement | undefined>;
   root: ShadowRoot;
+  setText: React.Dispatch<React.SetStateAction<string>>;
+  value: string;
 }
 
 export default function TextareaEditor(props: EditorProps) {
-  const [onKeyDownDropdown, setOnKeyDownDropdown] = useState<
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
-  >(() => {});
   const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -28,24 +26,14 @@ export default function TextareaEditor(props: EditorProps) {
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
     props.onChange(e);
-
-    getSuggestedUsers(e.target).then((users) => {
-      console.log(users);
-      setSuggestedUsers(users);
-    });
+    getSuggestedUsers(e.target).then((users) => setSuggestedUsers(users));
   };
 
   const onClick = async (e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
     e.stopPropagation();
-    setSuggestedUsers(await getSuggestedUsers(e.target as HTMLTextAreaElement));
+    getSuggestedUsers(e.target as HTMLTextAreaElement).then((users) => setSuggestedUsers(users));
   };
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    e.stopPropagation();
-    onKeyDownDropdown(e);
-  };
-
-  const dropdownData = suggestedUsers || [];
   return (
     <>
       <TextareaAutosize
@@ -53,14 +41,16 @@ export default function TextareaEditor(props: EditorProps) {
         onChange={onChange}
         onClick={onClick}
         onKeyPress={stopPropagation}
-        onKeyDown={onKeyDown}
+        onKeyDown={stopPropagation}
         onKeyUp={stopPropagation}
         value={props.value}
         placeholder="Write something..."
         // @ts-ignore
         ref={props.outsideRef}
       />
-      {dropdownData && <Dropdown data={dropdownData} textareaRef={props.outsideRef} />}
+      {suggestedUsers && (
+        <Dropdown data={suggestedUsers} textareaRef={props.outsideRef} setText={props.setText} />
+      )}
     </>
   );
 }

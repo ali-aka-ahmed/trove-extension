@@ -1,5 +1,4 @@
 import User from '../../../../../entities/User';
-import IUser from '../../../../../models/IUser';
 import { MessageType, sendMessageToExtension } from '../../../../../utils/chrome/tabs';
 
 export const getSuggestedUsers = (ta: HTMLTextAreaElement) => {
@@ -41,8 +40,16 @@ const getUsersByPrefix = (prefix: string): Promise<User[]> => {
   try {
     return sendMessageToExtension({
       type: MessageType.HandleUserSearch,
-      text: prefix,
-    }).then((users: IUser[]) => users.map((user) => new User(user))) as Promise<User[]>;
+      usernamePrefix: prefix,
+      numResults: 5,
+    }).then((resp: any) => {
+      if (resp.success) {
+        return resp.users.map((user) => new User(user)) as User[];
+      } else {
+        console.error(`Failed to retrieve usernames with prefix ${prefix}.`);
+        return Promise.reject(resp.message);
+      }
+    }) as Promise<User[]>;
   } catch (err) {
     return Promise.resolve([]);
   }

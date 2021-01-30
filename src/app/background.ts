@@ -8,7 +8,7 @@ import {
   Message,
   MessageType,
   sendMessageToExtension,
-  SocketMessageType
+  SocketMessageType,
 } from '../utils/chrome/tabs';
 import { forgotPassword, login } from './server/auth';
 import { createPost, createReply, getPosts, likePost, unlikePost } from './server/posts';
@@ -42,10 +42,10 @@ socket.on(SocketMessageType.Notification, (n: Notification) => {
     notifications: [],
     notificationDisplayIcon: 0,
   }).then((vals) => {
-    const newNotifications = [n].concat(vals.notifications)
-    const popupOpen = chrome.extension.getViews({ type: "popup" }).length !== 0;
+    const newNotifications = [n].concat(vals.notifications);
+    const popupOpen = chrome.extension.getViews({ type: 'popup' }).length !== 0;
     if (!popupOpen) {
-      const notificationDisplayIcon = vals.notificationDisplayIcon + 1
+      const notificationDisplayIcon = vals.notificationDisplayIcon + 1;
       set({
         notifications: newNotifications,
         notificationDisplayIcon,
@@ -123,8 +123,11 @@ chrome.runtime.onMessage.addListener(
         sendResponse(sender.tab?.id);
         break;
       case MessageType.HandleUserSearch: {
-        if (!message.text) return;
-        handleUserSearch(message.text).then((res) => {
+        if (!message.usernamePrefix || !message.numResults) return;
+        handleUserSearch({
+          usernamePrefix: message.usernamePrefix,
+          numResults: message.numResults,
+        }).then((res) => {
           sendResponse(res);
         });
         break;
@@ -164,36 +167,40 @@ chrome.runtime.onMessage.addListener(
 );
 
 // Messages received from outside the extension (messages from frontend website)
-chrome.runtime.onMessageExternal.addListener((
-  message: EMessage,
-  sender: chrome.runtime.MessageSender,
-  sendResponse: (response: any) => void,
-) => {
-  switch (message.type) {
-    case EMessageType.Exists: {
-      sendResponse({ success: true });
-      break;
+chrome.runtime.onMessageExternal.addListener(
+  (
+    message: EMessage,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (response: any) => void,
+  ) => {
+    switch (message.type) {
+      case EMessageType.Exists: {
+        sendResponse({ success: true });
+        break;
+      }
+      case EMessageType.Login: {
+        sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: message.user!.id });
+        set({
+          user: new User(message.user!),
+          token: message.token,
+          isExtensionOn: true,
+        })
+          .then(() => set({ isAuthenticated: true }))
+          .then(() => sendResponse(true));
+        break;
+      }
+      case EMessageType.IsAuthenticated: {
+        get({
+          isAuthenticated: false,
+          token: '',
+          user: null,
+        }).then((res) => sendResponse(res));
+        break;
+      }
     }
-    case EMessageType.Login: {
-      sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: message.user!.id })
-      set({
-        user: new User(message.user!),
-        token: message.token,
-        isExtensionOn: true,
-      }).then(() => set({ isAuthenticated: true })).then(() => sendResponse(true))
-      break;
-    }
-    case EMessageType.IsAuthenticated: {
-      get({
-        isAuthenticated: false,
-        token: '',
-        user: null,
-      }).then((res) => sendResponse(res))
-      break;
-    }
-  }
-  return true;
-});
+    return true;
+  },
+);
 
 // change in notification display icon
 chrome.storage.onChanged.addListener((change) => {
