@@ -1,6 +1,5 @@
 import Color from 'color';
 import React from 'react';
-import ReactQuill from 'react-quill';
 import { ORIGIN } from '../../../../config';
 import NotificationObject from '../../../../entities/Notification';
 import { get1, set } from '../../../../utils/chrome/storage';
@@ -17,20 +16,20 @@ export default function Notification({ notification }: NotificationProps) {
   const handleClick = async () => {
     sendMessageToExtension({
       type: SocketMessageType.ReadNotification,
-      notificationId: notification.id
+      notificationId: notification.id,
     });
-    const ns: NotificationObject[] = await get1('notifications')
-    const i = ns.findIndex((n) => n.id === notification.id)
-    notification.read = true
-    ns[i] = notification
-    await set({ notifications: ns })
+    const ns: NotificationObject[] = await get1('notifications');
+    const i = ns.findIndex((n) => n.id === notification.id);
+    notification.read = true;
+    ns[i] = notification;
+    await set({ notifications: ns });
     if (notification.url) {
-      chrome.tabs.create({url: notification.url});
+      chrome.tabs.create({ url: notification.url });
     } else {
-      chrome.tabs.create({url: `${ORIGIN}/${notification.sender.username}`});
+      chrome.tabs.create({ url: `${ORIGIN}/${notification.sender.username}` });
     }
-  }
-	return (
+  };
+  return (
     <div
       className={`TbdNotificationWrapper ${!notification.read && 'TbdNotificationWrapper--unread'}`}
       onClick={handleClick}
@@ -60,14 +59,7 @@ export default function Notification({ notification }: NotificationProps) {
         </div>
       </div>
       {notification.content && (
-        <div className="TbdNotificationWrapper__Content">
-          <ReactQuill
-            className="TroveTooltip__Editor TroveTooltip__Editor--read-only"
-            theme="bubble"
-            value={notification.content}
-            readOnly={true}
-          />
-        </div>
+        <div className="TbdNotificationWrapper__Content">{notification.content}</div>
       )}
     </div>
   );

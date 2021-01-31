@@ -1,8 +1,7 @@
 import classNames from 'classnames';
 import Color from 'color';
-import { Delta, Sources } from 'quill';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import ReactQuill, { UnprivilegedEditor } from 'react-quill';
+import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
 import { HighlightParam, IPostRes, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
@@ -12,21 +11,21 @@ import ITopic from '../../../models/ITopic';
 import { toArray } from '../../../utils';
 import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import TextareaEditor from './Editor';
 import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
-import { getOS, OS } from './helpers/os';
+import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
 import {
   getHoveredRect,
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists
+  selectionExists,
 } from './helpers/selection';
 import InputPill from './inputPill';
 import Pill from './pill';
-import TextareaEditor from './TextareaEditor';
 
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
@@ -44,7 +43,6 @@ export default function Tooltip(props: TooltipProps) {
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
 
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
-  const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const [user, setUser] = useState<User | null>(null);
 
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
@@ -63,8 +61,9 @@ export default function Tooltip(props: TooltipProps) {
   const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
 
   const [editorValue, setEditorValue] = useState('');
+  const [taggedUserIds, setTaggedUserIds] = useState([]);
+  const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const editor = useRef<HTMLTextAreaElement>();
-  const editor2 = useRef<ReactQuill>(null);
 
   // TODO: maybe assign this to a range state var
   const getTooltipRange = useCallback(
@@ -249,6 +248,8 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   useEffect(() => {
+    ReactTooltip.rebuild();
+
     // Get user object
     get(['user', 'isAuthenticated', 'isExtensionOn']).then((data) => {
       setIsAuthenticated(data.isAuthenticated || false);
@@ -410,10 +411,12 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mousemove', onMouseMovePage);
   }, [onMouseMovePage]);
 
-  const onClickSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onClickSubmit = async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    ReactTooltip.hide();
+
     if (tempHighlight) {
       const postReq = {
-        content: editorValue.replace(/<(.|\n)*?>/g, '').trim().length === 0 ? '' : editorValue,
+        content: editorValue,
         url: window.location.href,
         taggedUserIds: [],
         highlight: tempHighlight,
@@ -443,15 +446,10 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   const onKeyDownPage = (e: KeyboardEvent) => {
-    if (getOS() === OS.Mac) {
-      if (e.metaKey && e.key === 'd' && selectionExists(getSelection())) {
-        e.preventDefault();
-        miniTooltipToTooltip();
-      }
-    } else {
-      // Assume Windows
-      if (e.ctrlKey && e.key === 'd' && selectionExists(getSelection())) {
-        e.preventDefault();
+    if (isOsKeyPressed(e) && e.key === 'd') {
+      // New post on current selection
+      e.preventDefault();
+      if (selectionExists(getSelection())) {
         miniTooltipToTooltip();
       }
     }
@@ -466,69 +464,41 @@ export default function Tooltip(props: TooltipProps) {
     setEditorValue(event.target.value);
   };
 
-  const onEditorChange2 = (
-    content: string,
-    delta: Delta,
-    source: Sources,
-    editor: UnprivilegedEditor,
-  ) => {
-    if (editor.getText() === '') {
-      setEditorValue('');
-    } else setEditorValue(content);
-  };
+  /**
+   * Render list of topics. A given post indicates we are rendering for a hovered post which is
+   * read-only and therefor doesn't need a input pill. No post indicates we must show topics for
+   * editor.
+   */
+  const renderTopics = useCallback(
+    (post?: Post) => {
+      const pills = (post ? post.topics : topics).map((topic) => (
+        <Pill
+          key={topic.text}
+          color={topic.color!}
+          text={topic.text!}
+          onClose={() => {
+            setTopics(topics.slice().filter((t) => t !== topic));
+          }}
+          showClose={!post}
+          style={{ marginBottom: '3px' }}
+        />
+      ));
 
-  useEffect(() => {
-    // Workaround to force Quill placeholder to change dynamically
-    const editor = props.root.querySelector('.ql-editor');
-    if (!!hoveredPost) {
-      editor?.setAttribute('data-placeholder', 'No added note');
-    } else {
-      editor?.setAttribute('data-placeholder', 'Add note');
-    }
-  }, [hoveredPost]);
-
-  useEffect(() => {
-    // Force Quill to focus editor on render
-    if (wasMiniTooltipClicked || !hoveredPost) {
-      editor2.current?.getEditor().focus();
-      editor2.current?.getEditor().setSelection(editorValue.length - 1, 0);
-    }
-  }, [hoveredPost, wasMiniTooltipClicked]);
-
-  const renderTopics = useCallback((post?: Post) => {
-    const pills = (post ? post.topics : topics).map((topic) => (
-      <Pill
-        key={topic.text}
-        color={topic.color!}
-        text={topic.text!}
-        onClose={() => {
-          setTopics(topics.slice().filter((t) => t !== topic));
-        }}
-        showClose={!post}
-        style={{ marginBottom: '3px' }}
-      />
-    ));
-
-    // if this is not our hovered post and there is no content
-    const noMargin = post?.creator.id !== user?.id && post
-      && (!post?.content || post?.content.replace(/<(.|\n)*?>/g, '').trim().length === 0)
-
-    return (
-      <div
-        className={`${post && (!post.topics || post.topics.length === 0) ? '' : 'TbdTooltip__TopicList'}`}
-        style={noMargin ? { marginBottom: '0' } : {}}
-      >
-        {!post && <InputPill onSubmit={addTopic} style={{ marginBottom: '3px' }} />}
-        {pills}
-      </div>
-    );
-  }, [topics, user]);
+      return post && (!post.topics || post.topics.length === 0) ? null : (
+        <div className="TbdTooltip__TopicList">
+          {!post && <InputPill onSubmit={addTopic} style={{ marginBottom: '3px' }} />}
+          {pills}
+        </div>
+      );
+    },
+    [topics],
+  );
 
   const renderUserInfo = (post: Post) => {
-    const noTopics = !(post.topics?.length > 0)
-    const noContent = !post.content || post.content.replace(/<(.|\n)*?>/g, '').trim().length === 0
-    return (post && post.creator.id !== user?.id) ? (
-      <div className="TroveTooltip__Profile" style={noContent && noTopics ? { marginBottom: '0' } : {}}>
+    const isEmpty =
+      (!post.content || post.content.length === 0) && (!post.topics || post.topics.length === 0);
+    return post && post.creator.id !== user?.id ? (
+      <div className="TroveTooltip__Profile" style={isEmpty ? { marginBottom: '0' } : {}}>
         <div
           className="TroveTooltip__ProfileImg"
           style={{
@@ -548,26 +518,6 @@ export default function Tooltip(props: TooltipProps) {
     ) : null;
   };
 
-  const renderContent = (post: Post) => {
-    const content = post.content;
-    // if there is no content and this is not your note
-    if ((!content 
-        || content.replace(/<(.|\n)*?>/g, '').trim().length === 0
-      ) && post.creator.id !== user?.id
-    ) {
-      return null;
-    } else {
-      return (
-        <ReactQuill
-          className="TroveTooltip__Editor TroveTooltip__Editor--readonly"
-          theme="bubble"
-          value={post.content}
-          readOnly={true}
-        />
-      )
-    }
-  }
-
   if (hoveredPost) {
     // Readonly post
     return (
@@ -581,10 +531,11 @@ export default function Tooltip(props: TooltipProps) {
       >
         {renderUserInfo(hoveredPost)}
         {renderTopics(hoveredPost)}
-        {renderContent(hoveredPost)}
-        {/* <div className="TbdTooltip__ButtonList">
-          <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
-        </div> */}
+        {hoveredPost.content ? (
+          <div className="TroveTooltip__TextContent">{hoveredPost.content}</div>
+        ) : (
+          <div className="TroveTooltip__EmptyContent">No added note</div>
+        )}
       </div>
     );
   } else if (isSelectionHovered || isTempHighlightVisible) {
@@ -601,36 +552,47 @@ export default function Tooltip(props: TooltipProps) {
         <div className="TroveMiniTooltip__Logo"></div>
         <button className="TroveMiniTooltip__NewPostButton" onClick={miniTooltipToTooltip}>
           <p className="TroveMiniTooltip__NewPostButton__PrimaryText">New post</p>
-          <p className="TroveMiniTooltip__NewPostButton__SecondaryText">{`(${
-            getOS() === OS.Windows ? 'ctrl' : 'cmd'
-          }+d)`}</p>
+          <p className="TroveMiniTooltip__NewPostButton__SecondaryText">{`(${getOsKeyChar()}+d)`}</p>
         </button>
       </div>
     ) : (
-      <div
-        className={classNames('TbdTooltip', {
-          'TbdTooltip--position-above': positionEdge === Edge.Top,
-          'TbdTooltip--position-below': positionEdge === Edge.Bottom,
-        })}
-        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-        ref={tooltip}
-      >
-        {renderTopics()}
-        <TextareaEditor
-          value={editorValue}
-          onChange={onEditorChange}
-          outsideRef={editor}
-          setText={setEditorValue}
-          root={props.root}
+      <>
+        <div
+          className={classNames('TbdTooltip', {
+            'TbdTooltip--position-above': positionEdge === Edge.Top,
+            'TbdTooltip--position-below': positionEdge === Edge.Bottom,
+          })}
+          style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+          ref={tooltip}
+        >
+          {renderTopics()}
+          <TextareaEditor
+            value={editorValue}
+            onChange={onEditorChange}
+            outsideRef={editor}
+            setText={setEditorValue}
+            submit={onClickSubmit}
+            root={props.root}
+          />
+          <button
+            className="TroveTooltip__SubmitButton"
+            onClick={onClickSubmit}
+            data-tip={`
+              <div class="TroveHint__Content">
+                <p class="TroveHint__Content__PrimaryText">Submit</p>
+                <p class="TroveHint__Content__SecondaryText">(${getOsKeyChar()}+Enter)</p>
+              </div>
+            `}
+          />
+        </div>
+        <ReactTooltip
+          className="TroveTooltip__Hint"
+          effect="solid"
+          arrowColor="transparent"
+          html={true}
+          delayShow={750}
         />
-        {/* <Editor
-          value={editorValue}
-          onChange={onEditorChange2}
-          outsideRef={editor2}
-          root={props.root}
-        /> */}
-        <button className="TbdTooltip__SubmitButton" onClick={onClickSubmit} />
-      </div>
+      </>
     );
   } else {
     return null;

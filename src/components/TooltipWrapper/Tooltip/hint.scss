@@ -1,0 +1,30 @@
+.__react_component_tooltip.TroveTooltip__Hint,
+.TroveTooltip__Hint {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.TroveHint__Content {
+  display: flex;
+  flex-direction: row;
+}
+
+.TroveHint__Content__PrimaryText {
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  color: #fff;
+}
+
+.TroveHint__Content__SecondaryText {
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  color: #ccc;
+  line-height: 16px;
+  margin-left: 5px;
+}

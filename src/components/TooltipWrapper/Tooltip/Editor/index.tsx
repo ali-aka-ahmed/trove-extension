@@ -1,95 +1,67 @@
-import { Delta, Sources } from 'quill';
-import React, { useEffect } from 'react';
-import ReactQuill, { UnprivilegedEditor } from 'react-quill';
+import React, { useEffect, useState } from 'react';
+import TextareaAutosize from 'react-textarea-autosize';
+import User from '../../../../entities/User';
+import { isOsKeyPressed } from '../helpers/os';
+import Dropdown from './Dropdown';
+import { getSuggestedUsers } from './helpers';
 
 interface EditorProps {
-  onChange: (content: string, delta: Delta, source: Sources, editor: UnprivilegedEditor) => void;
-  outsideRef: React.MutableRefObject<ReactQuill | null>;
+  onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  outsideRef: React.MutableRefObject<HTMLTextAreaElement | undefined>;
   root: ShadowRoot;
+  setText: React.Dispatch<React.SetStateAction<string>>;
+  submit: (e?: React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => Promise<void>;
   value: string;
 }
 
-export default function Editor(props: EditorProps) {
+export default function TextareaEditor(props: EditorProps) {
+  const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
+
   useEffect(() => {
     props.outsideRef.current?.focus();
   }, []);
-
-  // TODO: doesn't work on text with newlines bc newlines are translated to <br> by react-quill
-  const getEditorIndex = () => {
-    const selection = props.root.getSelection()!;
-    if (!selection.isCollapsed || selection.type.toLowerCase() === 'range') return -1;
-
-    const children = props.root.activeElement?.children;
-    if (children && children.length > 0) {
-      const range = props.root.ownerDocument.createRange();
-      range.setStart(children[0], 0);
-      range.setEnd(selection.focusNode!, selection.focusOffset);
-      console.log(range.toString());
-      return range.toString().length;
-    }
-
-    return 0;
-  };
-
-  const onChange = (content: string, delta: Delta, source: Sources, editor: UnprivilegedEditor) => {
-    props.onChange(content, delta, source, editor);
-
-    // console.log(
-    //   editor,
-    //   editor.getBounds(0, 1),
-    //   editor.getContents(),
-    //   editor.getHTML(),
-    //   editor.getLength(),
-    //   editor.getSelection(),
-    //   editor.getText(),
-    // );
-    // console.log(props.root.getSelection());
-
-    // console.log(document.getElementsByClassName('TroveTooltip__Editor'));
-    // console.log(props.root.ownerDocument.getElementsByClassName('TroveTooltip__Editor'));
-    // console.log(props.root.activeElement?.children);
-    // console.log(props.root.children);
-
-    console.log(getEditorIndex());
-
-    // getSelection()!.modify('extend', 'backward', 'word');
-    // getSelection()!.modify('extend', 'backward', 'word');
-    // getSelection()!.modify('extend', 'backward', 'word');
-    // console.log(getSelection()!.toString());
-  };
-
-  // useEffect(() => {
-  //   try {
-  //     props.root.addEventListener('onselectionchange', test);
-  //   } catch {}
-  //   return () => {
-  //     try {
-  //       props.root.removeEventListener('onselectionchange', test);
-  //     } catch {}
-  //   };
-  // }, [test]);
 
   const stopPropagation = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
   };
 
-  // useEffect(() => {
-  //   const ele = props.root.querySelector('.ql-editor')!;
-  //   ele.addEventListener('keypress', onKeyPress);
-  //   return () => ele.removeEventListener('keypress', onKeyPress);
-  // }, [onKeyPress]);
+  const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    e.stopPropagation();
+    props.onChange(e);
+    getSuggestedUsers(e.target).then((users) => setSuggestedUsers(users));
+  };
+
+  const onClick = async (e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
+    e.stopPropagation();
+    getSuggestedUsers(e.target as HTMLTextAreaElement).then((users) => setSuggestedUsers(users));
+  };
+
+  const onKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    e.stopPropagation();
+    if (isOsKeyPressed(e) && (e.which === 13 || e.key === '\n')) {
+      // Submit current post
+      e.preventDefault();
+      props.submit();
+    }
+  };
 
   return (
-    <ReactQuill
-      className="TroveTooltip__Editor"
-      theme="bubble"
-      value={props.value}
-      onChange={onChange}
-      onKeyPress={stopPropagation}
-      onKeyDown={stopPropagation}
-      onKeyUp={stopPropagation}
-      placeholder="Write something..."
-      ref={props.outsideRef}
-    />
+    <>
+      <TextareaAutosize
+        className="TroveTooltip__Editor"
+        onChange={onChange}
+        onClick={onClick}
+        onKeyPress={onKeyPress}
+        onKeyDown={stopPropagation}
+        onKeyUp={stopPropagation}
+        value={props.value}
+        placeholder="Write something..."
+        // @ts-ignore
+        ref={props.outsideRef}
+      />
+      {suggestedUsers && (
+        <Dropdown data={suggestedUsers} textareaRef={props.outsideRef} setText={props.setText} />
+      )}
+    </>
   );
 }

@@ -38,7 +38,6 @@ export default function InputPill({ onSubmit, style = {} }: InputPillProps) {
   };
 
   const onKeyDownContent = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // console.log(e.key)
     e.stopPropagation();
     const showSuggestedTopics = suggestedTopics.length > 0 || newTopic !== null;
     switch (e.key) {
@@ -103,19 +102,21 @@ export default function InputPill({ onSubmit, style = {} }: InputPillProps) {
 
   const suggestTopics = async (text: string) => {
     const debouncedSuggestTopics = debounce(async (text) => {
-      await sendMessageToExtension({ type: MessageType.HandleTopicSearch, text: text.trim() }).then(
-        (res: ITopicsRes) => {
-          if (!res.success) return;
-          const normalizedText = text.trim().toLowerCase();
-          const existingTopics = res.topics!;
-          setSuggestedTopics(existingTopics);
-          if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
-          if (existingTopics.some((topic) => topic.normalizedText === normalizedText)) {
-            setNewTopic(null);
-            if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
-          }
-        },
-      );
+      await sendMessageToExtension({
+        type: MessageType.HandleTopicSearch,
+        textPrefix: text.trim(),
+        numResults: 5,
+      }).then((res: ITopicsRes) => {
+        if (!res.success) return;
+        const normalizedText = text.trim().toLowerCase();
+        const existingTopics = res.topics!;
+        setSuggestedTopics(existingTopics);
+        if (existingTopics.length === 0) setSuggestedTopicsIdx(-1);
+        if (existingTopics.some((topic) => topic.normalizedText === normalizedText)) {
+          setNewTopic(null);
+          if (suggestedTopicsIdx === -1) setSuggestedTopicsIdx(0);
+        }
+      });
     }, 0);
 
     await debouncedSuggestTopics(text);

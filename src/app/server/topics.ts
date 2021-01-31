@@ -11,7 +11,8 @@ export const getTopics = async (args: GetTopicsReqBody): Promise<ITopicsRes> => 
  * POST /topics/
  */
 interface GetTopicsReqBody {
-  text?: string;
+  textPrefix: string;
+  numResults: number;
 }
 
 /**

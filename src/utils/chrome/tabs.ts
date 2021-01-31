@@ -6,19 +6,20 @@ import { UpdateUserReqBody } from '../../app/server/users';
 
 export interface Message {
   type: MessageType | SocketMessageType;
-  id?: string;
-  name?: string;
-  post?: CreatePostReqBody;
-  text?: string;
-  url?: string;
-  loginArgs?: LoginReqBody;
   error?: ErrorReqBody;
   forgotPasswordArgs?: ForgotReqBody;
-  updateUserArgs?: UpdateUserReqBody;
-  userId?: string;
+  id?: string;
+  loginArgs?: LoginReqBody;
+  name?: string;
   notificationId?: string;
-  usernamePrefix?: string;
   numResults?: number;
+  post?: CreatePostReqBody;
+  text?: string;
+  textPrefix?: string;
+  updateUserArgs?: UpdateUserReqBody;
+  url?: string;
+  userId?: string;
+  usernamePrefix?: string;
 }
 
 export enum MessageType {

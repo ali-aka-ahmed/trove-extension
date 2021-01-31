@@ -2,7 +2,11 @@ import io from 'socket.io-client';
 import { BACKEND_URL } from '../config';
 import User from '../entities/User';
 import INotification from '../models/INotification';
-import { Message as EMessage, MessageType as EMessageType, sendMessageToWebsite } from '../utils/chrome/external';
+import {
+  Message as EMessage,
+  MessageType as EMessageType,
+  sendMessageToWebsite,
+} from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import {
   Message,
@@ -133,7 +137,11 @@ chrome.runtime.onMessage.addListener(
         break;
       }
       case MessageType.HandleTopicSearch || MessageType.GetTopics: {
-        getTopics(!message.text ? {} : { text: message.text }).then((res) => {
+        if (!message.textPrefix || !message.numResults) return;
+        getTopics({
+          textPrefix: message.textPrefix,
+          numResults: message.numResults,
+        }).then((res) => {
           sendResponse(res);
         });
         break;
