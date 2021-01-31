@@ -1,0 +1,76 @@
+@import '../../../../styles/general.scss';
+
+.TroveTooltip__Dropdown {
+  border-radius: 5px;
+  background-color: #fff;
+  position: absolute;
+  overflow: hidden;
+  min-width: 150px;
+  z-index: 2;
+  @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
+}
+
+.TroveDropdown__SuggestedUser {
+  height: 60px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+  border: none;
+  border-top: 1px solid #ebebeb;
+  background-color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.TroveDropdown__SuggestedUser:first-child {
+  border-top: none;
+}
+
+.TroveDropdown__SuggestedUser:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TroveDropdown__SuggestedUser:focus {
+  outline: none;
+}
+
+.TroveDropdown__SuggestedUser--selected {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TroveSuggestedUser__Right {
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px;
+}
+
+.TroveSuggestedUser__UserBubble {
+  height: 40px;
+  width: 40px;
+  border-radius: 20px;
+  text-align: center;
+  line-height: 38px; /* Should be 50 but looks more centered at 48 */
+  text-transform: uppercase;
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.TroveSuggestedUser__DisplayName {
+  font-weight: bold;
+  margin: 0px;
+  margin-right: 5px;
+  overflow: hidden;
+  max-width: 127.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.TroveSuggestedUser__Username {
+  margin: 0px;
+  margin-right: 5px;
+  overflow: hidden;
+  max-width: 127.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

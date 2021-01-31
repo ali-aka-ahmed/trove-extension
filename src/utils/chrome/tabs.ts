@@ -17,23 +17,25 @@ export interface Message {
   updateUserArgs?: UpdateUserReqBody;
   userId?: string;
   notificationId?: string;
+  usernamePrefix?: string;
+  numResults?: number;
 }
 
 export enum MessageType {
   CreatePost,
   CreateReply,
-  GetPosts,
-  GetTabId,
-  HandleUserSearch,
-  GetTopics,
-  HandleTopicSearch,
-  Sync,
-  Login,
   Error,
   ForgotPassword,
-  UpdateUser,
+  GetPosts,
+  GetTabId,
+  GetTopics,
+  HandleTopicSearch,
+  HandleUserSearch,
   LikePost,
+  Login,
+  Sync,
   UnlikePost,
+  UpdateUser,
 }
 
 /**

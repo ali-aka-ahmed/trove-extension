@@ -5,8 +5,7 @@ import { get } from '../../utils/chrome/storage';
 export type IUsersRes = UsersRes & AxiosRes;
 export type IUserRes = UserRes & AxiosRes;
 
-export const handleUserSearch = async (searchText: string): Promise<IUsersRes> => {
-  const args: GetUsersReqBody = { text: searchText };
+export const handleUserSearch = async (args: GetUsersReqBody): Promise<IUsersRes> => {
   return await api.post(`/users`, args);
 };
 
@@ -24,7 +23,8 @@ export const updateUser = async (args: UpdateUserReqBody): Promise<IUserRes> => 
  * POST /users/
  */
 interface GetUsersReqBody {
-  text: string;
+  usernamePrefix: string;
+  numResults: number;
 }
 
 /**

@@ -1,0 +1,14 @@
+.TroveTooltip__Editor {
+  border: none;
+  overflow: hidden;
+  resize: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  padding-bottom: 15px; // To prevent collision with buttons
+}
+
+.TroveTooltip__Editor:focus {
+  outline: none;
+  border: none;
+}
