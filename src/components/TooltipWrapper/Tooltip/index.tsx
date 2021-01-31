@@ -11,6 +11,7 @@ import ITopic from '../../../models/ITopic';
 import { toArray } from '../../../utils';
 import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import TextareaEditor from './Editor';
 import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
@@ -25,7 +26,6 @@ import {
 } from './helpers/selection';
 import InputPill from './inputPill';
 import Pill from './pill';
-import TextareaEditor from './TextareaEditor';
 
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
@@ -536,9 +536,6 @@ export default function Tooltip(props: TooltipProps) {
         ) : (
           <div className="TroveTooltip__EmptyContent">No added note</div>
         )}
-        {/* <div className="TbdTooltip__ButtonList">
-          <button className="TbdTooltip__RemoveButton" onClick={onClickRemove} />
-        </div> */}
       </div>
     );
   } else if (isSelectionHovered || isTempHighlightVisible) {

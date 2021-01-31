@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
-import User from '../../../../entities/User';
-import { getCurrentWord } from '../TextareaEditor/helpers';
+import User from '../../../../../entities/User';
+import { getCurrentWord } from '../helpers';
 
 interface DropdownProps {
   data: any[];

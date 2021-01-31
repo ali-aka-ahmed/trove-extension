@@ -1,21 +1,14 @@
-@import './quill.bubble.css';
-
-.TroveTooltip__Quill {
-  padding: 3px 2.5px 20px 2.5px;
-}
-
-.TroveTooltip__Quill .ql-editor {
-  padding: 0px;
+.TroveTooltip__Editor {
+  border: none;
+  overflow: hidden;
+  resize: none;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
+  padding-bottom: 15px; // To prevent collision with buttons
 }
 
-.TroveTooltip__Quill .ql-editor.ql-blank::before {
-  left: 0px;
-  right: 0px;
-}
-
-.TroveTooltip__Quill--readonly {
-  padding: 0px;
+.TroveTooltip__Editor:focus {
+  outline: none;
+  border: none;
 }
