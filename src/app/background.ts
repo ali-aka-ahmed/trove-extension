@@ -5,18 +5,18 @@ import INotification from '../models/INotification';
 import {
   Message as EMessage,
   MessageType as EMessageType,
-  sendMessageToWebsite,
+  sendMessageToWebsite
 } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import {
   Message,
   MessageType,
   sendMessageToExtension,
-  SocketMessageType,
+  SocketMessageType
 } from '../utils/chrome/tabs';
 import { forgotPassword, login } from './server/auth';
 import { createPost, createReply, getPosts, likePost, unlikePost } from './server/posts';
-import { getTopics } from './server/topics';
+import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
 
 export const socket = io.connect(BACKEND_URL);
@@ -136,11 +136,10 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
-      case MessageType.HandleTopicSearch || MessageType.GetTopics: {
-        if (!message.textPrefix || !message.numResults) return;
-        getTopics({
-          textPrefix: message.textPrefix,
-          numResults: message.numResults,
+      case MessageType.HandleTopicSearch: {
+        searchTopics({
+          ...(message.textPrefix ? { textPrefix: message.textPrefix } : {}),
+          ...(message.numResults ? { numResults: message.numResults } : {}),
         }).then((res) => {
           sendResponse(res);
         });

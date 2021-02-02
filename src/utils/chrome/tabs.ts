@@ -29,7 +29,6 @@ export enum MessageType {
   ForgotPassword,
   GetPosts,
   GetTabId,
-  GetTopics,
   HandleTopicSearch,
   HandleUserSearch,
   LikePost,

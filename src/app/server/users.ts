@@ -6,7 +6,7 @@ export type IUsersRes = UsersRes & AxiosRes;
 export type IUserRes = UserRes & AxiosRes;
 
 export const handleUserSearch = async (args: GetUsersReqBody): Promise<IUsersRes> => {
-  return await api.post(`/users`, args);
+  return await api.post('/users/', args);
 };
 
 export const getUser = async (id: string): Promise<IUserRes> => {
@@ -24,7 +24,7 @@ export const updateUser = async (args: UpdateUserReqBody): Promise<IUserRes> => 
  */
 interface GetUsersReqBody {
   usernamePrefix: string;
-  numResults: number;
+  numResults?: number; // defaults to 10
 }
 
 /**
