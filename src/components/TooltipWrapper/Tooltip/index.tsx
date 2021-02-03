@@ -48,8 +48,12 @@ export default function Tooltip(props: TooltipProps) {
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
-  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
 
+  const [hoveredPostRect, setHoveredPostRect] = useState<DOMRect | null>(null);
+  const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
+  const [tooltipCloseFn, setTooltipCloseFn] = useState<(() => void) | null>(null);
+
+  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
   const [miniTooltipRect, setMiniTooltipRect] = useState<DOMRect | null>(null);
   const [wasMiniTooltipClicked, setWasMiniTooltipClicked] = useState(false);
   const tooltip = useRef<HTMLDivElement>(null);
@@ -61,7 +65,6 @@ export default function Tooltip(props: TooltipProps) {
   const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
 
   const [editorValue, setEditorValue] = useState('');
-  const [taggedUserIds, setTaggedUserIds] = useState([]);
   const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const editor = useRef<HTMLTextAreaElement>();
 
@@ -137,47 +140,40 @@ export default function Tooltip(props: TooltipProps) {
     setHoveredPost(hoveredPostBuffer);
   }, [hoveredPostBuffer]);
 
-  // TODO: Maybe move active highlight logic to highlighter?
-  const onHighlightMouseEnter = useCallback(
-    (e: MouseEvent, post: Post) => {
+  /**
+   * Handler for when mouse cursor enters a Trove mark element. A highlight can be composed of
+   * multiple marks, which can each have multiple client rects.
+   * TODO: Maybe move active highlight logic to highlighter?
+   */
+  const onMarkMouseEnter = useCallback(
+    (e: MouseEvent, post: Post, mark: HTMLElement) => {
       if (!post.highlight) return;
       highlighter.modifyHighlightTemp(HighlightType.Default);
       highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
+
+      // Have to wrap anonymous function in another function to prevent React from computing it
+      // immediately: https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1
+      setTooltipCloseFn(() => () => {
+        if (!post.highlight) return;
+        highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
+        highlighter.modifyHighlightTemp(HighlightType.Active);
+        setTooltipRect(null);
+        setHoveredPostBuffer(null);
+        setTooltipCloseFn(null);
+      });
+      setHoveredPostRect(getHoveredRect(e, mark.getClientRects()));
       setHoveredPostBuffer(post);
     },
     [highlighter],
   );
 
-  const onHighlightMouseLeave = useCallback(
-    (e: MouseEvent, post: Post) => {
-      if (!post.highlight) return;
-      highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
-      highlighter.modifyHighlightTemp(HighlightType.Active);
-      setHoveredPostBuffer(null);
-    },
-    [highlighter],
-  );
-
-  const onHighlightMouseMove = useCallback(() => {}, []);
-
-  // TODO: Can we put these useeffects in a for loop by event?
   useEffect(() => {
     highlighter.highlights.forEach((highlight, id) => {
-      const onMouseEnter = (e: MouseEvent) => onHighlightMouseEnter(e, highlight.post);
       for (const mark of highlight.marks) {
-        mark.onmouseenter = onMouseEnter;
+        mark.onmouseenter = (e: MouseEvent) => onMarkMouseEnter(e, highlight.post, mark);
       }
     });
-  }, [posts, onHighlightMouseEnter]);
-
-  useEffect(() => {
-    highlighter.highlights.forEach((highlight, id) => {
-      const onMouseLeave = (e: MouseEvent) => onHighlightMouseLeave(e, highlight.post);
-      for (const mark of highlight.marks) {
-        mark.onmouseleave = onMouseLeave;
-      }
-    });
-  }, [posts, onHighlightMouseLeave]);
+  }, [posts, onMarkMouseEnter]);
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
@@ -375,6 +371,33 @@ export default function Tooltip(props: TooltipProps) {
 
   const onMouseMovePage = useCallback(
     (e: MouseEvent) => {
+      let rect;
+      if (
+        hoveredPost &&
+        !!hoveredPostRect &&
+        !!tooltipRect &&
+        isMouseBetweenRects(e, hoveredPostRect, tooltipRect)
+      ) {
+        // Do nothing
+        return;
+      } else if (!!hoveredPostBuffer && !hoveredPost) {
+        // Waiting for React hook to update hoveredPost
+        return;
+      } else if (
+        hoveredPost &&
+        !!hoveredPostRect &&
+        !!tooltipRect &&
+        !isMouseBetweenRects(e, hoveredPostRect, tooltipRect) &&
+        tooltipCloseFn
+      ) {
+        // Exiting tooltip from hovered post
+        tooltipCloseFn();
+      } else if (hoveredPost) {
+        // Calculate and set tooltip rect, this should happen once
+        setTooltipRect(tooltip.current!.getBoundingClientRect());
+        return;
+      }
+
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
       // as cursor enters and leaves selection
       if (e.buttons === 1 || wasMiniTooltipClicked || isSelectionInEditableElement()) {
@@ -382,7 +405,6 @@ export default function Tooltip(props: TooltipProps) {
       }
 
       const selection = getSelection()!;
-      let rect;
       if (
         isSelectionHovered &&
         !!selectionRect &&
@@ -403,7 +425,17 @@ export default function Tooltip(props: TooltipProps) {
         setSelectionRect(null);
       }
     },
-    [isSelectionHovered, selectionRect, miniTooltipRect, wasMiniTooltipClicked],
+    [
+      hoveredPost,
+      hoveredPostBuffer,
+      hoveredPostRect,
+      tooltipRect,
+      tooltipCloseFn,
+      isSelectionHovered,
+      selectionRect,
+      miniTooltipRect,
+      wasMiniTooltipClicked,
+    ],
   );
 
   useEffect(() => {
@@ -427,21 +459,18 @@ export default function Tooltip(props: TooltipProps) {
       resetTooltip();
 
       // Show actual highlight when we get response from server
-      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq })
-        .then((res: IPostRes) => {
+      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
+        (res: IPostRes) => {
           if (res.success && res.post) {
             removeTempHighlight();
             addPosts(new Post(res.post), HighlightType.Default);
           } else {
             // Show that highlighting failed
-            console.log('Failed to create post:', res.message);
+            console.error('Failed to create post:', res.message);
             throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
           }
-        })
-        .catch((err) => {
-          console.error('Errored while creating post: ', err);
-          throw err;
-        });
+        },
+      );
     }
   };
 
@@ -518,7 +547,7 @@ export default function Tooltip(props: TooltipProps) {
     ) : null;
   };
 
-  if (hoveredPost) {
+  if (!!hoveredPost) {
     // Readonly post
     return (
       <div
@@ -528,6 +557,7 @@ export default function Tooltip(props: TooltipProps) {
           'TbdTooltip--readonly': true,
         })}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+        ref={tooltip}
       >
         {renderUserInfo(hoveredPost)}
         {renderTopics(hoveredPost)}
