@@ -47,11 +47,12 @@ export default function Tooltip(props: TooltipProps) {
 
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
+  const [hoveredMark, setHoveredMark] = useState<HTMLElement | null>(null);
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
 
   const [hoveredPostRect, setHoveredPostRect] = useState<DOMRect | null>(null);
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
-  const [tooltipCloseFn, setTooltipCloseFn] = useState<(() => void) | null>(null);
+  const [tooltipCloseFn, setTooltipCloseFn] = useState<((arg?: boolean) => void) | null>(null);
 
   const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
   const [miniTooltipRect, setMiniTooltipRect] = useState<DOMRect | null>(null);
@@ -148,25 +149,47 @@ export default function Tooltip(props: TooltipProps) {
   const onMarkMouseEnter = useCallback(
     (e: MouseEvent, post: Post, mark: HTMLElement) => {
       if (!post.highlight) return;
+      console.log('entering', post.id);
       highlighter.modifyHighlightTemp(HighlightType.Default);
       highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
 
+      // Make sure we exit from the previous highlight, if any
+      // if (hoveredPost && hoveredPost.id !== post.id && tooltipCloseFn) {
+      //   console.log('exit previous highlight');
+      //   tooltipCloseFn();
+      // }
+
       // Have to wrap anonymous function in another function to prevent React from computing it
       // immediately: https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1
-      setTooltipCloseFn(() => () => {
+      setTooltipCloseFn(() => (modifyState = true) => {
         if (!post.highlight) return;
+        console.log('exiting', post.id);
         highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
         highlighter.modifyHighlightTemp(HighlightType.Active);
-        setTooltipRect(null);
-        setHoveredPostBuffer(null);
-        setTooltipCloseFn(null);
+        if (modifyState) {
+          setTooltipRect(null);
+          setHoveredPostBuffer(null);
+          setHoveredPost(null);
+          setTooltipCloseFn(null);
+          setHoveredMark(null);
+          setHoveredPostRect(null);
+        }
       });
-      setHoveredPostRect(getHoveredRect(e, mark.getClientRects()));
+      setTooltipRect(null);
+      setHoveredMark(mark);
+      // setHoveredPostRect(getHoveredRect(e, mark.getClientRects()));
       setHoveredPostBuffer(post);
     },
-    [highlighter],
+    [highlighter, hoveredPost, tooltipCloseFn],
   );
 
+  /**
+   * Attach handlers to highlights. We don't need to return a cleanup function since we're using
+   * the .onevent notation (as opposed to addEventListener) to add the listeners, which only
+   * accepts one event at a time. We have to include posts as a dependency to add handler to new
+   * posts on page.
+   * TODO: don't refresh handlers on already existing highlights
+   */
   useEffect(() => {
     highlighter.highlights.forEach((highlight, id) => {
       for (const mark of highlight.marks) {
@@ -379,9 +402,11 @@ export default function Tooltip(props: TooltipProps) {
         isMouseBetweenRects(e, hoveredPostRect, tooltipRect)
       ) {
         // Do nothing
+        console.log('in bounds');
         return;
-      } else if (!!hoveredPostBuffer && !hoveredPost) {
+      } else if (hoveredPostBuffer !== hoveredPost) {
         // Waiting for React hook to update hoveredPost
+        console.log('waiting for react');
         return;
       } else if (
         hoveredPost &&
@@ -391,11 +416,34 @@ export default function Tooltip(props: TooltipProps) {
         tooltipCloseFn
       ) {
         // Exiting tooltip from hovered post
+        console.log('left bounds', hoveredPost, tooltipRect, hoveredPostRect, hoveredMark);
+        console.log(
+          e,
+          hoveredMark!.getClientRects(),
+          getHoveredRect(e, hoveredMark!.getClientRects()),
+        );
         tooltipCloseFn();
-      } else if (hoveredPost) {
+      } else if (hoveredPost && (!tooltipRect || (!hoveredPostRect && !!hoveredMark))) {
         // Calculate and set tooltip rect, this should happen once
+        console.log('set once', hoveredPost, tooltipRect, hoveredPostRect, hoveredMark);
+        console.log(
+          e,
+          hoveredMark!.getClientRects(),
+          getHoveredRect(e, hoveredMark!.getClientRects()),
+        );
         setTooltipRect(tooltip.current!.getBoundingClientRect());
+        setHoveredPostRect(getHoveredRect(e, hoveredMark!.getClientRects()));
         return;
+      } else {
+        console.log(
+          'else',
+          hoveredPost,
+          hoveredPostBuffer,
+          hoveredPostRect,
+          tooltipRect,
+          tooltipCloseFn,
+        );
+        // console.log(e, hoveredPostRect, tooltipRect, isMouseBetweenRects(e, hoveredPostRect, tooltipRect))
       }
 
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
