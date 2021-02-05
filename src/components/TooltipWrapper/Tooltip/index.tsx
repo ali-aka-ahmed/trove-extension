@@ -47,9 +47,14 @@ export default function Tooltip(props: TooltipProps) {
 
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
+  const [hoveredMark, setHoveredMark] = useState<HTMLElement | null>(null);
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
-  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
 
+  const [hoveredPostRect, setHoveredPostRect] = useState<DOMRect | null>(null);
+  const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
+  const [tooltipCloseFn, setTooltipCloseFn] = useState<((arg?: boolean) => void) | null>(null);
+
+  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
   const [miniTooltipRect, setMiniTooltipRect] = useState<DOMRect | null>(null);
   const [wasMiniTooltipClicked, setWasMiniTooltipClicked] = useState(false);
   const tooltip = useRef<HTMLDivElement>(null);
@@ -61,7 +66,6 @@ export default function Tooltip(props: TooltipProps) {
   const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
 
   const [editorValue, setEditorValue] = useState('');
-  const [taggedUserIds, setTaggedUserIds] = useState([]);
   const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
   const editor = useRef<HTMLTextAreaElement>();
 
@@ -137,47 +141,63 @@ export default function Tooltip(props: TooltipProps) {
     setHoveredPost(hoveredPostBuffer);
   }, [hoveredPostBuffer]);
 
-  // TODO: Maybe move active highlight logic to highlighter?
-  const onHighlightMouseEnter = useCallback(
-    (e: MouseEvent, post: Post) => {
-      if (!post.highlight) return;
+  /**
+   * Handler for when mouse cursor enters a Trove mark element. A highlight can be composed of
+   * multiple marks, which can each have multiple client rects.
+   * TODO: Maybe move active highlight logic to highlighter?
+   */
+  const onMarkMouseEnter = useCallback(
+    (e: MouseEvent, post: Post, mark: HTMLElement) => {
+      // Don't trigger mouseenter event if user is selecting text (left mouse button down)
+      if (!post.highlight || e.buttons === 1) return;
       highlighter.modifyHighlightTemp(HighlightType.Default);
       highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
+
+      // Encountered a new mark before having left the last one
+      if (hoveredPostBuffer) {
+        if (hoveredPostBuffer.id !== post.id && tooltipCloseFn) {
+          // Make sure we exit from the previous highlight
+          tooltipCloseFn();
+        } else if (hoveredPostBuffer.id === post.id) {
+          // Do nothing because we are passing between two marks of the same highlight
+          return;
+        }
+      }
+
+      // Have to wrap anonymous function in another function to prevent React from computing it
+      // immediately: https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1
+      setTooltipCloseFn(() => () => {
+        if (!post.highlight) return;
+        highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
+        highlighter.modifyHighlightTemp(HighlightType.Active);
+        setTooltipRect(null);
+        setHoveredPostBuffer(null);
+        setHoveredPost(null);
+        setTooltipCloseFn(null);
+        setHoveredMark(null);
+        setHoveredPostRect(null);
+      });
+      setTooltipRect(null);
+      setHoveredMark(mark);
       setHoveredPostBuffer(post);
     },
-    [highlighter],
+    [highlighter, hoveredPostBuffer, tooltipCloseFn],
   );
 
-  const onHighlightMouseLeave = useCallback(
-    (e: MouseEvent, post: Post) => {
-      if (!post.highlight) return;
-      highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
-      highlighter.modifyHighlightTemp(HighlightType.Active);
-      setHoveredPostBuffer(null);
-    },
-    [highlighter],
-  );
-
-  const onHighlightMouseMove = useCallback(() => {}, []);
-
-  // TODO: Can we put these useeffects in a for loop by event?
+  /**
+   * Attach handlers to highlights. We don't need to return a cleanup function since we're using
+   * the .onevent notation (as opposed to addEventListener) to add the listeners, which only
+   * accepts one event at a time. We have to include posts as a dependency to add handler to new
+   * posts on page.
+   * TODO: don't refresh handlers on already existing highlights
+   */
   useEffect(() => {
     highlighter.highlights.forEach((highlight, id) => {
-      const onMouseEnter = (e: MouseEvent) => onHighlightMouseEnter(e, highlight.post);
       for (const mark of highlight.marks) {
-        mark.onmouseenter = onMouseEnter;
+        mark.onmouseenter = (e: MouseEvent) => onMarkMouseEnter(e, highlight.post, mark);
       }
     });
-  }, [posts, onHighlightMouseEnter]);
-
-  useEffect(() => {
-    highlighter.highlights.forEach((highlight, id) => {
-      const onMouseLeave = (e: MouseEvent) => onHighlightMouseLeave(e, highlight.post);
-      for (const mark of highlight.marks) {
-        mark.onmouseleave = onMouseLeave;
-      }
-    });
-  }, [posts, onHighlightMouseLeave]);
+  }, [posts, onMarkMouseEnter]);
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
@@ -375,6 +395,34 @@ export default function Tooltip(props: TooltipProps) {
 
   const onMouseMovePage = useCallback(
     (e: MouseEvent) => {
+      let rect;
+      if (
+        hoveredPost &&
+        !!hoveredPostRect &&
+        !!tooltipRect &&
+        isMouseBetweenRects(e, hoveredPostRect, tooltipRect)
+      ) {
+        // Do nothing
+        return;
+      } else if (hoveredPostBuffer !== hoveredPost) {
+        // Waiting for React hook to update hoveredPost
+        return;
+      } else if (
+        hoveredPost &&
+        !!hoveredPostRect &&
+        !!tooltipRect &&
+        !isMouseBetweenRects(e, hoveredPostRect, tooltipRect) &&
+        tooltipCloseFn
+      ) {
+        // Exiting tooltip from hovered post
+        tooltipCloseFn();
+      } else if (hoveredPost && (!tooltipRect || (!hoveredPostRect && !!hoveredMark))) {
+        // Calculate and set tooltip rect, this should happen once
+        setTooltipRect(tooltip.current!.getBoundingClientRect());
+        setHoveredPostRect(getHoveredRect(e, hoveredMark!.getClientRects()));
+        return;
+      }
+
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
       // as cursor enters and leaves selection
       if (e.buttons === 1 || wasMiniTooltipClicked || isSelectionInEditableElement()) {
@@ -382,7 +430,6 @@ export default function Tooltip(props: TooltipProps) {
       }
 
       const selection = getSelection()!;
-      let rect;
       if (
         isSelectionHovered &&
         !!selectionRect &&
@@ -403,7 +450,17 @@ export default function Tooltip(props: TooltipProps) {
         setSelectionRect(null);
       }
     },
-    [isSelectionHovered, selectionRect, miniTooltipRect, wasMiniTooltipClicked],
+    [
+      hoveredPost,
+      hoveredPostBuffer,
+      hoveredPostRect,
+      tooltipRect,
+      tooltipCloseFn,
+      isSelectionHovered,
+      selectionRect,
+      miniTooltipRect,
+      wasMiniTooltipClicked,
+    ],
   );
 
   useEffect(() => {
@@ -427,21 +484,18 @@ export default function Tooltip(props: TooltipProps) {
       resetTooltip();
 
       // Show actual highlight when we get response from server
-      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq })
-        .then((res: IPostRes) => {
+      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
+        (res: IPostRes) => {
           if (res.success && res.post) {
             removeTempHighlight();
             addPosts(new Post(res.post), HighlightType.Default);
           } else {
             // Show that highlighting failed
-            console.log('Failed to create post:', res.message);
+            console.error('Failed to create post:', res.message);
             throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
           }
-        })
-        .catch((err) => {
-          console.error('Errored while creating post: ', err);
-          throw err;
-        });
+        },
+      );
     }
   };
 
@@ -518,7 +572,7 @@ export default function Tooltip(props: TooltipProps) {
     ) : null;
   };
 
-  if (hoveredPost) {
+  if (!!hoveredPost) {
     // Readonly post
     return (
       <div
@@ -528,6 +582,7 @@ export default function Tooltip(props: TooltipProps) {
           'TbdTooltip--readonly': true,
         })}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+        ref={tooltip}
       >
         {renderUserInfo(hoveredPost)}
         {renderTopics(hoveredPost)}

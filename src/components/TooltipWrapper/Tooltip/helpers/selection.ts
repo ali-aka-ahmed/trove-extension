@@ -41,7 +41,13 @@ export const getHoveredRect = (e: MouseEvent, rects: DOMRectList | null) => {
   return null;
 };
 
+/**
+ * Determine if cursor is currently inside of given rect (including edges).
+ * @param e
+ * @param rect
+ */
 export const isMouseInRect = (e: MouseEvent, rect: DOMRect): boolean => {
+  rect = getTolerantRect(rect);
   return (
     e.clientX >= rect.left &&
     e.clientX <= rect.right &&
@@ -58,6 +64,9 @@ export const isMouseInRect = (e: MouseEvent, rect: DOMRect): boolean => {
  * @param r2
  */
 export const isMouseBetweenRects = (e: MouseEvent, r1: DOMRect, r2: DOMRect): boolean => {
+  r1 = getTolerantRect(r1);
+  r2 = getTolerantRect(r2);
+
   // Ensure that r1 is always the higher rect and r2 is the lower rect
   if (r2.bottom < r1.bottom) {
     const temp = r1;
@@ -98,4 +107,19 @@ export const isMouseBetweenRects = (e: MouseEvent, r1: DOMRect, r2: DOMRect): bo
 
   const xR = r1.right - ratio * (r1.right - r2.right);
   return e.clientX <= xR;
+};
+
+/**
+ * Returns a rect that is slightly larger and encompasses given rect. This tolerance reconciles
+ * clientRect with the area used for mouseenter events, which seem to be off by a few pixels.
+ * @param rect
+ */
+const getTolerantRect = (rect: DOMRect) => {
+  const tolerance = 1.5;
+  return new DOMRect(
+    rect.x - tolerance,
+    rect.y - tolerance,
+    rect.width + 2 * tolerance,
+    rect.height + 2 * tolerance,
+  );
 };
