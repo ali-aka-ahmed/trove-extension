@@ -1,7 +1,7 @@
 import { debounce } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { ITopicsRes } from '../../../../app/server/topics';
+import { ITopicsRes } from '../../../../app/server/search';
 import { DEFAULT_TOPIC_COLOR } from '../../../../constants';
 import ITopic from '../../../../models/ITopic';
 import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';

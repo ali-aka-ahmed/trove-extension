@@ -312,9 +312,16 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts]);
 
+  /**
+   * Handle transition between mini-tooltip and editor tooltip.
+   */
   const miniTooltipToTooltip = () => {
-    addTempHighlight();
-    setWasMiniTooltipClicked(true);
+    // Allow transition if selection exists with at least one non-whitespace character
+    const selection = getSelection()!;
+    if (selectionExists(selection) && /\S/.test(selection.toString())) {
+      addTempHighlight();
+      setWasMiniTooltipClicked(true);
+    }
   };
 
   const onScroll = useCallback(() => {

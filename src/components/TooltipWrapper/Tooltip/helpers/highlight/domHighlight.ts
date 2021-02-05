@@ -39,7 +39,6 @@ export const addDOMHighlight = (range: Range, color: string = 'yellow') => {
   // This is where the magic happens
   const marks: HTMLElement[] = [];
   for (let done = false, node = start; !done || !node; ) {
-    //console.log(node, start)
     if (
       hasContent &&
       node.nodeType === Node.TEXT_NODE &&
