@@ -38,7 +38,7 @@ export default function TextareaEditor(props: EditorProps) {
 
   const onKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
-    if (isOsKeyPressed(e) && (e.which === 13 || e.key === '\n')) {
+    if (isOsKeyPressed(e) && e.key === 'Enter') {
       // Submit current post
       e.preventDefault();
       props.submit();
