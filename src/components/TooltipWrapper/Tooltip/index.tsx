@@ -506,15 +506,20 @@ export default function Tooltip(props: TooltipProps) {
     }
   };
 
-  const onKeyDownPage = (e: KeyboardEvent) => {
-    if (isOsKeyPressed(e) && e.key === 'd') {
-      // New post on current selection
-      e.preventDefault();
-      if (selectionExists(getSelection())) {
-        miniTooltipToTooltip();
+  const onKeyDownPage = useCallback(
+    (e: KeyboardEvent) => {
+      if (!isAuthenticated || !isExtensionOn) return;
+
+      if (isOsKeyPressed(e) && e.key === 'd') {
+        // New post on current selection
+        e.preventDefault();
+        if (selectionExists(getSelection())) {
+          miniTooltipToTooltip();
+        }
       }
-    }
-  };
+    },
+    [isAuthenticated, isExtensionOn],
+  );
 
   useEffect(() => {
     document.addEventListener('keydown', onKeyDownPage);
