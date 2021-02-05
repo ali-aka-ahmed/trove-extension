@@ -148,17 +148,26 @@ export default function Tooltip(props: TooltipProps) {
    */
   const onMarkMouseEnter = useCallback(
     (e: MouseEvent, post: Post, mark: HTMLElement) => {
-      if (!post.highlight) return;
-      console.log('entering', post.id);
+      // Don't trigger mouseenter event if user is selecting text (left mouse button down)
+      if (!post.highlight || e.buttons === 1) return;
       highlighter.modifyHighlightTemp(HighlightType.Default);
       highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
 
-      // Make sure we exit from the previous highlight, if any
-      // if (hoveredPost && hoveredPost.id !== post.id && tooltipCloseFn) {
-      //   console.log('exit previous highlight');
-      //   tooltipCloseFn();
-      // }
+      // Encountered a new mark before having left the last one
+      if (hoveredPostBuffer) {
+        if (hoveredPostBuffer.id !== post.id && tooltipCloseFn) {
+          // Make sure we exit from the previous highlight
+          console.log('exit previous highlight');
+          tooltipCloseFn();
+        } else if (hoveredPostBuffer.id === post.id) {
+          // Do nothing because we are passing between two marks of the same highlight
+          console.log('do nothing because we already were in this highlight');
+          return;
+        }
+      }
 
+      console.log('entering', post.id);
+      console.log(hoveredPostBuffer);
       // Have to wrap anonymous function in another function to prevent React from computing it
       // immediately: https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1
       setTooltipCloseFn(() => (modifyState = true) => {
@@ -177,10 +186,9 @@ export default function Tooltip(props: TooltipProps) {
       });
       setTooltipRect(null);
       setHoveredMark(mark);
-      // setHoveredPostRect(getHoveredRect(e, mark.getClientRects()));
       setHoveredPostBuffer(post);
     },
-    [highlighter, hoveredPost, tooltipCloseFn],
+    [highlighter, hoveredPostBuffer, tooltipCloseFn],
   );
 
   /**
@@ -192,8 +200,10 @@ export default function Tooltip(props: TooltipProps) {
    */
   useEffect(() => {
     highlighter.highlights.forEach((highlight, id) => {
-      for (const mark of highlight.marks) {
-        mark.onmouseenter = (e: MouseEvent) => onMarkMouseEnter(e, highlight.post, mark);
+      if (!hoveredPost || highlight.post.id !== hoveredPost.id) {
+        for (const mark of highlight.marks) {
+          mark.onmouseenter = (e: MouseEvent) => onMarkMouseEnter(e, highlight.post, mark);
+        }
       }
     });
   }, [posts, onMarkMouseEnter]);
