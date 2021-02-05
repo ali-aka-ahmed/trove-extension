@@ -157,32 +157,25 @@ export default function Tooltip(props: TooltipProps) {
       if (hoveredPostBuffer) {
         if (hoveredPostBuffer.id !== post.id && tooltipCloseFn) {
           // Make sure we exit from the previous highlight
-          console.log('exit previous highlight');
           tooltipCloseFn();
         } else if (hoveredPostBuffer.id === post.id) {
           // Do nothing because we are passing between two marks of the same highlight
-          console.log('do nothing because we already were in this highlight');
           return;
         }
       }
 
-      console.log('entering', post.id);
-      console.log(hoveredPostBuffer);
       // Have to wrap anonymous function in another function to prevent React from computing it
       // immediately: https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1
-      setTooltipCloseFn(() => (modifyState = true) => {
+      setTooltipCloseFn(() => () => {
         if (!post.highlight) return;
-        console.log('exiting', post.id);
         highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
         highlighter.modifyHighlightTemp(HighlightType.Active);
-        if (modifyState) {
-          setTooltipRect(null);
-          setHoveredPostBuffer(null);
-          setHoveredPost(null);
-          setTooltipCloseFn(null);
-          setHoveredMark(null);
-          setHoveredPostRect(null);
-        }
+        setTooltipRect(null);
+        setHoveredPostBuffer(null);
+        setHoveredPost(null);
+        setTooltipCloseFn(null);
+        setHoveredMark(null);
+        setHoveredPostRect(null);
       });
       setTooltipRect(null);
       setHoveredMark(mark);
@@ -200,10 +193,8 @@ export default function Tooltip(props: TooltipProps) {
    */
   useEffect(() => {
     highlighter.highlights.forEach((highlight, id) => {
-      if (!hoveredPost || highlight.post.id !== hoveredPost.id) {
-        for (const mark of highlight.marks) {
-          mark.onmouseenter = (e: MouseEvent) => onMarkMouseEnter(e, highlight.post, mark);
-        }
+      for (const mark of highlight.marks) {
+        mark.onmouseenter = (e: MouseEvent) => onMarkMouseEnter(e, highlight.post, mark);
       }
     });
   }, [posts, onMarkMouseEnter]);
@@ -412,11 +403,9 @@ export default function Tooltip(props: TooltipProps) {
         isMouseBetweenRects(e, hoveredPostRect, tooltipRect)
       ) {
         // Do nothing
-        console.log('in bounds');
         return;
       } else if (hoveredPostBuffer !== hoveredPost) {
         // Waiting for React hook to update hoveredPost
-        console.log('waiting for react');
         return;
       } else if (
         hoveredPost &&
@@ -426,34 +415,12 @@ export default function Tooltip(props: TooltipProps) {
         tooltipCloseFn
       ) {
         // Exiting tooltip from hovered post
-        console.log('left bounds', hoveredPost, tooltipRect, hoveredPostRect, hoveredMark);
-        console.log(
-          e,
-          hoveredMark!.getClientRects(),
-          getHoveredRect(e, hoveredMark!.getClientRects()),
-        );
         tooltipCloseFn();
       } else if (hoveredPost && (!tooltipRect || (!hoveredPostRect && !!hoveredMark))) {
         // Calculate and set tooltip rect, this should happen once
-        console.log('set once', hoveredPost, tooltipRect, hoveredPostRect, hoveredMark);
-        console.log(
-          e,
-          hoveredMark!.getClientRects(),
-          getHoveredRect(e, hoveredMark!.getClientRects()),
-        );
         setTooltipRect(tooltip.current!.getBoundingClientRect());
         setHoveredPostRect(getHoveredRect(e, hoveredMark!.getClientRects()));
         return;
-      } else {
-        console.log(
-          'else',
-          hoveredPost,
-          hoveredPostBuffer,
-          hoveredPostRect,
-          tooltipRect,
-          tooltipCloseFn,
-        );
-        // console.log(e, hoveredPostRect, tooltipRect, isMouseBetweenRects(e, hoveredPostRect, tooltipRect))
       }
 
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
