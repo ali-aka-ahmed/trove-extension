@@ -183,7 +183,8 @@ export default function Tooltip(props: TooltipProps) {
         setHoveredPostRect(null);
       });
       setTooltipRect(null);
-      setHoveredMark(mark);
+      // setHoveredMark(mark);
+      setHoveredPostRect(getHoveredRect(e, mark.getClientRects()));
       setHoveredPostBuffer(post);
     },
     [highlighter, hoveredPostBuffer, tooltipCloseFn],
@@ -431,12 +432,23 @@ export default function Tooltip(props: TooltipProps) {
       ) {
         // Exiting tooltip from hovered post
         tooltipCloseFn();
-      } else if (hoveredPost && (!tooltipRect || (!hoveredPostRect && !!hoveredMark))) {
+      } else if (hoveredPost && !tooltipRect) {
         // Calculate and set tooltip rect, this should happen once
         setTooltipRect(tooltip.current!.getBoundingClientRect());
-        setHoveredPostRect(getHoveredRect(e, hoveredMark!.getClientRects()));
         return;
       }
+
+      // else {
+      //   console.log(
+      //     'else',
+      //     e,
+      //     hoveredPost,
+      //     hoveredPostRect,
+      //     tooltipRect,
+      //     hoveredMark,
+      //     tooltipCloseFn,
+      //   );
+      // }
 
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
       // as cursor enters and leaves selection
