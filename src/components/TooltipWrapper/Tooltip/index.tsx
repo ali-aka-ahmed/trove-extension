@@ -509,19 +509,15 @@ export default function Tooltip(props: TooltipProps) {
 
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
-      // Special case, where we want to disable native bookmarks shortcut even if user isn't
-      // logged in or extension is off
-      if (isOsKeyPressed(e) && e.key === 'd') {
-        e.preventDefault();
+      // Handle case where user logs out or turns ext off, but page isn't refreshed
+      if (!isAuthenticated || !isExtensionOn) {
+        return;
       }
-
-      // if (!isAuthenticated || !isExtensionOn) {
-      //   return;
-      // }
 
       // Keyboard shortcuts
       if (isOsKeyPressed(e) && e.key === 'd') {
         // New post on current selection
+        e.preventDefault();
         miniTooltipToTooltip();
       }
     },
