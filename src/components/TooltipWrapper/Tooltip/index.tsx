@@ -88,6 +88,11 @@ export default function Tooltip(props: TooltipProps) {
       }
 
       if (tempHighlightRange) {
+        console.log(
+          'getTooltipRange',
+          tempHighlightRange,
+          tempHighlightRange.getBoundingClientRect(),
+        );
         return tempHighlightRange;
       }
 
@@ -225,17 +230,20 @@ export default function Tooltip(props: TooltipProps) {
     const selection = getSelection();
     if (selection?.toString()) {
       const range = selection.getRangeAt(0);
+      const rangeCopy = range.cloneRange();
       const textRange = getTextRangeFromRange(range);
       setTempHighlight({
         textRange: textRange,
         url: window.location.href,
       });
 
+      console.log('addTempHighlight', range, rangeCopy);
+
       const id = uuid();
       setTempHighlightId(id);
-      setTempHighlightRange(range.cloneRange());
+      setTempHighlightRange(rangeCopy);
       setIsTempHighlightVisible(true);
-      highlighter.addHighlightTemp(range, user?.color, HighlightType.Active);
+      highlighter.addHighlightTemp(rangeCopy, user?.color, HighlightType.Active);
       selection.removeAllRanges();
     }
   }, [user]);
@@ -619,8 +627,8 @@ export default function Tooltip(props: TooltipProps) {
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         ref={tooltip}
       >
-        <div className="TroveMiniTooltip__Logo"></div>
         <button className="TroveMiniTooltip__NewPostButton" onClick={miniTooltipToTooltip}>
+          <div className="TroveMiniTooltip__Logo"></div>
           <p className="TroveMiniTooltip__NewPostButton__PrimaryText">New post</p>
           <p className="TroveMiniTooltip__NewPostButton__SecondaryText">{`(${getOsKeyChar()}+d)`}</p>
         </button>
