@@ -221,7 +221,7 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   // TODO: Store temp highlight stuff inside highlighter
-  const addTempHighlight = () => {
+  const addTempHighlight = useCallback(() => {
     const selection = getSelection();
     if (selection?.toString()) {
       const range = selection.getRangeAt(0);
@@ -238,7 +238,7 @@ export default function Tooltip(props: TooltipProps) {
       highlighter.addHighlightTemp(range, user?.color, HighlightType.Active);
       selection.removeAllRanges();
     }
-  };
+  }, [user]);
 
   const removeTempHighlight = useCallback(() => {
     highlighter.removeHighlightTemp();
@@ -315,14 +315,14 @@ export default function Tooltip(props: TooltipProps) {
   /**
    * Handle transition between mini-tooltip and editor tooltip.
    */
-  const miniTooltipToTooltip = () => {
+  const miniTooltipToTooltip = useCallback(() => {
     // Allow transition if selection exists with at least one non-whitespace character
     const selection = getSelection()!;
     if (selectionExists(selection) && /\S/.test(selection.toString())) {
       addTempHighlight();
       setWasMiniTooltipClicked(true);
     }
-  };
+  }, [addTempHighlight]);
 
   const onScroll = useCallback(() => {
     setIsSelectionHovered(false);
@@ -458,6 +458,7 @@ export default function Tooltip(props: TooltipProps) {
       }
     },
     [
+      hoveredMark,
       hoveredPost,
       hoveredPostBuffer,
       hoveredPostRect,
@@ -514,9 +515,9 @@ export default function Tooltip(props: TooltipProps) {
         e.preventDefault();
       }
 
-      if (!isAuthenticated || !isExtensionOn) {
-        return;
-      }
+      // if (!isAuthenticated || !isExtensionOn) {
+      //   return;
+      // }
 
       // Keyboard shortcuts
       if (isOsKeyPressed(e) && e.key === 'd') {
@@ -524,7 +525,7 @@ export default function Tooltip(props: TooltipProps) {
         miniTooltipToTooltip();
       }
     },
-    [isAuthenticated, isExtensionOn],
+    [isAuthenticated, isExtensionOn, miniTooltipToTooltip],
   );
 
   useEffect(() => {
