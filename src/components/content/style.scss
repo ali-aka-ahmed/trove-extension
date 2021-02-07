@@ -1,0 +1,19 @@
+.TroveExtension__EditorContent {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+  'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+  'Noto Color Emoji';
+  width: 100%;
+  height: fit-content;
+}
+
+.TroveContent__UserLink {
+  font-weight: 500;
+}
+
+.TroveContent__Substring {
+  word-break: break-word;
+}
+
+.TroveContent__UserLink:hover {
+  text-decoration: underline;
+}

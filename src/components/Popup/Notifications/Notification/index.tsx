@@ -4,6 +4,7 @@ import { ORIGIN } from '../../../../config';
 import NotificationObject from '../../../../entities/Notification';
 import { get1, set } from '../../../../utils/chrome/storage';
 import { sendMessageToExtension, SocketMessageType } from '../../../../utils/chrome/tabs';
+import Content from '../../../content';
 import '../../style.scss';
 import '../style.scss';
 import './style.scss';
@@ -24,14 +25,14 @@ export default function Notification({ notification }: NotificationProps) {
     ns[i] = notification;
     await set({ notifications: ns });
     if (notification.url) {
-      chrome.tabs.create({ url: notification.url });
+      chrome.tabs.create({ url: notification.url, active: false });
     } else {
-      chrome.tabs.create({ url: `${ORIGIN}/${notification.sender.username}` });
+      chrome.tabs.create({ url: `${ORIGIN}/${notification.sender.username}`, active: false });
     }
   };
   return (
     <div
-      className={`TbdNotificationWrapper ${!notification.read && 'TbdNotificationWrapper--unread'}`}
+      className="TbdNotificationWrapper"
       onClick={handleClick}
     >
       <div className="TbdNotificationWrapper__HeaderWrapper">
@@ -59,7 +60,13 @@ export default function Notification({ notification }: NotificationProps) {
         </div>
       </div>
       {notification.content && (
-        <div className="TbdNotificationWrapper__Content">{notification.content}</div>
+        <div className="TbdNotificationWrapper__Content">
+          <Content
+            value={notification.content}
+            taggedUsers={notification.taggedUsers || []}
+            style={{ maxHeight: '70px', overflow: 'hidden' }}
+          />
+        </div>
       )}
     </div>
   );
