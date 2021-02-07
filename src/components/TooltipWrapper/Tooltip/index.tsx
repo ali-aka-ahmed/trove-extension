@@ -47,7 +47,6 @@ export default function Tooltip(props: TooltipProps) {
 
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
-  const [hoveredMark, setHoveredMark] = useState<HTMLElement | null>(null);
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
 
   const [hoveredPostRect, setHoveredPostRect] = useState<DOMRect | null>(null);
@@ -88,11 +87,6 @@ export default function Tooltip(props: TooltipProps) {
       }
 
       if (tempHighlightRange) {
-        console.log(
-          'getTooltipRange',
-          tempHighlightRange,
-          tempHighlightRange.getBoundingClientRect(),
-        );
         return tempHighlightRange;
       }
 
@@ -179,11 +173,9 @@ export default function Tooltip(props: TooltipProps) {
         setHoveredPostBuffer(null);
         setHoveredPost(null);
         setTooltipCloseFn(null);
-        setHoveredMark(null);
         setHoveredPostRect(null);
       });
       setTooltipRect(null);
-      // setHoveredMark(mark);
       setHoveredPostRect(getHoveredRect(e, mark.getClientRects()));
       setHoveredPostBuffer(post);
     },
@@ -231,20 +223,23 @@ export default function Tooltip(props: TooltipProps) {
     const selection = getSelection();
     if (selection?.toString()) {
       const range = selection.getRangeAt(0);
-      const rangeCopy = range.cloneRange();
       const textRange = getTextRangeFromRange(range);
       setTempHighlight({
         textRange: textRange,
         url: window.location.href,
       });
 
-      console.log('addTempHighlight', range, rangeCopy);
-
       const id = uuid();
       setTempHighlightId(id);
-      setTempHighlightRange(rangeCopy);
+      highlighter.addHighlightTemp(range, user?.color, HighlightType.Active);
       setIsTempHighlightVisible(true);
-      highlighter.addHighlightTemp(rangeCopy, user?.color, HighlightType.Active);
+
+      // Recalculate range after adding highlight because range may have shifted. Handles case
+      // where highlight starts from offset 0, which would otherwise cause previously calculated
+      // range to collapse.
+      const newRange = getRangeFromTextRange(textRange);
+      setTempHighlightRange(newRange);
+
       selection.removeAllRanges();
     }
   }, [user]);
@@ -438,18 +433,6 @@ export default function Tooltip(props: TooltipProps) {
         return;
       }
 
-      // else {
-      //   console.log(
-      //     'else',
-      //     e,
-      //     hoveredPost,
-      //     hoveredPostRect,
-      //     tooltipRect,
-      //     hoveredMark,
-      //     tooltipCloseFn,
-      //   );
-      // }
-
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
       // as cursor enters and leaves selection
       if (e.buttons === 1 || wasMiniTooltipClicked || isSelectionInEditableElement()) {
@@ -478,7 +461,6 @@ export default function Tooltip(props: TooltipProps) {
       }
     },
     [
-      hoveredMark,
       hoveredPost,
       hoveredPostBuffer,
       hoveredPostRect,
