@@ -8,59 +8,80 @@ import { getSuggestedUsers } from './helpers';
 interface EditorProps {
   onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   outsideRef: React.MutableRefObject<HTMLTextAreaElement | undefined>;
-  root: ShadowRoot;
   setText: React.Dispatch<React.SetStateAction<string>>;
   submit: (e?: React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => Promise<void>;
   value: string;
+  placeholder?: string;
+  autoFocus?: boolean;
 }
 
-export default function TextareaEditor(props: EditorProps) {
+export default function TextareaEditor({
+  onChange,
+  outsideRef,
+  setText,
+  submit,
+  value,
+  placeholder,
+  autoFocus,
+}: EditorProps) {
   const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    props.outsideRef.current?.focus();
+    if (autoFocus && outsideRef) {
+      const selectionIdx = value.length;
+      outsideRef.current?.setSelectionRange(selectionIdx, selectionIdx)
+    }
+  }, [autoFocus, outsideRef])
+
+  useEffect(() => {
+    outsideRef.current?.focus();
   }, []);
 
   const stopPropagation = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
   };
 
-  const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleOnChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
-    props.onChange(e);
+    onChange(e);
     getSuggestedUsers(e.target).then((users) => setSuggestedUsers(users));
   };
 
-  const onClick = async (e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
+  const handleOnClick = async (e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
     e.stopPropagation();
     getSuggestedUsers(e.target as HTMLTextAreaElement).then((users) => setSuggestedUsers(users));
   };
 
-  const onKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const onKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement> | KeyboardEvent) => {
     e.stopPropagation();
     if (isOsKeyPressed(e) && (e.which === 13 || e.key === '\n')) {
       // Submit current post
       e.preventDefault();
-      props.submit();
+      submit();
     }
   };
+
+  useEffect(() => {
+    outsideRef.current?.addEventListener('keydown', onKeyPress, false)
+    return () => { outsideRef.current?.removeEventListener('keydown', onKeyPress, false) }
+  }, [outsideRef.current, onKeyPress])
 
   return (
     <>
       <TextareaAutosize
         className="TroveTooltip__Editor"
-        onChange={onChange}
-        onClick={onClick}
+        onChange={handleOnChange}
+        onClick={handleOnClick}
         onKeyPress={onKeyPress}
         onKeyDown={stopPropagation}
         onKeyUp={stopPropagation}
-        value={props.value}
-        placeholder="Write something..."
+        value={value}
+        placeholder={placeholder || "Write something..."}
         // @ts-ignore
-        ref={props.outsideRef}
+        ref={outsideRef}
       />
       {suggestedUsers && (
-        <Dropdown data={suggestedUsers} textareaRef={props.outsideRef} setText={props.setText} />
+        <Dropdown data={suggestedUsers} textareaRef={outsideRef} setText={setText} />
       )}
     </>
   );

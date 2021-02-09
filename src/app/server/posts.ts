@@ -22,10 +22,7 @@ export const createPost = async (args: CreatePostReqBody): Promise<IPostRes> => 
   return await api.post('/posts/create', args);
 };
 
-export const createReply = async (
-  parentPostId: string,
-  args: CreateCommentReqBody,
-): Promise<IPostRes> => {
+export const createComment = async (parentPostId: string, args: CreateCommentReqBody): Promise<IPostRes> => {
   const params: BaseParams = { id: parentPostId };
   return await api.post(`/posts/${params.id}/comment/create`, args);
 };

@@ -5,7 +5,7 @@
   background-color: #fff;
   position: absolute;
   overflow: hidden;
-  min-width: 150px;
+  min-width: 175px;
   z-index: 2;
   @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
 }
@@ -21,6 +21,8 @@
   background-color: #fff;
   text-align: left;
   cursor: pointer;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .TroveDropdown__SuggestedUser:first-child {
@@ -46,31 +48,44 @@
 }
 
 .TroveSuggestedUser__UserBubble {
-  height: 40px;
-  width: 40px;
-  border-radius: 20px;
-  text-align: center;
-  line-height: 38px; /* Should be 50 but looks more centered at 48 */
-  text-transform: uppercase;
-  color: #ffffff;
-  font-size: 16px;
+  border-radius: 100px;
+  min-height: 45px;
+  min-width: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  font-size: 17px;
+  font-weight: 400;
 }
 
 .TroveSuggestedUser__DisplayName {
-  font-weight: bold;
   margin: 0px;
   margin-right: 5px;
   overflow: hidden;
-  max-width: 127.5px;
+  max-width: 150px;
   white-space: nowrap;
   text-overflow: ellipsis;
+  @include TbdFont;
+  font-weight: 700;
 }
 
 .TroveSuggestedUser__Username {
   margin: 0px;
   margin-right: 5px;
   overflow: hidden;
-  max-width: 127.5px;
+  max-width: 150px;
   white-space: nowrap;
   text-overflow: ellipsis;
+  @include TbdFont;
+}
+
+.TroveDropdown__NoUsers {
+  font-size: 14px;
+  font-weight: 500;
+  color: #969696;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

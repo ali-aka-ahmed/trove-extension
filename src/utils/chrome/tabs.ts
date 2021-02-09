@@ -1,7 +1,7 @@
 import { toArray } from '..';
 import { ForgotReqBody, LoginReqBody } from '../../app/server/auth';
 import { ErrorReqBody } from '../../app/server/misc';
-import { CreatePostReqBody } from '../../app/server/posts';
+import { CreateCommentReqBody, CreatePostReqBody } from '../../app/server/posts';
 import { UpdateUserReqBody } from '../../app/server/users';
 
 export interface Message {
@@ -9,11 +9,13 @@ export interface Message {
   error?: ErrorReqBody;
   forgotPasswordArgs?: ForgotReqBody;
   id?: string;
+  parentPostId?: string;
   loginArgs?: LoginReqBody;
   name?: string;
   notificationId?: string;
   numResults?: number;
   post?: CreatePostReqBody;
+  comment?: CreateCommentReqBody;
   text?: string;
   textPrefix?: string;
   updateUserArgs?: UpdateUserReqBody;
@@ -24,7 +26,7 @@ export interface Message {
 
 export enum MessageType {
   CreatePost,
-  CreateReply,
+  CreateComment,
   Error,
   ForgotPassword,
   GetPosts,
@@ -36,6 +38,8 @@ export enum MessageType {
   Sync,
   UnlikePost,
   UpdateUser,
+  OpenTab,
+  DeletePost
 }
 
 /**

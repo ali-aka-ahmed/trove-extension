@@ -1,6 +1,7 @@
 import antdStyles from 'antd/dist/antd.min.css?inject';
 import React, { useEffect } from 'react';
 import { ErrorOrigin } from '../../app/server/misc';
+import contentStyles from '../../components/content/index.scss?inject';
 import { EXCLUDED_HOSTNAMES } from '../../constants';
 import ErrorBoundary from '../errorBoundary/index';
 import './index.scss';
@@ -12,7 +13,9 @@ import hintStyles from './Tooltip/hint.scss?inject';
 import tooltipStyles from './Tooltip/index.scss?inject';
 import inputPillStyles from './Tooltip/InputPill/index.scss?inject';
 import miniTooltipStyles from './Tooltip/minitooltip.scss?inject';
+import newCommentStyles from './Tooltip/NewComment/index.scss?inject';
 import pillStyles from './Tooltip/Pill/index.scss?inject';
+import userInfoStyles from './Tooltip/userInfo/index.scss?inject';
 
 interface TooltipWrapperProps {
   root: ShadowRoot;
@@ -49,6 +52,9 @@ export default function TooltipWrapper(props: TooltipWrapperProps) {
         <style type="text/css">{miniTooltipStyles}</style>
         <style type="text/css">{pillStyles}</style>
         <style type="text/css">{inputPillStyles}</style>
+        <style type="text/css">{contentStyles}</style>
+        <style type="text/css">{newCommentStyles}</style>
+        <style type="text/css">{userInfoStyles}</style>
       </>
     );
   }

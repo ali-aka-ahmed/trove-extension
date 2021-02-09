@@ -6,13 +6,11 @@
   align-items: center;
   flex-shrink: 1;
   min-width: 0px;
-  height: 20px;
+  height: $pill-height;
   border-radius: $pill-border-radius;
   font-size: $pill-font-size;
   font-weight: 400;
-  line-height: 120%;
   margin-right: 6px;
-  margin-bottom: 3px;
   max-width: calc(100% - 20px);
   width: fit-content;
   padding-left: $pill-padding;
@@ -25,15 +23,21 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 50px;
+  user-select: none;
 }
 
 .TbdInputPill--button:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+.TbdInputPill--button:focus {
+  outline: 0;
+}
+
 .TbdInputPill--input {
   height: $pill-height;
-  min-width: 30px;
+  min-width: 50px;
   outline: 0;
   border: 0;
   border: 1px dashed #ccc;
@@ -45,7 +49,7 @@
   flex-direction: column;
   align-items: flex-start;
   position: relative;
-  height: 22px;
+  height: $pill-height;
   width: inherit;
 }
 

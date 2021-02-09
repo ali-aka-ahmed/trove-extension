@@ -49,6 +49,7 @@
 .TbdProfile__DisplayName {
   @include TbdProfile__PropertyWrapper;
   @include TbdFont--medium;
+  font-weight: 700;
 }
 
 .TbdProfile__Username {
@@ -136,6 +137,7 @@
 .TbdProfile__EditDisplayName {
   @include TbdProfile__EditWrapper;
   padding: 0 5px;
+  font-weight: 700;
 }
 
 .TbdProfile__EditUsername {

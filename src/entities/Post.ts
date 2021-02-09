@@ -14,7 +14,7 @@ export default class Post implements IPost {
   public numComments: number;
   public numLikes: number;
   public highlight?: Highlight;
-  public comments?: Post[];
+  public comments: Post[];
   public liked: boolean;
   public id: string;
   public creationDatetime: number;
@@ -38,8 +38,10 @@ export default class Post implements IPost {
     this.numLikes = p.numLikes;
     this.liked = p.liked;
     if (p.highlight) this.highlight = new Highlight(p.highlight);
-    if (p.comments) this.comments = p.comments.map((p) => new Post(p));
     if (p.parentPostId) this.parentPostId = p.parentPostId;
+    if (p.comments) {
+      this.comments = p.comments.map((p) => new Post(p));
+    } else this.comments = [];
   }
 
   get timeAgo() {
@@ -55,10 +57,6 @@ export default class Post implements IPost {
 
   get isComment() {
     return !!this.parentPostId;
-  }
-
-  get isLikedByCurrentUser() {
-    return this.liked;
   }
 
   get displayUrl(): string {
@@ -77,19 +75,32 @@ export default class Post implements IPost {
     this.topics.unshift(new Topic(newTopic));
   };
 
-  likePost = () => {
+  likePost = async () => {
     this.numLikes += 1;
-    return sendMessageToExtension({
+    this.liked = true;
+    return await sendMessageToExtension({
       type: MessageType.LikePost,
       id: this.id,
     });
   };
 
-  unlikePost = () => {
+  unlikePost = async () => {
     this.numLikes -= 1;
-    return sendMessageToExtension({
+    this.liked = false;
+    return await sendMessageToExtension({
       type: MessageType.UnlikePost,
       id: this.id,
     });
   };
+
+  addComment = async (comment: Post) => {
+    this.numComments += 1;
+    this.comments.unshift(comment);
+  }
+
+  deleteComment = async (commentId: string) => {
+    this.numComments -= 1;
+    const i = this.comments.findIndex((c) => c.id === commentId);
+    if (i > -1) this.comments.splice(i, 1);
+  }
 }

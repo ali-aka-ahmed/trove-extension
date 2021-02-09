@@ -1,4 +1,5 @@
 import classNames from 'classnames';
+import Color from 'color';
 import React, { useEffect, useState } from 'react';
 import User from '../../../../../entities/User';
 import { getCurrentWord } from '../helpers';
@@ -61,10 +62,10 @@ export default function Dropdown(props: DropdownProps) {
     const text1 = ta.value.slice(0, ta.selectionStart); // Up to end of username prefix
     const text2 = str.slice(currWord.length - 1); // Autocompleted username
     const text3 = ta.value.slice(ta.selectionStart); // End of username to end of text
-    props.setText(text1 + text2 + text3);
+    props.setText(`${text1}${text2}${text3} `);
 
     // Set cursor to correct position
-    const selectionIdx = text1.length + text2.length;
+    const selectionIdx = text1.length + text2.length + 1;
     ta.setSelectionRange(selectionIdx, selectionIdx);
 
     // Hide dropdown
@@ -74,7 +75,6 @@ export default function Dropdown(props: DropdownProps) {
 
   const renderItem = (item: any, idx: number) => {
     if (item instanceof User) {
-      console.log('isUser');
       return (
         <button
           className={classNames('TroveDropdown__SuggestedUser', {
@@ -84,7 +84,13 @@ export default function Dropdown(props: DropdownProps) {
           onClick={() => autocomplete(item.username)}
         >
           <div className="TroveSuggestedUser__Left">
-            <div className="TroveSuggestedUser__UserBubble" style={{ backgroundColor: item.color }}>
+            <div 
+              className="TroveSuggestedUser__UserBubble"
+              style={{
+              color: Color(item.color).isLight() ? 'black' : 'white',
+              backgroundColor: item.color
+            }}
+            >
               {item.username[0]}
             </div>
           </div>

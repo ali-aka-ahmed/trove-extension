@@ -35,6 +35,7 @@
 .TbdNotificationWrapper__DisplayName {
   width: fit-content;
   @include TbdFont--medium;
+  font-weight: 700;
 }
 
 .TbdNotificationWrapper__Action {

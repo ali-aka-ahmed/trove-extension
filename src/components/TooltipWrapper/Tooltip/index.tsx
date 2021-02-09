@@ -1,16 +1,18 @@
+import { DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
-import Color from 'color';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
+import { AxiosRes } from '../../../app/server/';
 import { HighlightParam, IPostRes, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import ITopic from '../../../models/ITopic';
-import { toArray } from '../../../utils';
+import { hexToRgba, toArray } from '../../../utils';
 import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import Content from '../../content';
 import TextareaEditor from './Editor';
 import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
@@ -22,10 +24,12 @@ import {
   getHoveredRect,
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists,
+  selectionExists
 } from './helpers/selection';
 import InputPill from './inputPill';
+import NewComment from './NewComment';
 import Pill from './pill';
+import UserInfo from './userInfo';
 
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
@@ -48,6 +52,14 @@ export default function Tooltip(props: TooltipProps) {
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
+  const [optionsHovered, setOptionsHovered] = useState(false);
+  const [likeIconHovered, setLikeIconHovered] = useState(false);
+  const [commentIconHovered, setCommentIconHovered] = useState(false);
+
+  const [hoveredPostLiked, setHoveredPostLiked] = useState(false);
+  const [showNewComment, setShowNewComment] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [hoveredPostRect, setHoveredPostRect] = useState<DOMRect | null>(null);
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
@@ -66,7 +78,10 @@ export default function Tooltip(props: TooltipProps) {
 
   const [editorValue, setEditorValue] = useState('');
   const [topics, setTopics] = useState<Partial<ITopic>[]>([]);
-  const editor = useRef<HTMLTextAreaElement>();
+  const postOptionsBar = useRef<HTMLDivElement | null>(null);
+  const postOptionDelete = useRef<HTMLDivElement | null>(null);
+  const postOptionEdit = useRef<HTMLDivElement | null>(null);
+  const editor = useRef<HTMLTextAreaElement>(null!);
 
   // TODO: maybe assign this to a range state var
   const getTooltipRange = useCallback(
@@ -136,6 +151,9 @@ export default function Tooltip(props: TooltipProps) {
   }, [wasMiniTooltipClicked]);
 
   useEffect(() => {
+    setShowNewComment(false);
+    setHoveredPostLiked(hoveredPostBuffer?.liked || false);
+    setShowOptions(false);
     positionTooltip();
     setHoveredPost(hoveredPostBuffer);
   }, [hoveredPostBuffer]);
@@ -170,8 +188,8 @@ export default function Tooltip(props: TooltipProps) {
         highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
         highlighter.modifyHighlightTemp(HighlightType.Active);
         setTooltipRect(null);
-        setHoveredPostBuffer(null);
-        setHoveredPost(null);
+        // setHoveredPostBuffer(null);
+        // setHoveredPost(null);
         setTooltipCloseFn(null);
         setHoveredPostRect(null);
       });
@@ -213,7 +231,6 @@ export default function Tooltip(props: TooltipProps) {
       if (!post.highlight) continue;
       highlighter.removeHighlight(post.highlight.id);
     }
-
     // Remove post(s) from list of posts
     dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
   };
@@ -485,10 +502,11 @@ export default function Tooltip(props: TooltipProps) {
       const postReq = {
         content: editorValue,
         url: window.location.href,
-        taggedUserIds: [],
         highlight: tempHighlight,
         topics: topics,
       };
+
+      console.log("postReq", postReq)
 
       // Hide tooltip
       resetTooltip();
@@ -535,6 +553,83 @@ export default function Tooltip(props: TooltipProps) {
     setEditorValue(event.target.value);
   };
 
+  const handleLike = async (e: React.MouseEvent<HTMLDivElement, MouseEvent>, post: Post) => {
+    e.stopPropagation();
+    setHoveredPostLiked(true);
+    await post.likePost();
+  }
+
+  const handleUnlike = async (e: React.MouseEvent<HTMLDivElement, MouseEvent>, post: Post) => {
+    e.stopPropagation();
+    setHoveredPostLiked(false);
+    await post.unlikePost();
+  }
+
+  const renderLikeIconPath = (post: Post) => {
+    if (post.liked) return chrome.extension.getURL('images/heartFilled.png');
+    else if (likeIconHovered) return chrome.extension.getURL('images/heartOutlined.png');
+    else return chrome.extension.getURL('images/heart.png');
+  };
+
+  const renderCommentIconPath = () => {
+    if (commentIconHovered) return chrome.extension.getURL('images/commentOutlined.png');
+    else return chrome.extension.getURL('images/comment.png');
+  };
+
+  const handleShowComment = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.stopPropagation()
+    setShowNewComment(true);
+  }
+
+  useEffect(() => {
+    if (tooltip.current) setTooltipRect(tooltip.current.getBoundingClientRect());
+  }, [showNewComment])
+
+  const handleCreateComment = async (content: string, parentPost: Post) => {
+    return sendMessageToExtension({
+      type: MessageType.CreateComment,
+      parentPostId: parentPost.id,
+      comment: { url: parentPost.url, content }
+    }).then((res: IPostRes) => {
+      if (res.success) {
+        const comment = new Post(res.post!);
+        parentPost.addComment(comment);
+        dispatch({ type: ListReducerActionType.Update, data: parentPost });
+        setShowNewComment(false);
+      }
+      return res;
+    });
+  };
+
+  const handleDeletePost = async (e: React.MouseEvent<HTMLSpanElement, MouseEvent>, post: Post) => {
+    e.stopPropagation();
+    setDeleteLoading(true);
+    const res = await sendMessageToExtension({ type: MessageType.DeletePost, id: post.id }) as AxiosRes;
+    if (res.success) {
+      if (tooltipCloseFn) tooltipCloseFn();
+      removePosts(post);
+      setShowOptions(false);
+      setDeleteLoading(false);
+    }
+  }
+
+  const toggleOptions = useCallback((e: any) => {
+    e.stopPropagation();
+    const clickedMenuBar = postOptionsBar.current?.isSameNode(e.target);
+    const clickedDelete = postOptionDelete.current?.isSameNode(e.target);
+    const clickedEdit = postOptionEdit.current?.isSameNode(e.target);
+    if (clickedMenuBar) {
+      setShowOptions(!showOptions)
+    } else if (!clickedDelete && !clickedEdit) {
+      setShowOptions(false)
+    }
+  }, [showOptions]);
+
+  useEffect(() => {
+    document.addEventListener('click', toggleOptions);
+    return () => document.removeEventListener('click', toggleOptions)
+  }, [toggleOptions]);
+
   /**
    * Render list of topics. A given post indicates we are rendering for a hovered post which is
    * read-only and therefor doesn't need a input pill. No post indicates we must show topics for
@@ -551,13 +646,13 @@ export default function Tooltip(props: TooltipProps) {
             setTopics(topics.slice().filter((t) => t !== topic));
           }}
           showClose={!post}
-          style={{ marginBottom: '3px' }}
+          style={{ marginTop: '3px' }}
         />
       ));
 
       return post && (!post.topics || post.topics.length === 0) ? null : (
-        <div className="TbdTooltip__TopicList">
-          {!post && <InputPill onSubmit={addTopic} style={{ marginBottom: '3px' }} />}
+        <div className="TbdTooltip__TopicList" style={post ? { marginTop: '7px' } : {}}>
+          {!post && <InputPill onSubmit={addTopic} style={{ marginTop: '3px' }} />}
           {pills}
         </div>
       );
@@ -565,29 +660,133 @@ export default function Tooltip(props: TooltipProps) {
     [topics],
   );
 
-  const renderUserInfo = (post: Post) => {
-    const isEmpty =
-      (!post.content || post.content.length === 0) && (!post.topics || post.topics.length === 0);
-    return post && post.creator.id !== user?.id ? (
-      <div className="TroveTooltip__Profile" style={isEmpty ? { marginBottom: '0' } : {}}>
+  const renderOptions = (post: Post) => {
+    return (
+      <div
+        className="TroveTooltip__OptionsWrapper" 
+        onClick={(e) => toggleOptions(e)}
+        style={{
+          ...(post.creator.id !== user?.id ? { display: 'none' } : {}),
+        }}
+      >
         <div
-          className="TroveTooltip__ProfileImg"
-          style={{
-            backgroundColor: post.creator.color,
-            color: Color(post.creator.color).isLight() ? 'black' : 'white',
-          }}
+          className={`TroveTooltip__Options ${optionsHovered ? 'TroveTooltip__Options--hovered' : ''}`}
+          ref={postOptionsBar}
+          onMouseEnter={() => setOptionsHovered(true)}
+          onMouseLeave={() => setOptionsHovered(false)}
         >
-          {post.creator.displayName[0]}
+          ···
         </div>
-        <div className="TroveTooltip__ProfileInfo">
-          <div className="TroveTooltip__DisplayName">{post.creator.displayName}</div>
-          <div className="TroveTooltip__Username" style={{ color: post.creator.color }}>
-            {`@${post.creator.username}`}
+        {showOptions && (
+          <div className="TroveTooltip__OptionsMenu">
+            <span
+              className="TroveTooltip__Options--option"
+              style={{color: 'rgb(224, 36, 94)'}}
+              onClick={(e) => handleDeletePost(e, post)}
+              ref={postOptionDelete}
+            >
+              <div className="TroveTooltip__Options--icon">
+                {deleteLoading ? <LoadingOutlined /> : <DeleteOutlined />}
+              </div>
+              Delete
+            </span>
+            {/* <span
+              className="TroveTooltip__Options--option"
+              onClick={handleEditPost}
+              ref={postOptionEdit}
+            >
+              <div className="TroveTooltip__Options--icon">
+                <EditOutlined />
+              </div>
+              Edit
+            </span> */}
           </div>
+        )}
+      </div>
+    )
+  }
+
+  const renderReactionBar = (post: Post) => {
+    const renderReaction = (
+      icon: string,
+      num: number,
+      onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void,
+      hovered: boolean,
+      setHovered: React.Dispatch<React.SetStateAction<boolean>>,
+      color: string, // hex
+      iconClassName: string,
+      iconWrapperClassName: string,
+      alreadySelected?: boolean
+    ) => {
+      return (
+        <div
+          className="TroveTooltip__Reaction"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onClick={onClick}
+        >
+          <span
+            className={`TroveTooltip__IconWrapper ${iconWrapperClassName}`}
+            style={hovered ? { backgroundColor: hexToRgba(color, 0.15) || undefined } : {}}
+          >
+            <img
+              className={`TroveTooltip__Icon ${iconClassName}`}
+              src={icon}
+              alt="r"
+            />
+          </span>
+          <span
+            className="TroveTooltip__NumReaction"
+            style={hovered || alreadySelected ? { color } : {}}
+          >
+            {num}
+          </span>
+        </div>
+      )
+    }
+
+    return (
+      <div className="TroveTooltip__ReactionBar">
+        {renderReaction(
+            renderLikeIconPath(post),
+            post.numLikes,
+            (e) => { hoveredPostLiked ? handleUnlike(e, post) : handleLike(e, post) },
+            likeIconHovered,
+            setLikeIconHovered,
+            "#e0245e",
+            "TroveTooltip__LikeIcon",
+            "TroveTooltip__LikeIconWrapper",
+            hoveredPostLiked
+          )}
+        <div className="TroveTooltip__ReactionMargin">
+          {renderReaction(
+            renderCommentIconPath(),
+            post.numComments,
+            (e) => handleShowComment(e),
+            commentIconHovered,
+            setCommentIconHovered,
+            "#0d77e2",
+            "TroveTooltip__CommentIcon",
+            "TroveTooltip__CommentIconWrapper"
+          )}
         </div>
       </div>
-    ) : null;
-  };
+    )
+  }
+
+  const renderNewComment = (post: Post) => {
+    if (!user) return;
+    return (
+      <div className="TrovePost__CommentWrapper">
+        <NewComment
+          user={user}
+          creator={post.creator}
+          onCancel={() => setShowNewComment(false)}
+          onSubmit={(text) => handleCreateComment(text, post)}
+        />
+      </div>
+    )
+  }
 
   if (!!hoveredPost) {
     // Readonly post
@@ -601,13 +800,23 @@ export default function Tooltip(props: TooltipProps) {
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
         ref={tooltip}
       >
-        {renderUserInfo(hoveredPost)}
-        {renderTopics(hoveredPost)}
-        {hoveredPost.content ? (
-          <div className="TroveTooltip__TextContent">{hoveredPost.content}</div>
-        ) : (
-          <div className="TroveTooltip__EmptyContent">No added note</div>
-        )}
+        <div className="TroveTooltip__PostWrapper">
+          <div className="TbdTooltip__Header">
+            <UserInfo user={hoveredPost.creator} />
+            {renderOptions(hoveredPost)}
+          </div>
+          {renderTopics(hoveredPost)}
+          {hoveredPost.content && (
+            <div className="TroveTooltip__TextContent">
+              <Content
+                value={hoveredPost.content}
+                taggedUsers={hoveredPost.taggedUsers || []}
+              />
+            </div>
+          )}
+          {renderReactionBar(hoveredPost)}
+        </div>
+        {showNewComment && renderNewComment(hoveredPost)}
       </div>
     );
   } else if (isSelectionHovered || isTempHighlightVisible) {
@@ -637,32 +846,35 @@ export default function Tooltip(props: TooltipProps) {
           style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
           ref={tooltip}
         >
-          {renderTopics()}
-          <TextareaEditor
-            value={editorValue}
-            onChange={onEditorChange}
-            outsideRef={editor}
-            setText={setEditorValue}
-            submit={onClickSubmit}
-            root={props.root}
-          />
-          <button
-            className="TroveTooltip__SubmitButton"
-            onClick={onClickSubmit}
-            data-tip={`
-              <div class="TroveHint__Content">
-                <p class="TroveHint__Content__PrimaryText">Submit</p>
-                <p class="TroveHint__Content__SecondaryText">(${getOsKeyChar()}+Enter)</p>
-              </div>
-            `}
-          />
+          <div className="TroveTooltip__PostWrapper">
+            {renderTopics()}
+            <div className="TroveTooltip__TextContent">
+              <TextareaEditor
+                value={editorValue}
+                onChange={onEditorChange}
+                outsideRef={editor}
+                setText={setEditorValue}
+                submit={onClickSubmit}
+              />
+            </div>
+            <button
+              className="TroveTooltip__SubmitButton"
+              onClick={onClickSubmit}
+              data-tip={`
+                <div class="TroveHint__Content">
+                  <p class="TroveHint__Content__PrimaryText">Submit</p>
+                  <p class="TroveHint__Content__SecondaryText">(${getOsKeyChar()}+Enter)</p>
+                </div>
+              `}
+            />
+          </div>
         </div>
         <ReactTooltip
           className="TroveTooltip__Hint"
           effect="solid"
           arrowColor="transparent"
           html={true}
-          delayShow={750}
+          delayShow={250}
         />
       </>
     );

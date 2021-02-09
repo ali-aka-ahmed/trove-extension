@@ -164,24 +164,26 @@ export default function InputPill({ onSubmit, style = {} }: InputPillProps) {
 
   if (!isInput) {
     return (
-      <button className="TbdInputPill TbdInputPill--button" onClick={onClickTopic}>
+      <button className="TbdInputPill TbdInputPill--button" onClick={onClickTopic} style={style}>
         + Topic
       </button>
     );
   } else {
     return (
-      <div className="TbdInputPill__Wrapper" style={style}>
-        <input
-          value={content}
-          className="TbdInputPill TbdInputPill--input"
-          style={{ width: `${(content.length + 1) * 8}px` }}
-          onChange={handleInputChange}
-          onBlur={onBlur}
-          onKeyDown={onKeyDownContent}
-          ref={inputRef}
-        />
-        {(suggestedTopics.length > 0 || newTopic !== null) && renderSuggestedTopics()}
-      </div>
+      <>
+        <div className="TbdInputPill__Wrapper" style={style}>
+          <input
+            value={content}
+            className="TbdInputPill TbdInputPill--input"
+            style={{ width: `${(content.length + 1) * 8}px` }}
+            onChange={handleInputChange}
+            onBlur={onBlur}
+            onKeyDown={onKeyDownContent}
+            ref={inputRef}
+          />
+          {(suggestedTopics.length > 0 || newTopic !== null) && renderSuggestedTopics()}
+        </div>
+      </>
     );
   }
 }

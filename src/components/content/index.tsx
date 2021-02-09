@@ -1,7 +1,8 @@
 import React, { forwardRef } from 'react';
 import { ORIGIN } from '../../config/config.dev';
 import User from '../../models/IUser';
-import './style.scss';
+import { MessageType, sendMessageToExtension } from '../../utils/chrome/tabs';
+import './index.scss';
 
 interface ContentProps {
   value: string;
@@ -19,9 +20,9 @@ const Content = forwardRef<ContentRef, ContentProps>(({
   style={},
 }, ref) => {
 
-  const handleClickUserTag = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>, username: string) => {
+  const handleClickUserTag = async (e: React.MouseEvent<HTMLSpanElement, MouseEvent>, username: string) => {
     e.stopPropagation();
-    chrome.tabs.create({ url: `${ORIGIN}/${username}`, active: false })
+    await sendMessageToExtension({ type: MessageType.OpenTab, url: `${ORIGIN}/${username}` });
   }
 
   const renderContentWithTags = (content: string, taggedUsers: User[]) => {
