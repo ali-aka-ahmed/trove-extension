@@ -634,7 +634,7 @@ export default function Tooltip(props: TooltipProps) {
 
   const goToPost = async (e: React.MouseEvent<HTMLSpanElement, MouseEvent>, username: string, postId: string) => {
     e.stopPropagation();
-    await sendMessageToExtension({ type: MessageType.OpenTab, url: `${ORIGIN}/${username}/${postId}` });
+    await sendMessageToExtension({ type: MessageType.OpenTab, url: `${ORIGIN}/${username}/${postId}`, active: true });
   }
 
   /**
@@ -776,7 +776,7 @@ export default function Tooltip(props: TooltipProps) {
             "TroveTooltip__LikeIconWrapper",
             hoveredPostLiked
           )}
-        <div className="TroveTooltip__ReactionMargin">
+        <div>
           {renderReaction(
             renderCommentIconPath(),
             post.numComments,
@@ -787,6 +787,33 @@ export default function Tooltip(props: TooltipProps) {
             "TroveTooltip__CommentIcon",
             "TroveTooltip__CommentIconWrapper"
           )}
+        </div>
+        <div
+          className="TroveTooltip__Reaction"
+          onMouseEnter={() => setGoToPostHovered(true)}
+          onMouseLeave={() => setGoToPostHovered(false)}
+          onClick={(e) => goToPost(e, post.creator.username, post.id)}
+        >
+          <span
+            className="TroveTooltip__IconWrapper TroveTooltip__GoToPostWrapper"
+            style={goToPostHovered ? { backgroundColor: 'rgba(13, 119, 226, 0.15)' } : {}}
+            data-tip={`
+            <div class="TroveHint__Content--gotopost">
+              <p class="TroveHint__Content__PrimaryText">Go to post</p>
+            </div>
+          `}
+          >
+            <span className="TroveTooltip__GoToPostIcon" style={goToPostHovered ? { color: 'rgba(13, 119, 226, 0.5)' } : {}}>
+              <ExportOutlined />
+            </span>
+          </span>
+          <ReactTooltip
+            className="TroveTooltip__Hint"
+            effect="solid"
+            arrowColor="transparent"
+            html={true}
+            delayShow={250}
+          />
         </div>
       </div>
     )
@@ -832,36 +859,7 @@ export default function Tooltip(props: TooltipProps) {
               />
             </div>
           )}
-          <div className="TroveTooltip__BottomBar">
-            {renderReactionBar(hoveredPost)}
-            <div
-              className="TroveTooltip__Reaction"
-              onMouseEnter={() => setGoToPostHovered(true)}
-              onMouseLeave={() => setGoToPostHovered(false)}
-              onClick={(e) => goToPost(e, hoveredPost.creator.username, hoveredPost.id)}
-            >
-              <span
-                className="TroveTooltip__IconWrapper TroveTooltip__GoToPostWrapper"
-                style={goToPostHovered ? { backgroundColor: 'rgba(13, 119, 226, 0.15)' } : {}}
-                data-tip={`
-                <div class="TroveHint__Content--gotopost">
-                  <p class="TroveHint__Content__PrimaryText">Go to post</p>
-                </div>
-              `}
-              >
-                <span className="TroveTooltip__GoToPostIcon" style={goToPostHovered ? { color: 'rgba(13, 119, 226, 0.5)' } : {}}>
-                  <ExportOutlined />
-                </span>
-              </span>
-              <ReactTooltip
-                className="TroveTooltip__Hint"
-                effect="solid"
-                arrowColor="transparent"
-                html={true}
-                delayShow={250}
-              />
-            </div>
-          </div>
+          {renderReactionBar(hoveredPost)}
         </div>
         {showNewComment && renderNewComment(hoveredPost)}
       </div>

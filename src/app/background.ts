@@ -176,7 +176,14 @@ chrome.runtime.onMessage.addListener(
         if (!message.url) break;
         chrome.tabs.create({
           url: message.url,
-          active: false
+          active: message.active || false
+        }, () => sendResponse({ success: true }));
+        break;
+      }
+      case MessageType.GoToPage: {
+        if (!message.url) break;
+        chrome.tabs.update({
+          url: message.url,
         }, () => sendResponse({ success: true }));
         break;
       }

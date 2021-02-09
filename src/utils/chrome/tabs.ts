@@ -22,6 +22,7 @@ export interface Message {
   url?: string;
   userId?: string;
   usernamePrefix?: string;
+  active?: boolean;
 }
 
 export enum MessageType {
@@ -39,7 +40,8 @@ export enum MessageType {
   UnlikePost,
   UpdateUser,
   OpenTab,
-  DeletePost
+  DeletePost,
+  GoToPage
 }
 
 /**

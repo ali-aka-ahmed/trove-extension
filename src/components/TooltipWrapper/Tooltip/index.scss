@@ -106,7 +106,8 @@ $tooltip-width: 175px;
   font-weight: 400px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
+  margin-top: 5px;
 }
 
 .TroveTooltip__Reaction {
@@ -166,12 +167,8 @@ $tooltip-width: 175px;
 .TroveTooltip__NumReaction {
   margin-left: 2px;
   user-select: none;
-  width: 25px;
+  width: fit-content;
   text-align: left;
-}
-
-.TroveTooltip__ReactionMargin {
-  margin-left: 5px;
 }
 
 // Options
@@ -247,11 +244,4 @@ $tooltip-width: 175px;
 .TrovePost__CommentWrapper {
   width: 100%;
   border-top: 1px solid #DDDDDD;
-}
-
-.TroveTooltip__BottomBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 5px;
 }
