@@ -509,8 +509,6 @@ export default function Tooltip(props: TooltipProps) {
         topics: topics,
       };
 
-      console.log("postReq", postReq)
-
       // Hide tooltip
       resetTooltip();
 
