@@ -1,5 +1,6 @@
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en';
 import INotification, { NotificationType } from '../models/INotification';
-import { displayRelativeTime } from '../utils';
 import User from './User';
 
 export default class Notification implements INotification {
@@ -37,8 +38,10 @@ export default class Notification implements INotification {
     else return null;
   }
 
-  get time(): string {
-    return displayRelativeTime(this.creationDatetime);
+  get timeAgo(): string {
+    TimeAgo.addLocale(en);
+    const timeAgo = new TimeAgo('en-US');
+    return timeAgo.format(this.creationDatetime, 'twitter');
   }
 
   get displayUrl(): string | null {

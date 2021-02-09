@@ -1,4 +1,4 @@
-export const DEFAULT_TOPIC_COLOR = '#40A9FF';
+export const DEFAULT_TOPIC_COLOR = '#BCE1FF';
 export const DEFAULT_TOPIC_COLORS = [
   '#EBEAEA', // grey
   '#E8D5CC', // brown

@@ -48,7 +48,6 @@ export default class Post implements IPost {
     TimeAgo.addLocale(en);
     const timeAgo = new TimeAgo('en-US');
     return timeAgo.format(this.creationDatetime, 'twitter');
-    // return displayRelativeTime(this.creationDatetime)
   }
 
   get isTopOfThread() {
