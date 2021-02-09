@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
-  "name": "Trove DEV",
+  "name": "Trove",
   "description": "A hidden layer of the internet.",
   "version": "0.0.7",
   "browser_action": {
-    "default_icon": "icons/dev/icon16.png",
+    "default_icon": "icons/prod/icon16.png",
     "default_popup": "popup.html"
   },
   "background": {
@@ -24,25 +24,22 @@
     }
   ],
   "icons": {
-    "16": "icons/dev/icon16.png",
-    "48": "icons/dev/icon48.png",
-    "128": "icons/dev/icon128.png"
+    "16": "icons/prod/icon16.png",
+    "48": "icons/prod/icon48.png",
+    "128": "icons/prod/icon128.png"
   },
   "permissions": [
     "storage",
     "tabs",
     "activeTab",
-    "http://localhost:3000/*",
-    "https://development.trove.so/*",
-    "https://demo.trove.so/*",
-    "http://localhost:5000/*",
-    "https://dev.trove.so/*"
+    "https://trove.so/*",
+      "https://www.trove.so/*",
+      "https://api.trove.so/*"
   ],
   "externally_connectable": {
     "matches": [
-      "http://localhost:3000/*",
-      "https://development.trove.so/*",
-      "https://demo.trove.so/*"
+      "https://trove.so/*",
+      "https://www.trove.so/*"
     ]
   },
   "web_accessible_resources": [
