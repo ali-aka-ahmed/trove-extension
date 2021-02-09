@@ -9,7 +9,7 @@ interface NotificationsProps {
 
 export default function Notifications({ notifications }: NotificationsProps) {
   if (notifications.length === 0) {
-    return <div className="TroveNotifications__Empty">No new notifications.</div>;
+    return <div className="TroveNotifications__Empty">No new notifications</div>;
   } else
     return (
       <div className="TroveNotificationWrapper">
