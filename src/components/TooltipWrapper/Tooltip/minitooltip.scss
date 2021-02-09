@@ -48,8 +48,9 @@
 .TroveMiniTooltip__NewPostButton__PrimaryText {
   color: #000;
   font-size: 14px;
-  width: 65px;
+  width: fit-content;
   text-align: center;
+  white-space: nowrap;
 }
 
 .TroveMiniTooltip__NewPostButton__SecondaryText {
