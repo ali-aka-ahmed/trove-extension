@@ -380,25 +380,21 @@
   display: flex;
   align-items: flex-start;
   width: 100%;
-}
-
-.TroveNewComment__TopPaddingImage__Left {
   height: 33px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.TroveNewComment__TopPaddingImage__Line {
-  height: 100%;
-  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
+.TroveNewComment__ReplyingTo--text {
+  width: fit-content;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .TroveNewComment__ReplyingTo {
   font-size: 12px;
   margin-left: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -49,18 +49,13 @@ const NewComment = ({
   const renderPaddingWithLine = () => {
     return (
       <div className="TroveNewComment__TopPaddingImage">
-        <div className="TroveNewComment__TopPaddingImage__Left">
-          <div className="TroveNewComment__TopPaddingImage__Line">
-            Replying to 
-            <span
-              className="TroveNewComment__ReplyingTo"
-              style={{ color: creator.color }}
-            >
-              {`@${creator.username}`}
-            </span>
-            ...
-          </div>
-        </div>
+        <span className="TroveNewComment__ReplyingTo--text">Replying to</span>
+        <span
+          className="TroveNewComment__ReplyingTo"
+          style={{ color: creator.color }}
+        >
+          {`@${creator.username}`}
+        </span>
       </div>
     )
   };
