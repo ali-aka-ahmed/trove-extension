@@ -5,7 +5,7 @@ import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
 import { AxiosRes } from '../../../app/server/';
 import { HighlightParam, IPostRes, IPostsRes } from '../../../app/server/posts';
-import { ORIGIN } from '../../../config/config.dev';
+import { ORIGIN } from '../../../config/config.prod';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
@@ -25,7 +25,7 @@ import {
   getHoveredRect,
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists
+  selectionExists,
 } from './helpers/selection';
 import InputPill from './inputPill';
 import NewComment from './NewComment';
@@ -558,13 +558,13 @@ export default function Tooltip(props: TooltipProps) {
     e.stopPropagation();
     setHoveredPostLiked(true);
     await post.likePost();
-  }
+  };
 
   const handleUnlike = async (e: React.MouseEvent<HTMLDivElement, MouseEvent>, post: Post) => {
     e.stopPropagation();
     setHoveredPostLiked(false);
     await post.unlikePost();
-  }
+  };
 
   const renderLikeIconPath = (post: Post) => {
     if (post.liked) return chrome.extension.getURL('images/heartFilled.png');
@@ -578,19 +578,19 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   const handleShowComment = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    e.stopPropagation()
+    e.stopPropagation();
     setShowNewComment(true);
-  }
+  };
 
   useEffect(() => {
     if (tooltip.current) setTooltipRect(tooltip.current.getBoundingClientRect());
-  }, [showNewComment])
+  }, [showNewComment]);
 
   const handleCreateComment = async (content: string, parentPost: Post) => {
     return sendMessageToExtension({
       type: MessageType.CreateComment,
       parentPostId: parentPost.id,
-      comment: { url: parentPost.url, content }
+      comment: { url: parentPost.url, content },
     }).then((res: IPostRes) => {
       if (res.success) {
         const comment = new Post(res.post!);
@@ -605,37 +605,51 @@ export default function Tooltip(props: TooltipProps) {
   const handleDeletePost = async (e: React.MouseEvent<HTMLSpanElement, MouseEvent>, post: Post) => {
     e.stopPropagation();
     setDeleteLoading(true);
-    const res = await sendMessageToExtension({ type: MessageType.DeletePost, id: post.id }) as AxiosRes;
+    const res = (await sendMessageToExtension({
+      type: MessageType.DeletePost,
+      id: post.id,
+    })) as AxiosRes;
     if (res.success) {
       if (tooltipCloseFn) tooltipCloseFn();
       removePosts(post);
       setShowOptions(false);
       setDeleteLoading(false);
     }
-  }
+  };
 
-  const toggleOptions = useCallback((e: any) => {
-    e.stopPropagation();
-    const clickedMenuBar = postOptionsBar.current?.isSameNode(e.target);
-    const clickedDelete = postOptionDelete.current?.isSameNode(e.target);
-    const clickedGoToPost = postOptionGoToPost.current?.isSameNode(e.target);
-    const clickedEdit = postOptionEdit.current?.isSameNode(e.target);
-    if (clickedMenuBar) {
-      setShowOptions(!showOptions)
-    } else if (!clickedDelete && !clickedEdit && !clickedGoToPost) {
-      setShowOptions(false)
-    }
-  }, [showOptions]);
+  const toggleOptions = useCallback(
+    (e: any) => {
+      e.stopPropagation();
+      const clickedMenuBar = postOptionsBar.current?.isSameNode(e.target);
+      const clickedDelete = postOptionDelete.current?.isSameNode(e.target);
+      const clickedGoToPost = postOptionGoToPost.current?.isSameNode(e.target);
+      const clickedEdit = postOptionEdit.current?.isSameNode(e.target);
+      if (clickedMenuBar) {
+        setShowOptions(!showOptions);
+      } else if (!clickedDelete && !clickedEdit && !clickedGoToPost) {
+        setShowOptions(false);
+      }
+    },
+    [showOptions],
+  );
 
   useEffect(() => {
     document.addEventListener('click', toggleOptions);
-    return () => document.removeEventListener('click', toggleOptions)
+    return () => document.removeEventListener('click', toggleOptions);
   }, [toggleOptions]);
 
-  const goToPost = async (e: React.MouseEvent<HTMLSpanElement, MouseEvent>, username: string, postId: string) => {
+  const goToPost = async (
+    e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
+    username: string,
+    postId: string,
+  ) => {
     e.stopPropagation();
-    await sendMessageToExtension({ type: MessageType.OpenTab, url: `${ORIGIN}/${username}/${postId}`, active: true });
-  }
+    await sendMessageToExtension({
+      type: MessageType.OpenTab,
+      url: `${ORIGIN}/${username}/${postId}`,
+      active: true,
+    });
+  };
 
   /**
    * Render list of topics. A given post indicates we are rendering for a hovered post which is
@@ -670,14 +684,16 @@ export default function Tooltip(props: TooltipProps) {
   const renderOptions = (post: Post) => {
     return (
       <div
-        className="TroveTooltip__OptionsWrapper" 
+        className="TroveTooltip__OptionsWrapper"
         onClick={(e) => toggleOptions(e)}
         style={{
           ...(post.creator.id !== user?.id ? { display: 'none' } : {}),
         }}
       >
         <div
-          className={`TroveTooltip__Options ${optionsHovered ? 'TroveTooltip__Options--hovered' : ''}`}
+          className={`TroveTooltip__Options ${
+            optionsHovered ? 'TroveTooltip__Options--hovered' : ''
+          }`}
           ref={postOptionsBar}
           onMouseEnter={() => setOptionsHovered(true)}
           onMouseLeave={() => setOptionsHovered(false)}
@@ -688,7 +704,7 @@ export default function Tooltip(props: TooltipProps) {
           <div className="TroveTooltip__OptionsMenu">
             <span
               className="TroveTooltip__Options--option"
-              style={{color: 'rgb(224, 36, 94)'}}
+              style={{ color: 'rgb(224, 36, 94)' }}
               onClick={(e) => handleDeletePost(e, post)}
               ref={postOptionDelete}
             >
@@ -720,8 +736,8 @@ export default function Tooltip(props: TooltipProps) {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   const renderReactionBar = (post: Post) => {
     const renderReaction = (
@@ -733,7 +749,7 @@ export default function Tooltip(props: TooltipProps) {
       color: string, // hex
       iconClassName: string,
       iconWrapperClassName: string,
-      alreadySelected?: boolean
+      alreadySelected?: boolean,
     ) => {
       return (
         <div
@@ -746,12 +762,7 @@ export default function Tooltip(props: TooltipProps) {
             className={`TroveTooltip__IconWrapper ${iconWrapperClassName}`}
             style={hovered ? { backgroundColor: hexToRgba(color, 0.15) || undefined } : {}}
           >
-            
-            <img
-              className={`TroveTooltip__Icon ${iconClassName}`}
-              src={icon}
-              alt="r"
-            />
+            <img className={`TroveTooltip__Icon ${iconClassName}`} src={icon} alt="r" />
           </span>
           <span
             className="TroveTooltip__NumReaction"
@@ -760,22 +771,24 @@ export default function Tooltip(props: TooltipProps) {
             {num}
           </span>
         </div>
-      )
-    }
+      );
+    };
 
     return (
       <div className="TroveTooltip__ReactionBar">
         {renderReaction(
-            renderLikeIconPath(post),
-            post.numLikes,
-            (e) => { hoveredPostLiked ? handleUnlike(e, post) : handleLike(e, post) },
-            likeIconHovered,
-            setLikeIconHovered,
-            "#e0245e",
-            "TroveTooltip__LikeIcon",
-            "TroveTooltip__LikeIconWrapper",
-            hoveredPostLiked
-          )}
+          renderLikeIconPath(post),
+          post.numLikes,
+          (e) => {
+            hoveredPostLiked ? handleUnlike(e, post) : handleLike(e, post);
+          },
+          likeIconHovered,
+          setLikeIconHovered,
+          '#e0245e',
+          'TroveTooltip__LikeIcon',
+          'TroveTooltip__LikeIconWrapper',
+          hoveredPostLiked,
+        )}
         <div>
           {renderReaction(
             renderCommentIconPath(),
@@ -783,9 +796,9 @@ export default function Tooltip(props: TooltipProps) {
             (e) => handleShowComment(e),
             commentIconHovered,
             setCommentIconHovered,
-            "#0d77e2",
-            "TroveTooltip__CommentIcon",
-            "TroveTooltip__CommentIconWrapper"
+            '#0d77e2',
+            'TroveTooltip__CommentIcon',
+            'TroveTooltip__CommentIconWrapper',
           )}
         </div>
         <div
@@ -803,7 +816,10 @@ export default function Tooltip(props: TooltipProps) {
             </div>
           `}
           >
-            <span className="TroveTooltip__GoToPostIcon" style={goToPostHovered ? { color: 'rgba(13, 119, 226, 0.5)' } : {}}>
+            <span
+              className="TroveTooltip__GoToPostIcon"
+              style={goToPostHovered ? { color: 'rgba(13, 119, 226, 0.5)' } : {}}
+            >
               <ExportOutlined />
             </span>
           </span>
@@ -816,8 +832,8 @@ export default function Tooltip(props: TooltipProps) {
           />
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const renderNewComment = (post: Post) => {
     if (!user) return;
@@ -830,8 +846,8 @@ export default function Tooltip(props: TooltipProps) {
           onSubmit={(text) => handleCreateComment(text, post)}
         />
       </div>
-    )
-  }
+    );
+  };
 
   if (!!hoveredPost) {
     // Readonly post
@@ -853,10 +869,7 @@ export default function Tooltip(props: TooltipProps) {
           {renderTopics(hoveredPost)}
           {hoveredPost.content && (
             <div className="TroveTooltip__TextContent">
-              <Content
-                value={hoveredPost.content}
-                taggedUsers={hoveredPost.taggedUsers || []}
-              />
+              <Content value={hoveredPost.content} taggedUsers={hoveredPost.taggedUsers || []} />
             </div>
           )}
           {renderReactionBar(hoveredPost)}

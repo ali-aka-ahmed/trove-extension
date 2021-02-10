@@ -1,11 +1,11 @@
 import Color from 'color';
 import React, { useState } from 'react';
-import { ORIGIN } from '../../../../config/config.dev';
+import { ORIGIN } from '../../../../config/config.prod';
 import User from '../../../../entities/User';
 import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
 
 interface UserInfoProps {
-  user: User
+  user: User;
 }
 const UserInfo = ({ user }: UserInfoProps) => {
   const [profileImgHovered, setProfileImgHovered] = useState(false);
@@ -19,7 +19,9 @@ const UserInfo = ({ user }: UserInfoProps) => {
   return (
     <div className="TroveTooltip__Profile">
       <div
-        className={`TroveTooltip__ProfileImg ${profileImgHovered ? 'TroveTooltip__ProfileImg--hover' : ''}`}
+        className={`TroveTooltip__ProfileImg ${
+          profileImgHovered ? 'TroveTooltip__ProfileImg--hover' : ''
+        }`}
         style={{
           backgroundColor: user.color,
           color: Color(user.color).isLight() ? 'black' : 'white',
@@ -31,7 +33,9 @@ const UserInfo = ({ user }: UserInfoProps) => {
         {user.displayName[0]}
       </div>
       <div
-        className={`TroveTooltip__ProfileInfo ${profileNameHovered ? 'TroveTooltip__ProfileInfo--hover' : ''}`}
+        className={`TroveTooltip__ProfileInfo ${
+          profileNameHovered ? 'TroveTooltip__ProfileInfo--hover' : ''
+        }`}
         onClick={(e) => handleGoToProfile(e)}
         style={{ textDecorationColor: user.color }}
         onMouseEnter={() => setProfileNameHovered(true)}
@@ -43,7 +47,7 @@ const UserInfo = ({ user }: UserInfoProps) => {
         </div>
       </div>
     </div>
-  )
+  );
 };
 
 export default UserInfo;
