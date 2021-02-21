@@ -23,8 +23,8 @@ export enum WebsiteOrigins {
 /**
  * SET THESE 👇
  */
-export const FRONTEND: Environments = Environments.DEVELOPMENT;
-export const BACKEND: Environments = Environments.DEVELOPMENT;
+export const FRONTEND: Environments = Environments.LOCAL;
+export const BACKEND: Environments = Environments.LOCAL;
 export const LOGGING: boolean = true;
 
 export let BACKEND_URL: BackendURLs;
