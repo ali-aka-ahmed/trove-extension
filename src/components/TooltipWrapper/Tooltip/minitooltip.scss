@@ -20,6 +20,10 @@
   background-color: #F7FAFE;
 }
 
+.TroveMiniTooltip button:hover {
+  background-color: #fff;
+}
+
 .TroveMiniTooltip__Logo {
   height: 24px;
   width: 20px;
@@ -48,7 +52,6 @@
 .TroveMiniTooltip__NewPostButton__PrimaryText {
   color: #000;
   font-size: 14px;
-  width: fit-content;
   text-align: center;
   white-space: nowrap;
 }
