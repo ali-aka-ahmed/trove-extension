@@ -8,6 +8,7 @@ import User from '../../../entities/User';
 import { toArray } from '../../../utils';
 import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import Dropdown from './Dropdown';
 import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
@@ -35,6 +36,8 @@ export default function Tooltip(props: TooltipProps) {
   const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
+  const [dropdownClicked, setDropdownClicked] = useState(false);
+  const [dropdownText, setDropdownText] = useState('Loading...');
 
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
@@ -42,7 +45,8 @@ export default function Tooltip(props: TooltipProps) {
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
   const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
-  const tooltip = useRef<HTMLButtonElement>(null);
+  const tooltip = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
 
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
@@ -145,6 +149,7 @@ export default function Tooltip(props: TooltipProps) {
     setTempHighlight(null);
     setTempHighlightRange(null);
     setIsTempHighlightVisible(false);
+    setDropdownClicked(false);
   }, []);
 
   const resetTooltip = () => {
@@ -159,8 +164,10 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     ReactTooltip.rebuild();
 
+    setDropdownText('Investing');
+
     // Get user object
-    get(['user', 'isAuthenticated', 'isExtensionOn']).then((data) => {
+    get(['user', 'isAuthenticated', 'isExtensionOn', 'lastPageName']).then((data) => {
       setIsAuthenticated(data.isAuthenticated || false);
       setIsExtensionOn(data.isExtensionOn || false);
       if (!data.isAuthenticated || !data.isExtensionOn) return;
@@ -267,6 +274,10 @@ export default function Tooltip(props: TooltipProps) {
         return;
       }
 
+      if ((e.target as HTMLElement).classList.contains('TroveTooltip__Dropdown')) {
+        setDropdownClicked(false);
+      }
+
       positionTooltip();
     },
     [positionTooltip],
@@ -281,7 +292,7 @@ export default function Tooltip(props: TooltipProps) {
     (e: MouseEvent) => {
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
       // as cursor enters and leaves selection
-      if (e.buttons === 1 || isSelectionInEditableElement()) {
+      if (e.buttons === 1 || isSelectionInEditableElement() || tempHighlightRange) {
         return;
       }
 
@@ -352,15 +363,38 @@ export default function Tooltip(props: TooltipProps) {
 
       // Keyboard shortcuts
       if (isOsKeyPressed(e) && e.key === 'd') {
-        // New post on current selection
+        e.preventDefault();
+        const selection = getSelection()!;
+        if (isTempHighlightVisible) {
+          // Submit current highlight
+          onSubmit();
+        } else if (selectionExists(selection) && /\S/.test(selection.toString())) {
+          // New post on current selection
+          addTempHighlight();
+        }
+      } else if (
+        e.key === 'Tab' &&
+        (isSelectionHovered || isTempHighlightVisible) &&
+        !dropdownClicked
+      ) {
+        // Open dropdown
         e.preventDefault();
         const selection = getSelection()!;
         if (selectionExists(selection) && /\S/.test(selection.toString())) {
           addTempHighlight();
         }
+
+        setDropdownClicked(true);
       }
     },
-    [isAuthenticated, isExtensionOn],
+    [
+      dropdownClicked,
+      isAuthenticated,
+      isExtensionOn,
+      isSelectionHovered,
+      isTempHighlightVisible,
+      addTempHighlight,
+    ],
   );
 
   useEffect(() => {
@@ -370,23 +404,88 @@ export default function Tooltip(props: TooltipProps) {
 
   return isSelectionHovered || isTempHighlightVisible ? (
     <>
-      <button
+      <div
         className={classNames('TroveTooltip', {
           'TroveTooltip--position-above': positionEdge === Edge.Top,
           'TroveTooltip--position-below': positionEdge === Edge.Bottom,
         })}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-        onClick={onSubmit}
+        data-tip={`
+          <div class="TroveHint__Content">
+            <p class="TroveHint__Content__PrimaryText">Save to Notion</p>
+            <p class="TroveHint__Content__SecondaryText">(ctrl+d)</p>
+          </div>
+        `}
         ref={tooltip}
       >
-        <p className="TroveTooltip__Text">Save to</p>
-      </button>
+        <div className="TroveTooltip__Content">
+          <button
+            className="TroveContent__Button"
+            onClick={onSubmit}
+            onMouseOver={() => {
+              ReactTooltip.show(tooltip.current!);
+              if (tooltip.current) tooltip.current.style.backgroundColor = '#f3f3f3';
+            }}
+            onMouseLeave={() => {
+              if (tooltip.current) tooltip.current.style.backgroundColor = '#fff';
+            }}
+          ></button>
+          <p className="TroveContent__Text">Save to</p>
+          {dropdownClicked ? (
+            <Dropdown setText={setDropdownText} setDropdownClicked={setDropdownClicked} />
+          ) : (
+            <>
+              <button
+                className="TroveContent__SaveTo"
+                onClick={() => {
+                  const selection = getSelection()!;
+                  if (selectionExists(selection) && /\S/.test(selection.toString())) {
+                    addTempHighlight();
+                  }
+
+                  setDropdownClicked(true);
+                  ReactTooltip.hide();
+                }}
+                onMouseEnter={() => {
+                  ReactTooltip.show(button.current!);
+                }}
+                data-tip={`
+                  <div class="TroveHint__Content">
+                    <p class="TroveHint__Content__PrimaryText">Pick Notion page</p>
+                    <p class="TroveHint__Content__SecondaryText">(Tab)</p>
+                  </div>
+                `}
+                ref={button}
+              >
+                {dropdownText}
+              </button>
+              <p className="TroveContent__Text" style={{ marginLeft: '3px' }}>
+                ▾
+              </p>
+            </>
+          )}
+        </div>
+      </div>
       <ReactTooltip
+        place="bottom"
         className="TroveTooltip__Hint"
         effect="solid"
+        event={'mouseenter'}
+        eventOff={'mouseleave'}
         arrowColor="transparent"
         html={true}
-        delayShow={250}
+        overridePosition={(pos) => {
+          let rect = tooltipRect;
+          if (!rect && tooltip.current) {
+            rect = tooltip.current.getBoundingClientRect();
+            setTooltipRect(rect);
+          }
+
+          const left = rect?.left || pos.left;
+          const top = (rect?.bottom || pos.top) + 10;
+          return { left, top };
+        }}
+        disable={dropdownClicked}
       />
     </>
   ) : null;

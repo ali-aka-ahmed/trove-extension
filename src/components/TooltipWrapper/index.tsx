@@ -6,7 +6,7 @@ import { EXCLUDED_HOSTNAMES } from '../../constants';
 import ErrorBoundary from '../errorBoundary/index';
 import './index.scss';
 import Tooltip from './Tooltip';
-import dropdownStyles from './Tooltip/Editor/Dropdown/index.scss?inject';
+import dropdownStyles from './Tooltip/Dropdown/index.scss?inject';
 import editorStyles from './Tooltip/Editor/index.scss?inject';
 import { isOsKeyPressed } from './Tooltip/helpers/os';
 import hintStyles from './Tooltip/hint.scss?inject';
