@@ -11,11 +11,6 @@ import editorStyles from './Tooltip/Editor/index.scss?inject';
 import { isOsKeyPressed } from './Tooltip/helpers/os';
 import hintStyles from './Tooltip/hint.scss?inject';
 import tooltipStyles from './Tooltip/index.scss?inject';
-import inputPillStyles from './Tooltip/InputPill/index.scss?inject';
-import miniTooltipStyles from './Tooltip/minitooltip.scss?inject';
-import newCommentStyles from './Tooltip/NewComment/index.scss?inject';
-import pillStyles from './Tooltip/Pill/index.scss?inject';
-import userInfoStyles from './Tooltip/userInfo/index.scss?inject';
 
 interface TooltipWrapperProps {
   root: ShadowRoot;
@@ -49,12 +44,7 @@ export default function TooltipWrapper(props: TooltipWrapperProps) {
         <style type="text/css">{dropdownStyles}</style>
         <style type="text/css">{hintStyles}</style>
         <style type="text/css">{tooltipStyles}</style>
-        <style type="text/css">{miniTooltipStyles}</style>
-        <style type="text/css">{pillStyles}</style>
-        <style type="text/css">{inputPillStyles}</style>
         <style type="text/css">{contentStyles}</style>
-        <style type="text/css">{newCommentStyles}</style>
-        <style type="text/css">{userInfoStyles}</style>
       </>
     );
   }

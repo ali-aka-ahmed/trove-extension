@@ -11,7 +11,7 @@ import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs'
 import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
-import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
+import { isOsKeyPressed } from './helpers/os';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
 import {
@@ -39,18 +39,10 @@ export default function Tooltip(props: TooltipProps) {
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
 
-  const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
-  const [hoveredPostBuffer, setHoveredPostBuffer] = useState<Post | null>(null);
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
-
-  const [hoveredPostRect, setHoveredPostRect] = useState<DOMRect | null>(null);
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
-  const [tooltipCloseFn, setTooltipCloseFn] = useState<((arg?: boolean) => void) | null>(null);
-
   const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
-  const [miniTooltipRect, setMiniTooltipRect] = useState<DOMRect | null>(null);
-  const [wasMiniTooltipClicked, setWasMiniTooltipClicked] = useState(false);
-  const tooltip = useRef<HTMLDivElement>(null);
+  const tooltip = useRef<HTMLButtonElement>(null);
 
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
@@ -64,30 +56,18 @@ export default function Tooltip(props: TooltipProps) {
         return range;
       }
 
-      let retRange: Range | null;
-      if (hoveredPostBuffer && hoveredPostBuffer.highlight) {
-        try {
-          retRange = getRangeFromTextRange(hoveredPostBuffer.highlight.textRange);
-        } catch (e) {
-          retRange = null;
-        }
-
-        if (retRange) return retRange;
-      }
-
       if (tempHighlightRange) {
         return tempHighlightRange;
       }
 
       const selection = getSelection()!;
       if (selectionExists(selection)) {
-        retRange = selection.getRangeAt(0);
-        return retRange;
+        return selection.getRangeAt(0);
       }
 
       return null;
     },
-    [hoveredPostBuffer, tempHighlightRange],
+    [tempHighlightRange],
   );
 
   /**
@@ -115,76 +95,6 @@ export default function Tooltip(props: TooltipProps) {
     },
     [tooltip, getTooltipRange],
   );
-
-  useEffect(() => {
-    // Reposition tooltip after clicking mini-tooltip to account for possible shift due to change
-    // in size
-    if (wasMiniTooltipClicked) {
-      positionTooltip();
-    }
-  }, [wasMiniTooltipClicked]);
-
-  useEffect(() => {
-    positionTooltip();
-    setHoveredPost(hoveredPostBuffer);
-  }, [hoveredPostBuffer]);
-
-  /**
-   * Handler for when mouse cursor enters a Trove mark element. A highlight can be composed of
-   * multiple marks, which can each have multiple client rects.
-   * TODO: Maybe move active highlight logic to highlighter?
-   */
-  const onMarkMouseEnter = useCallback(
-    (e: MouseEvent, post: Post, mark: HTMLElement) => {
-      // Don't trigger mouseenter event if user is selecting text (left mouse button down)
-      if (!post.highlight || e.buttons === 1) return;
-      highlighter.modifyHighlightTemp(HighlightType.Default);
-      highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
-
-      // Encountered a new mark before having left the last one
-      if (hoveredPostBuffer) {
-        if (hoveredPostBuffer.id !== post.id && tooltipCloseFn) {
-          // Make sure we exit from the previous highlight
-          tooltipCloseFn();
-        } else if (hoveredPostBuffer.id === post.id) {
-          // Do nothing because we are passing between two marks of the same highlight
-          return;
-        }
-      }
-
-      // Have to wrap anonymous function in another function to prevent React from computing it
-      // immediately: https://medium.com/swlh/how-to-store-a-function-with-the-usestate-hook-in-react-8a88dd4eede1
-      setTooltipCloseFn(() => () => {
-        if (!post.highlight) return;
-        highlighter.modifyHighlight(post.highlight.id, HighlightType.Default);
-        highlighter.modifyHighlightTemp(HighlightType.Active);
-        setTooltipRect(null);
-        setHoveredPostBuffer(null);
-        setHoveredPost(null);
-        setTooltipCloseFn(null);
-        setHoveredPostRect(null);
-      });
-      setTooltipRect(null);
-      setHoveredPostRect(getHoveredRect(e, mark.getClientRects()));
-      setHoveredPostBuffer(post);
-    },
-    [highlighter, hoveredPostBuffer, tooltipCloseFn],
-  );
-
-  /**
-   * Attach handlers to highlights. We don't need to return a cleanup function since we're using
-   * the .onevent notation (as opposed to addEventListener) to add the listeners, which only
-   * accepts one event at a time. We have to include posts as a dependency to add handler to new
-   * posts on page.
-   * TODO: don't refresh handlers on already existing highlights
-   */
-  useEffect(() => {
-    highlighter.highlights.forEach((highlight, id) => {
-      for (const mark of highlight.marks) {
-        mark.onmouseenter = (e: MouseEvent) => onMarkMouseEnter(e, highlight.post, mark);
-      }
-    });
-  }, [posts, onMarkMouseEnter]);
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
@@ -239,8 +149,7 @@ export default function Tooltip(props: TooltipProps) {
 
   const resetTooltip = () => {
     removeTempHighlight();
-    setWasMiniTooltipClicked(false);
-    setMiniTooltipRect(null);
+    setTooltipRect(null);
 
     // Making the assumption that whenever we reset tooltip, we are also resetting selection
     setIsSelectionHovered(false);
@@ -292,21 +201,9 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts]);
 
-  /**
-   * Handle transition between mini-tooltip and editor tooltip.
-   */
-  const miniTooltipToTooltip = useCallback(() => {
-    // Allow transition if selection exists with at least one non-whitespace character
-    const selection = getSelection()!;
-    if (selectionExists(selection) && /\S/.test(selection.toString())) {
-      addTempHighlight();
-      setWasMiniTooltipClicked(true);
-    }
-  }, [addTempHighlight]);
-
   const onScroll = useCallback(() => {
     setIsSelectionHovered(false);
-    setMiniTooltipRect(null);
+    setTooltipRect(null);
     setSelectionRect(null);
   }, []);
 
@@ -382,45 +279,19 @@ export default function Tooltip(props: TooltipProps) {
 
   const onMouseMovePage = useCallback(
     (e: MouseEvent) => {
-      let rect;
-      if (
-        hoveredPost &&
-        !!hoveredPostRect &&
-        !!tooltipRect &&
-        isMouseBetweenRects(e, hoveredPostRect, tooltipRect)
-      ) {
-        // Do nothing
-        return;
-      } else if (hoveredPostBuffer !== hoveredPost) {
-        // Waiting for React hook to update hoveredPost
-        return;
-      } else if (
-        hoveredPost &&
-        !!hoveredPostRect &&
-        !!tooltipRect &&
-        !isMouseBetweenRects(e, hoveredPostRect, tooltipRect) &&
-        tooltipCloseFn
-      ) {
-        // Exiting tooltip from hovered post
-        tooltipCloseFn();
-      } else if (hoveredPost && !tooltipRect) {
-        // Calculate and set tooltip rect, this should happen once
-        setTooltipRect(tooltip.current!.getBoundingClientRect());
-        return;
-      }
-
       // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
       // as cursor enters and leaves selection
-      if (e.buttons === 1 || wasMiniTooltipClicked || isSelectionInEditableElement()) {
+      if (e.buttons === 1 || isSelectionInEditableElement()) {
         return;
       }
 
+      let rect;
       const selection = getSelection()!;
       if (
         isSelectionHovered &&
         !!selectionRect &&
-        !!miniTooltipRect &&
-        isMouseBetweenRects(e, selectionRect, miniTooltipRect)
+        !!tooltipRect &&
+        isMouseBetweenRects(e, selectionRect, tooltipRect)
       ) {
         // Do nothing
       } else if (
@@ -428,25 +299,15 @@ export default function Tooltip(props: TooltipProps) {
         !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
       ) {
         setIsSelectionHovered(true);
-        setMiniTooltipRect(tooltip.current!.getBoundingClientRect());
+        setTooltipRect(tooltip.current!.getBoundingClientRect());
         setSelectionRect(rect);
       } else {
         setIsSelectionHovered(false);
-        setMiniTooltipRect(null);
+        setTooltipRect(null);
         setSelectionRect(null);
       }
     },
-    [
-      hoveredPost,
-      hoveredPostBuffer,
-      hoveredPostRect,
-      tooltipRect,
-      tooltipCloseFn,
-      isSelectionHovered,
-      selectionRect,
-      miniTooltipRect,
-      wasMiniTooltipClicked,
-    ],
+    [tooltipRect, isSelectionHovered, selectionRect, tooltipRect],
   );
 
   useEffect(() => {
@@ -454,7 +315,7 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mousemove', onMouseMovePage);
   }, [onMouseMovePage]);
 
-  const onClickSubmit = async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onSubmit = async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     ReactTooltip.hide();
 
     if (tempHighlight) {
@@ -493,10 +354,13 @@ export default function Tooltip(props: TooltipProps) {
       if (isOsKeyPressed(e) && e.key === 'd') {
         // New post on current selection
         e.preventDefault();
-        miniTooltipToTooltip();
+        const selection = getSelection()!;
+        if (selectionExists(selection) && /\S/.test(selection.toString())) {
+          addTempHighlight();
+        }
       }
     },
-    [isAuthenticated, isExtensionOn, miniTooltipToTooltip],
+    [isAuthenticated, isExtensionOn],
   );
 
   useEffect(() => {
@@ -504,31 +368,26 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('keydown', onKeyDownPage);
   }, [onKeyDownPage]);
 
-  return (
-    (isSelectionHovered || isTempHighlightVisible) && (
-      <>
-        <div
-          className={classNames('TroveMiniTooltip', {
-            'TbdTooltip--position-above': positionEdge === Edge.Top,
-            'TbdTooltip--position-below': positionEdge === Edge.Bottom,
-          })}
-          style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-          ref={tooltip}
-        >
-          <button className="TroveMiniTooltip__NewPostButton" onClick={miniTooltipToTooltip}>
-            <div className="TroveMiniTooltip__Logo"></div>
-            <p className="TroveMiniTooltip__NewPostButton__PrimaryText">New post</p>
-            <p className="TroveMiniTooltip__NewPostButton__SecondaryText">{`(${getOsKeyChar()}+d)`}</p>
-          </button>
-        </div>
-        <ReactTooltip
-          className="TroveTooltip__Hint"
-          effect="solid"
-          arrowColor="transparent"
-          html={true}
-          delayShow={250}
-        />
-      </>
-    )
-  );
+  return isSelectionHovered || isTempHighlightVisible ? (
+    <>
+      <button
+        className={classNames('TroveTooltip', {
+          'TroveTooltip--position-above': positionEdge === Edge.Top,
+          'TroveTooltip--position-below': positionEdge === Edge.Bottom,
+        })}
+        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+        onClick={onSubmit}
+        ref={tooltip}
+      >
+        <p className="TroveTooltip__Text">Save to</p>
+      </button>
+      <ReactTooltip
+        className="TroveTooltip__Hint"
+        effect="solid"
+        arrowColor="transparent"
+        html={true}
+        delayShow={250}
+      />
+    </>
+  ) : null;
 }
