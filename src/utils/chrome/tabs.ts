@@ -26,22 +26,23 @@ export interface Message {
 }
 
 export enum MessageType {
-  CreatePost,
   CreateComment,
+  CreatePost,
+  DeletePost,
   Error,
   ForgotPassword,
+  GetNotionAuthToken,
   GetPosts,
   GetTabId,
+  GoToPage,
   HandleTopicSearch,
   HandleUserSearch,
   LikePost,
   Login,
+  OpenTab,
   Sync,
   UnlikePost,
   UpdateUser,
-  OpenTab,
-  DeletePost,
-  GoToPage
 }
 
 /**

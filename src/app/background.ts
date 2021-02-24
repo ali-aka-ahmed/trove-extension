@@ -5,17 +5,25 @@ import INotification from '../models/INotification';
 import {
   Message as EMessage,
   MessageType as EMessageType,
-  sendMessageToWebsite
+  sendMessageToWebsite,
 } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import {
   Message,
   MessageType,
   sendMessageToExtension,
-  SocketMessageType
+  SocketMessageType,
 } from '../utils/chrome/tabs';
 import { forgotPassword, login } from './server/auth';
-import { createComment, createPost, deletePostAndChildren, getPosts, likePost, unlikePost } from './server/posts';
+import { getNotionAuthToken } from './server/notion';
+import {
+  createComment,
+  createPost,
+  deletePostAndChildren,
+  getPosts,
+  likePost,
+  unlikePost,
+} from './server/posts';
 import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
 
@@ -116,6 +124,12 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+      case MessageType.GetNotionAuthToken: {
+        getNotionAuthToken().then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
       case MessageType.UnlikePost: {
         if (!message.id) break;
         unlikePost(message.id).then((res) => {
@@ -174,17 +188,23 @@ chrome.runtime.onMessage.addListener(
       }
       case MessageType.OpenTab: {
         if (!message.url) break;
-        chrome.tabs.create({
-          url: message.url,
-          active: message.active || false
-        }, () => sendResponse({ success: true }));
+        chrome.tabs.create(
+          {
+            url: message.url,
+            active: message.active || false,
+          },
+          () => sendResponse({ success: true }),
+        );
         break;
       }
       case MessageType.GoToPage: {
         if (!message.url) break;
-        chrome.tabs.update({
-          url: message.url,
-        }, () => sendResponse({ success: true }));
+        chrome.tabs.update(
+          {
+            url: message.url,
+          },
+          () => sendResponse({ success: true }),
+        );
         break;
       }
       case MessageType.Sync:

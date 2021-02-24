@@ -32,6 +32,8 @@
     "storage",
     "tabs",
     "activeTab",
+    "cookies",
+    "https://www.notion.so/*",
     "http://localhost:3000/*",
     "https://development.trove.so/*",
     "https://demo.trove.so/*",
