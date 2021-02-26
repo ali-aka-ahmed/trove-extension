@@ -1,5 +1,4 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import { Tabs } from 'antd';
 import 'antd/dist/antd.css';
 import React, { useEffect, useState } from 'react';
 import 'react-quill/dist/quill.bubble.css';
@@ -12,7 +11,6 @@ import { sendMessageToExtension, SocketMessageType } from '../../utils/chrome/ta
 import ErrorBoundary from '../errorBoundary/index';
 import BottomBar from './BottomBar';
 import Login from './Login';
-import Notifications from './Notifications';
 import Profile from './Profile';
 import './style.scss';
 
@@ -90,18 +88,18 @@ export default function Popup() {
       <div className="TbdPopupContainer">
         {isAuthenticated ? (
           <>
-            <Tabs activeKey={tabKey} onChange={(newTabKey) => setTabKey(newTabKey)}>
+            {/* <Tabs activeKey={tabKey} onChange={(newTabKey) => setTabKey(newTabKey)}>
               <Tabs.TabPane tab="Notifications" key="1">
                 <div className="TbdPopupContainer__TabWrapper">
                   {notifications && <Notifications notifications={notifications} />}
                 </div>
               </Tabs.TabPane>
-              <Tabs.TabPane tab="Profile" key="2">
+              <Tabs.TabPane tab="Profile" key="2"> */}
                 <div className="TbdPopupContainer__TabWrapper">
                   {user && <Profile user={user} />}
                 </div>
-              </Tabs.TabPane>
-            </Tabs>
+              {/* </Tabs.TabPane>
+            </Tabs> */}
             <BottomBar isExtensionOn={isExtensionOn} />
           </>
         ) : (

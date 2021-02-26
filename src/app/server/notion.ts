@@ -1,7 +1,67 @@
-export const getPageNames = (limit?: number): string[] => {
-  return ['Investing', 'Politics', 'Read later'];
+import { api, AxiosRes, BaseRes } from '.';
+
+export type IGetPageNamesRes = GetPageNamesRes & AxiosRes;
+export type ISearchPagesRes = SearchPagesRes & AxiosRes;
+
+export const getNotionPages = async (spaceId?: string, recentIds?: string[]): Promise<IGetPageNamesRes> => {
+  const args: GetPageNamesReqBody = {
+    ...(spaceId ? { spaceId } : {}),
+    ...(recentIds ? { recentIds } : {}),
+  }
+  return await api.post('/notion/getPages', args);
 };
 
-export const getPageNamesByPrefix = (prefix: string, limit?: number): string[] => {
-  return [`${prefix} 1`, `${prefix} 2`, `${prefix} 3`];
+export const searchNotionPages = async (query: string, spaceId: string, limit?: number): Promise<ISearchPagesRes> => {
+  const args: SearchPagesReqBody = { query, spaceId, limit };
+  return await api.post('/notion/search', args);
 };
+
+export type Icon = {
+  value: string;
+  type: 'url' | 'emoji';
+};
+
+export type Record = {
+  id: string;
+  name: string;
+  type: 'database' | 'page';
+  section?: 'recent' | 'database' | 'page';
+  path?: string;
+  icon?: Icon;
+}
+
+/**
+ * POST /notion/getPages
+ */
+export interface GetPageNamesReqBody {
+  spaceId?: string;
+  recentIds?: string[];
+}
+
+/**
+ * POST /notion/search
+ */
+export interface SearchPagesReqBody {
+  limit?: number;
+  query: string;
+  spaceId: string;
+}
+
+/**
+ * GET /getPageNames
+ */
+type GetPageNamesRes = {
+  spaceId?: string;
+  recents?: Record[];
+  pages?: Record[];
+  databases?: Record[];
+} & BaseRes;
+
+/**
+ * POST /notion/search
+ */
+type SearchPagesRes = {
+  spaceId?: string;
+  pages?: Record[];
+  databases?: Record[];
+} & BaseRes;

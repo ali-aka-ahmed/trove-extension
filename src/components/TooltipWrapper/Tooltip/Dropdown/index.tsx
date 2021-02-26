@@ -1,6 +1,8 @@
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
-import { getPageNames, getPageNamesByPrefix } from '../../../../app/server/notion';
+import { IGetPageNamesRes, ISearchPagesRes, Record } from '../../../../app/server/notion';
+import { get, get1, set } from '../../../../utils/chrome/storage';
+import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
 
 interface DropdownProps {
   setDropdownClicked: React.Dispatch<React.SetStateAction<boolean>>;
@@ -8,12 +10,30 @@ interface DropdownProps {
 }
 
 export default function Dropdown(props: DropdownProps) {
-  const [itemIdx, setItemIdx] = useState(1);
-  const [items, setItems] = useState<any[]>([]);
+  const [spaceId, setSpaceId] = useState('');
+  const [itemIdx, setItemIdx] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<Record[]>([]);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setItems(['input placeholder'].concat(getPageNames(10)));
+    setLoading(true);
+    get([ 'recents', 'spaceId' ]).then((data) => {
+      const recentIds = data.recents.map((r: Record) => r.id);
+      sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds, spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
+        setShowError(false);
+        setLoading(false);
+        if (res.success) {
+          setItems(res.recents!.concat(res.databases!).concat(res.pages!));
+          setSpaceId(res.spaceId!)
+        } else {
+          setShowError(true);
+          setErrorMessage(res.message);
+        };
+      });
+    });
   }, []);
 
   const onKeyDownTextarea = (e: KeyboardEvent) => {
@@ -24,27 +44,27 @@ export default function Dropdown(props: DropdownProps) {
         e.preventDefault();
         setItemIdx(Math.max(1, itemIdx - 1));
         break;
-      }
+      };
       case 'ArrowDown': {
         e.preventDefault();
         const newIdx = Math.min(items.length - 1, itemIdx + 1);
         setItemIdx(newIdx);
         break;
-      }
+      };
       case 'Enter':
       case 'Tab': {
         e.preventDefault();
-        props.setText(items[itemIdx]);
+        props.setText(items[itemIdx].name);
         props.setDropdownClicked(false);
         break;
-      }
+      };
       case 'Escape': {
         e.preventDefault();
         setItems([]);
         setItemIdx(0);
         props.setDropdownClicked(false);
         break;
-      }
+      };
     }
   };
 
@@ -73,18 +93,24 @@ export default function Dropdown(props: DropdownProps) {
   //   setItemIdx(0);
   // };
 
-  const renderItem = (item: any, idx: number) => {
+  const handleSelectItem = (item: Record) => {
+    props.setText(item.name);
+    props.setDropdownClicked(false);
+    get1('recents').then((recents: Record[]) => {
+      recents.unshift(item);
+      set({ 'recents': recents.slice(0, 5) })
+    });
+  };
+
+  const renderItem = (item: Record, idx: number) => {
     if (idx <= 0) return;
     return (
       <button
         className={classNames('TroveDropdown__Item', {
           'TroveDropdown__Item--selected': idx === itemIdx,
         })}
-        key={item}
-        onClick={() => {
-          props.setText(item);
-          props.setDropdownClicked(false);
-        }}
+        key={item.id}
+        onClick={() => handleSelectItem(item)}
       >
         <p className="TroveDropdownItem__Text">{item}</p>
       </button>
@@ -92,14 +118,26 @@ export default function Dropdown(props: DropdownProps) {
   };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setItems(['input placeholder'].concat(getPageNamesByPrefix(e.target.value)));
+    sendMessageToExtension({ type: MessageType.SearchNotionPages, spaceId, query: e.target.value }).then((res: ISearchPagesRes) => {
+      setShowError(false);
+      setLoading(false);
+      if (res.success) {
+        get1('recents').then((recents: Record[]) => {
+          setItems(recents.concat(res.databases!).concat(res.pages!));
+          setSpaceId(res.spaceId!);
+        })
+      } else {
+        setShowError(true);
+        setErrorMessage(res.message);
+      }
+    });
   };
 
   return (
     <div className="TroveTooltip__Dropdown">
       <input
         className="TroveDropdown__Search"
-        placeholder="Find a page..."
+        placeholder="Search for databases or pages..."
         autoFocus={true}
         ref={input}
         onClick={(e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
@@ -111,3 +149,9 @@ export default function Dropdown(props: DropdownProps) {
     </div>
   );
 }
+
+// TODO AFTER certain amount of time remove the most recents.
+// test the fuck and style.
+// then potentially add the cmd-D add.
+// then add create a notion thing in add.
+// then help Aki

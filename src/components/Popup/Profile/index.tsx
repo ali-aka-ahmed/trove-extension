@@ -1,6 +1,5 @@
-import { CloseOutlined, EditOutlined, LoadingOutlined, SaveOutlined } from '@ant-design/icons';
+import { EditOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
-import Color from 'color';
 import React, { useState } from 'react';
 import { IUserRes } from '../../../app/server/users';
 import IUser from '../../../models/IUser';
@@ -23,8 +22,8 @@ export default function Profile({ user }: ProfileProps) {
   const [editable, setEditable] = useState<'displayName' | 'username' | 'color' | null>(null);
   const [loading, setLoading] = useState<'displayName' | 'username' | 'color' | null>(null);
 
-  const [displayName, setDisplayName] = useState(user.displayName);
-  const [username, setUsername] = useState(user.username);
+  const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
 
   const [showError, setShowError] = useState<'displayName' | 'username' | 'color' | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
@@ -90,7 +89,7 @@ export default function Profile({ user }: ProfileProps) {
 
   return (
     <div className="TbdProfile__Wrapper">
-      <div className="TbdProfile__Header">
+      {/* <div className="TbdProfile__Header">
         <div
           className="TbdProfile__Img"
           style={{
@@ -194,7 +193,7 @@ export default function Profile({ user }: ProfileProps) {
             </div>
           )}
         </div>
-      </div>
+      </div> */}
       {editable === 'color' ? (
         <div className="TbdProfile__Color TbdProfile__EditColor EditProp">
           <div className="TbdProfile__ColorText">

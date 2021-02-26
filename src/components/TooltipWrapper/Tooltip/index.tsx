@@ -1,12 +1,13 @@
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
+import { Record } from '../../../app/server/notion';
 import { HighlightParam, IPostRes, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import { toArray } from '../../../utils';
-import { get } from '../../../utils/chrome/storage';
+import { get, get1 } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Dropdown from './Dropdown';
 import Edge from './helpers/Edge';
@@ -19,7 +20,7 @@ import {
   getHoveredRect,
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists,
+  selectionExists
 } from './helpers/selection';
 
 const TOOLTIP_MARGIN = 10;
@@ -164,7 +165,9 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     ReactTooltip.rebuild();
 
-    setDropdownText('Investing');
+    get1('recents').then((recents: Record[]) => {
+      setDropdownText(recents[0].name);
+    });
 
     // Get user object
     get(['user', 'isAuthenticated', 'isExtensionOn', 'lastPageName']).then((data) => {
