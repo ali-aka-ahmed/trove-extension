@@ -2,7 +2,7 @@
 @import '../../styles/general.scss';
 
 $popup-width: 300px; // 350px
-$popup-height: 350px;
+$popup-height: 105px; // was 350 with notifs
 
 $footer-height: 40px;
 
@@ -33,13 +33,14 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 430px; // IF POPUP HEIGHT ADJUSTS, SO DOES THIS
+  height: 145px; // IF POPUP HEIGHT ADJUSTS, SO DOES THIS (was 430px
 }
 
 .TbdPopupContainer__TabWrapper {
   margin-bottom: $footer-height;
+  min-height: $popup-height;
   max-height: $popup-height;
-  height: fit-content;
+  height: $popup-height;
   overflow-y: auto;
 }
 

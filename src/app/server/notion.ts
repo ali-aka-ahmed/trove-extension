@@ -1,5 +1,4 @@
-import { api, AxiosRes, BaseRes } from '.';
-import { getCookie } from '../../utils/chrome/cookies';
+import { apiNotionRoutes, AxiosRes, BaseRes } from '.';
 
 export type IGetPageNamesRes = GetPageNamesRes & AxiosRes;
 export type ISearchPagesRes = SearchPagesRes & AxiosRes;
@@ -12,7 +11,7 @@ export const getNotionPages = async (
     ...(spaceId ? { spaceId } : {}),
     ...(recentIds ? { recentIds } : {}),
   };
-  return await api.post('/notion/getPages', args);
+  return await apiNotionRoutes.post('/notion/getPages', args);
 };
 
 export const searchNotionPages = async (
@@ -21,11 +20,7 @@ export const searchNotionPages = async (
   limit?: number,
 ): Promise<ISearchPagesRes> => {
   const args: SearchPagesReqBody = { query, spaceId, limit };
-  return await api.post('/notion/search', args);
-};
-
-export const getNotionAuthToken = () => {
-  return getCookie('https://www.notion.so', 'token_v2');
+  return await apiNotionRoutes.post('/notion/search', args);
 };
 
 export type Icon = {
@@ -37,7 +32,15 @@ export type Record = {
   id: string;
   name: string;
   type: 'database' | 'page';
-  section?: 'recent' | 'database' | 'page';
+  section?: 'database' | 'page';
+  path?: string;
+  icon?: Icon;
+} | {
+  id: string;
+  name: string;
+  type: 'database' | 'page';
+  section: 'recent';
+  datetimeExpiry: number;
   path?: string;
   icon?: Icon;
 };

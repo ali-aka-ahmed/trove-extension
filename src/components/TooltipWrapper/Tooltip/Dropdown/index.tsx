@@ -20,8 +20,14 @@ export default function Dropdown(props: DropdownProps) {
 
   useEffect(() => {
     setLoading(true);
-    get([ 'recents', 'spaceId' ]).then((data) => {
-      const recentIds = data.recents.map((r: Record) => r.id);
+    get([ 'notionRecents', 'spaceId' ]).then((data) => {
+      // if any recents have expired, remove them and do not retrieve them
+      const unexpiredRecents = data.notionRecents
+        .filter((r: Record) => r.section === 'recent' && r.datetimeExpiry > Date.now());
+      set({ 'notionRecents': unexpiredRecents });
+
+      // fetch recents and relevant pages for the user
+      const recentIds = unexpiredRecents.map((r: Record) => r.id);
       sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds, spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
         setShowError(false);
         setLoading(false);
@@ -38,7 +44,7 @@ export default function Dropdown(props: DropdownProps) {
 
   const onKeyDownTextarea = (e: KeyboardEvent) => {
     e.stopPropagation();
-    if (!items || items.length === 0) return;
+    if (!(e.key === 'Escape') && (!items || items.length === 0)) return;
     switch (e.key) {
       case 'ArrowUp': {
         e.preventDefault();
@@ -96,9 +102,10 @@ export default function Dropdown(props: DropdownProps) {
   const handleSelectItem = (item: Record) => {
     props.setText(item.name);
     props.setDropdownClicked(false);
-    get1('recents').then((recents: Record[]) => {
+    set({ 'notionDefault': item });
+    get1('notionRecents').then((recents: Record[]) => {
       recents.unshift(item);
-      set({ 'recents': recents.slice(0, 5) })
+      set({ 'notionRecents': recents.slice(0, 5) })
     });
   };
 
@@ -122,7 +129,7 @@ export default function Dropdown(props: DropdownProps) {
       setShowError(false);
       setLoading(false);
       if (res.success) {
-        get1('recents').then((recents: Record[]) => {
+        get1('notionRecents').then((recents: Record[]) => {
           setItems(recents.concat(res.databases!).concat(res.pages!));
           setSpaceId(res.spaceId!);
         })
@@ -144,13 +151,12 @@ export default function Dropdown(props: DropdownProps) {
           e.stopPropagation();
         }}
         onChange={onChange}
-      ></input>
+      />
       {items.map((item, idx) => renderItem(item, idx))}
     </div>
   );
 }
 
-// TODO AFTER certain amount of time remove the most recents.
 // test the fuck and style.
 // then potentially add the cmd-D add.
 // then add create a notion thing in add.

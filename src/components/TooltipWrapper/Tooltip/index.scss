@@ -1,7 +1,7 @@
 @import '../../../styles/general.scss';
 
 $tooltip-width: 175px;
-$tooltip-height: 60px;
+$tooltip-height: 35px;
 
 .TroveTooltip {
   position: absolute;
@@ -31,25 +31,21 @@ $tooltip-height: 60px;
 }
 
 .TroveTooltip__Content {
+  // display: flex;
+  // flex-direction: row;
+  // width: max-content;
+  // padding: 0px 15px;
+  // overflow: visible;
+
   display: flex;
   flex-direction: row;
-  width: max-content;
-  padding: 0px 15px;
+  width: fit-content;
   overflow: visible;
+  height: fit-content;
 }
 
-.TroveContent__Button {
-  z-index: 2;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  height: 100%;
-  width: 100%;
-  outline: none;
-  border: none;
-  background-color: transparent;
-  padding: 0;
-  margin: 0;
+.TroveContent:hover {
+  background-color: #f3f3f3;
   cursor: pointer;
 }
 
@@ -58,27 +54,68 @@ $tooltip-height: 60px;
 // }
 
 .TroveContent__Text {
-  z-index: 1;
-  line-height: $tooltip-height;
+  // z-index: 1;
+  // line-height: $tooltip-height;
+  // margin: 0;
+  // padding: 0;
+  // width: fit-content;
+  // pointer-events: none;
+  height: $tooltip-height;
   margin: 0;
   padding: 0;
   width: fit-content;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border-right: 1px solid #DDDDDD;
 }
 
 .TroveContent__SaveTo {
-  z-index: 3;
-  line-height: $tooltip-height;
-  margin: 0 0 0 15px;
-  padding: 0;
-  outline: none;
-  border: none;
+  height: $tooltip-height;
+  outline: 0;
+  border: 0;
   background-color: transparent;
-  font-weight: bold;
-  width: fit-content;
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
 }
 
 .TroveContent__SaveTo:hover {
-  text-decoration: underline;
+  background-color: #f3f3f3;
+  cursor: pointer;
+}
+
+.TroveContent__Wrapper {
+  height: $tooltip-height;
+}
+
+.TroveButton__IconRight {
+  @include TbdFont;
+  margin-left: 10px;
+}
+
+.TroveButton__Text {
+  @include TbdFont;
+}
+
+.TroveHint__Wrapper {
+  opacity: 0.9;
+  margin-top: 0;
+  margin-left: 0;
+  visibility: visible;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  padding: 5px 10px;
+  border-radius: 3px;
+  display: inline-block;
+  font-size: 13px;
+  position: fixed;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+  z-index: 999;
+  color: #fff;
+  background: #222;
+  border: 1px solid transparent;
 }

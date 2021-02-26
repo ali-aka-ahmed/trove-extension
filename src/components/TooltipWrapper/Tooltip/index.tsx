@@ -1,3 +1,4 @@
+import { LoadingOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
@@ -13,7 +14,7 @@ import Dropdown from './Dropdown';
 import Edge from './helpers/Edge';
 import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
 import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
-import { isOsKeyPressed } from './helpers/os';
+import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
 import Point from './helpers/Point';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
 import {
@@ -38,7 +39,8 @@ export default function Tooltip(props: TooltipProps) {
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
   const [dropdownClicked, setDropdownClicked] = useState(false);
-  const [dropdownText, setDropdownText] = useState('Loading...');
+  const [defaultPageLoading, setDefaultPageLoading] = useState(true);
+  const [dropdownText, setDropdownText] = useState('');
 
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
@@ -163,10 +165,14 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   useEffect(() => {
+
     ReactTooltip.rebuild();
 
-    get1('recents').then((recents: Record[]) => {
-      setDropdownText(recents[0].name);
+    get1('notionDefault').then((r: Record) => {
+      console.log("r", r);
+      if (!r) setDropdownText('Click here to select page!')
+      else setDropdownText(r.name)
+      setDefaultPageLoading(false);
     });
 
     // Get user object
@@ -329,7 +335,7 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mousemove', onMouseMovePage);
   }, [onMouseMovePage]);
 
-  const onSubmit = async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onSubmit = async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     ReactTooltip.hide();
 
     if (tempHighlight) {
@@ -405,7 +411,24 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('keydown', onKeyDownPage);
   }, [onKeyDownPage]);
 
-  return isSelectionHovered || isTempHighlightVisible ? (
+  if (isSelectionHovered) {
+    return (
+      <div
+        className={classNames('', {
+          'TroveTooltip--position-above': positionEdge === Edge.Top,
+          'TroveTooltip--position-below': positionEdge === Edge.Bottom,
+        })}
+        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
+        ref={tooltip}
+      >
+        <div className="TroveHint__Wrapper">
+          <p className="TroveHint__Content__PrimaryText">Highlight text</p>
+          <p className="TroveHint__Content__SecondaryText">({`${getOsKeyChar()}+d`}</p>
+        </div>
+      </div>
+    )
+  }
+  return isTempHighlightVisible ? (
     <>
       <div
         className={classNames('TroveTooltip', {
@@ -416,28 +439,37 @@ export default function Tooltip(props: TooltipProps) {
         data-tip={`
           <div class="TroveHint__Content">
             <p class="TroveHint__Content__PrimaryText">Save to Notion</p>
-            <p class="TroveHint__Content__SecondaryText">(ctrl+d)</p>
+            <p class="TroveHint__Content__SecondaryText">(${getOsKeyChar()}+d)</p>
           </div>
         `}
         ref={tooltip}
       >
         <div className="TroveTooltip__Content">
-          <button
-            className="TroveContent__Button"
+          <div
+            className="TroveContent__Text"
             onClick={onSubmit}
-            onMouseOver={() => {
-              ReactTooltip.show(tooltip.current!);
-              if (tooltip.current) tooltip.current.style.backgroundColor = '#f3f3f3';
+            onMouseEnter={() => {
+              console.log('entering')
+              ReactTooltip.show(tooltip.current!)
             }}
-            onMouseLeave={() => {
-              if (tooltip.current) tooltip.current.style.backgroundColor = '#fff';
-            }}
-          ></button>
-          <p className="TroveContent__Text">Save to</p>
+            onMouseLeave={() => ReactTooltip.hide(tooltip.current!)}
+          >
+            Save to
+          </div>
           {dropdownClicked ? (
             <Dropdown setText={setDropdownText} setDropdownClicked={setDropdownClicked} />
           ) : (
-            <>
+            <div
+              onMouseEnter={() => ReactTooltip.show(button.current!)}
+              onMouseLeave={() => ReactTooltip.hide(button.current!)}
+              data-tip={`
+                <div class="TroveHint__Content">
+                  <p class="TroveHint__Content__PrimaryText">Pick Notion page</p>
+                  <p class="TroveHint__Content__SecondaryText">(Tab)</p>
+                </div>
+              `}
+              className="TroveContent__Wrapper"
+            >
               <button
                 className="TroveContent__SaveTo"
                 onClick={() => {
@@ -449,23 +481,20 @@ export default function Tooltip(props: TooltipProps) {
                   setDropdownClicked(true);
                   ReactTooltip.hide();
                 }}
-                onMouseEnter={() => {
-                  ReactTooltip.show(button.current!);
-                }}
-                data-tip={`
-                  <div class="TroveHint__Content">
-                    <p class="TroveHint__Content__PrimaryText">Pick Notion page</p>
-                    <p class="TroveHint__Content__SecondaryText">(Tab)</p>
-                  </div>
-                `}
                 ref={button}
               >
-                {dropdownText}
+                {defaultPageLoading ? (
+                  <div>
+                    <LoadingOutlined />
+                  </div>
+                ) : (
+                  <div className="TroveButton__Text">
+                    {dropdownText}
+                  </div>
+                )}
+                <div className="TroveButton__IconRight">▾</div>
               </button>
-              <p className="TroveContent__Text" style={{ marginLeft: '3px' }}>
-                ▾
-              </p>
-            </>
+            </div>
           )}
         </div>
       </div>

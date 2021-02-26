@@ -1,11 +1,26 @@
 import axios from 'axios';
 import { BACKEND_URL } from '../../config';
+import { getCookie } from '../../utils/chrome/cookies';
 import { get1 } from '../../utils/chrome/storage';
 
 export const api = axios.create({
   baseURL: BACKEND_URL,
   timeout: 2000,
   headers: { 'Content-Type': 'application/json' },
+});
+
+export const apiNotionRoutes = axios.create({
+  baseURL: BACKEND_URL,
+  timeout: 10000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+apiNotionRoutes.interceptors.request.use(async (config) => {
+  const token = await get1('token');
+  const notiontoken = await getCookie('https://www.notion.so', 'token_v2');
+  token ? (config.headers.Authorization = `bearer ${token}`) : null;
+  notiontoken ? (config.headers['notion-toke n'] = notiontoken) : null;
+  return config;
 });
 
 api.interceptors.request.use(async (config) => {

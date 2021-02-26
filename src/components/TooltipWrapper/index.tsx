@@ -1,8 +1,8 @@
 import antdStyles from 'antd/dist/antd.min.css?inject';
 import React, { useEffect } from 'react';
 import { ErrorOrigin } from '../../app/server/misc';
-import contentStyles from '../../components/content/index.scss?inject';
 import { EXCLUDED_HOSTNAMES } from '../../constants';
+import contentStyles from '../content/index.scss?inject';
 import ErrorBoundary from '../errorBoundary/index';
 import './index.scss';
 import Tooltip from './Tooltip';

@@ -292,9 +292,10 @@ chrome.runtime.onStartup.addListener(() => {
       remove(['token', 'user']);
     } else {
       getNotionPages().then((res) => {
-        if (res.success) {
+        if (res.success && res.recents) {
           set({
-            recents: res.recents,
+            notionRecents: res.recents,
+            notionDefault: res.recents[0],
             spaceId: res.spaceId,
           });
         }
@@ -312,9 +313,10 @@ chrome.runtime.onInstalled.addListener(() => {
       remove(['token', 'user']);
     } else {
       getNotionPages().then((res) => {
-        if (res.success) {
+        if (res.success && res.recents) {
           set({
-            recents: res.recents,
+            notionRecents: res.recents,
+            notionDefault: res.recents[0],
             spaceId: res.spaceId,
           });
         }
