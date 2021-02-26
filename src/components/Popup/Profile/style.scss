@@ -60,7 +60,7 @@
 .TbdProfile__Color {
   @include TbdProfile__PropertyWrapper;
   @include TbdFont;
-  margin-top: 15px;
+  // margin-top: 15px;
 }
 
 .TbdProfile__DisplayName:hover {

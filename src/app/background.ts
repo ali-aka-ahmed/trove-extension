@@ -15,7 +15,7 @@ import {
   SocketMessageType,
 } from '../utils/chrome/tabs';
 import { forgotPassword, login } from './server/auth';
-import { getNotionAuthToken } from './server/notion';
+import { getNotionAuthToken, getNotionPages, searchNotionPages } from './server/notion';
 import {
   createComment,
   createPost,
@@ -166,6 +166,19 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+      case MessageType.GetNotionPages: {
+        getNotionPages(message.spaceId, message.recentIds).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
+      case MessageType.SearchNotionPages: {
+        if (!message.query || !message.spaceId) break;
+        searchNotionPages(message.query, message.spaceId, message.limit).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
       case SocketMessageType.JoinRoom: {
         if (!message.userId) break;
         socket.emit(SocketMessageType.JoinRoom, message.userId);
@@ -273,9 +286,19 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 
 // When a profile that has this extension installed first starts up
 chrome.runtime.onStartup.addListener(() => {
-  get1('isAuthenticated').then((isAuthenticated) => {
+  get1('isAuthenticated').then((isAuthenticated: boolean) => {
     if (!isAuthenticated) {
-      Promise.all([set({ isExtensionOn: false }), remove(['token', 'user'])]);
+      set({ isExtensionOn: false });
+      remove(['token', 'user']);
+    } else {
+      getNotionPages().then((res) => {
+        if (res.success) {
+          set({
+            recents: res.recents,
+            spaceId: res.spaceId,
+          });
+        }
+      });
     }
   });
   sendMessageToWebsite({ type: EMessageType.Exists });
@@ -283,9 +306,19 @@ chrome.runtime.onStartup.addListener(() => {
 
 // Extension installed or updated
 chrome.runtime.onInstalled.addListener(() => {
-  get1('isAuthenticated').then((isAuthenticated) => {
+  get1('isAuthenticated').then((isAuthenticated: boolean) => {
     if (!isAuthenticated) {
-      Promise.all([set({ isExtensionOn: false }), remove(['token', 'user'])]);
+      set({ isExtensionOn: false });
+      remove(['token', 'user']);
+    } else {
+      getNotionPages().then((res) => {
+        if (res.success) {
+          set({
+            recents: res.recents,
+            spaceId: res.spaceId,
+          });
+        }
+      });
     }
   });
   sendMessageToWebsite({ type: EMessageType.Exists });

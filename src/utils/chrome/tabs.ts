@@ -23,26 +23,32 @@ export interface Message {
   userId?: string;
   usernamePrefix?: string;
   active?: boolean;
+  query?: string;
+  spaceId?: string;
+  limit?: number;
+  recentIds?: string[];
 }
 
 export enum MessageType {
   CreateComment,
   CreatePost,
-  DeletePost,
   Error,
   ForgotPassword,
   GetNotionAuthToken,
   GetPosts,
   GetTabId,
-  GoToPage,
   HandleTopicSearch,
   HandleUserSearch,
   LikePost,
   Login,
-  OpenTab,
   Sync,
   UnlikePost,
   UpdateUser,
+  OpenTab,
+  DeletePost,
+  GoToPage,
+  GetNotionPages,
+  SearchNotionPages,
 }
 
 /**
