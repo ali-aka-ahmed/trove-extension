@@ -1,4 +1,5 @@
 @import '../../../../styles/general.scss';
+@import '../index.scss';
 
 .TroveTooltip__Dropdown {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
@@ -8,7 +9,8 @@
   display: flex;
   flex-direction: column;
   color: rgb(55, 53, 47);
-  // @include boxShadow(0px 0px 7.5px -1.5px rgba(125,125,125,0.5));
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 15px;
+  border-radius: 3px;
 }
 
 .TroveDropdown__Search {
@@ -18,30 +20,37 @@
   padding: 0 0 0 10px;
   border: none;
   outline: none;
-  height: 100%;
+  height: $tooltip-height;
   min-width: 235px;
 }
 
-.TroveDropdown__Item {
-  margin: 0;
-  padding: 0;
-  outline: none;
-  border: none;
-  background-color: transparent;
-  height: 40px;
-  text-align: left;
-  cursor: pointer;
+.TroveDropdown__ItemsWrapper {
+  background-color: #FFFFFF;
+  padding: 5px 0;
+  max-height: 250px;
+  overflow: scroll;
 }
 
-.TroveDropdown__Item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
+// .TroveDropdown__Item {
+//   margin: 0;
+//   padding: 0;
+//   outline: none;
+//   border: none;
+//   background-color: transparent;
+//   height: 40px;
+//   text-align: left;
+//   cursor: pointer;
+// }
 
-.TroveDropdown__Item--selected {
-  background-color: rgba(255, 255, 255, 0.1);
-}
+// .TroveDropdown__Item:hover {
+//   background-color: rgba(255, 255, 255, 0.1);
+// }
 
-.TroveDropdownItem__Text {
-  padding: 0;
-  margin: 0 0 0 15px;
-}
+// .TroveDropdown__Item--selected {
+//   background-color: rgba(255, 255, 255, 0.1);
+// }
+
+// .TroveDropdownItem__Text {
+//   padding: 0;
+//   margin: 0 0 0 15px;
+// }

@@ -44,7 +44,8 @@
     "matches": [
       "http://localhost:3000/*",
       "https://development.trove.so/*",
-      "https://demo.trove.so/*"
+      "https://demo.trove.so/*",
+      "https://s3-us-west-2.amazonaws.com/secure.notion-static.com/*"
     ]
   },
   "web_accessible_resources": [
@@ -52,6 +53,8 @@
     "images/heartFilled.png",
     "images/heartOutlined.png",
     "images/comment.png",
-    "images/commentOutlined.png"
+    "images/commentOutlined.png",
+    "images/noIconNotion.png",
+    "https://s3-us-west-2.amazonaws.com/secure.notion-static.com/*"
   ]
 }

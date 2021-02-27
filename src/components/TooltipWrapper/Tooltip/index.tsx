@@ -40,7 +40,7 @@ export default function Tooltip(props: TooltipProps) {
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
   const [dropdownClicked, setDropdownClicked] = useState(false);
   const [defaultPageLoading, setDefaultPageLoading] = useState(true);
-  const [dropdownText, setDropdownText] = useState('');
+  const [dropdownItem, setDropdownItem] = useState<Record | null>(null);
 
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
@@ -169,9 +169,7 @@ export default function Tooltip(props: TooltipProps) {
     ReactTooltip.rebuild();
 
     get1('notionDefault').then((r: Record) => {
-      console.log("r", r);
-      if (!r) setDropdownText('Click here to select page!')
-      else setDropdownText(r.name)
+      if (r) setDropdownItem(r)
       setDefaultPageLoading(false);
     });
 
@@ -361,7 +359,40 @@ export default function Tooltip(props: TooltipProps) {
         },
       );
     }
+
+    // TODO WRITE HIGHLIGHT TO PAGE
   };
+
+  const renderItem = (item: Record | null) => {
+    if (!item) {
+      return (
+        <span>Click to select a page</span>
+      )
+    };
+    let icon;
+    if (item.icon?.type === 'emoji') icon = <span className="TroveDropdown__Icon" >{item.icon?.value}</span>
+    else if (item.icon?.type === 'url') (
+      icon = <img
+        src={ chrome.extension.getURL('images/noIconNotion.png') }
+        className="TroveDropdown__Icon"
+      />
+    )
+    return (
+      <span className="TroveDropdown__SelectedItem">
+        <span className="TroveDropdown__ItemIconWrapper">
+          {item.icon ? (
+            icon
+          ) : (
+            <img
+              src={ chrome.extension.getURL('images/noIconNotion.png') }
+              className="TroveDropdown__Icon"
+            />
+          )}
+        </span>
+        <span className="TroveDropdown__SelectedItemName">{item.name}</span>
+      </span>
+    )
+  }
 
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
@@ -379,6 +410,7 @@ export default function Tooltip(props: TooltipProps) {
           onSubmit();
         } else if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
+          setIsSelectionHovered(false);
           addTempHighlight();
         }
       } else if (
@@ -423,7 +455,7 @@ export default function Tooltip(props: TooltipProps) {
       >
         <div className="TroveHint__Wrapper">
           <p className="TroveHint__Content__PrimaryText">Highlight text</p>
-          <p className="TroveHint__Content__SecondaryText">({`${getOsKeyChar()}+d`}</p>
+          <p className="TroveHint__Content__SecondaryText">{`(${getOsKeyChar()}+d)`}</p>
         </div>
       </div>
     )
@@ -448,16 +480,13 @@ export default function Tooltip(props: TooltipProps) {
           <div
             className="TroveContent__Text"
             onClick={onSubmit}
-            onMouseEnter={() => {
-              console.log('entering')
-              ReactTooltip.show(tooltip.current!)
-            }}
+            onMouseEnter={() => ReactTooltip.show(tooltip.current!)}
             onMouseLeave={() => ReactTooltip.hide(tooltip.current!)}
           >
             Save to
           </div>
           {dropdownClicked ? (
-            <Dropdown setText={setDropdownText} setDropdownClicked={setDropdownClicked} />
+            <Dropdown setItem={setDropdownItem} setDropdownClicked={setDropdownClicked} />
           ) : (
             <div
               onMouseEnter={() => ReactTooltip.show(button.current!)}
@@ -488,9 +517,7 @@ export default function Tooltip(props: TooltipProps) {
                     <LoadingOutlined />
                   </div>
                 ) : (
-                  <div className="TroveButton__Text">
-                    {dropdownText}
-                  </div>
+                  renderItem(dropdownItem)
                 )}
                 <div className="TroveButton__IconRight">▾</div>
               </button>

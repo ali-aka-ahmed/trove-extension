@@ -15,7 +15,7 @@ import {
   SocketMessageType
 } from '../utils/chrome/tabs';
 import { forgotPassword, login } from './server/auth';
-import { getNotionPages, searchNotionPages } from './server/notion';
+import { getNotionImage, getNotionPages, searchNotionPages } from './server/notion';
 import {
   createComment,
   createPost,
@@ -169,6 +169,13 @@ chrome.runtime.onMessage.addListener(
       case MessageType.SearchNotionPages: {
         if (!message.query || !message.spaceId) break;
         searchNotionPages(message.query, message.spaceId, message.limit).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
+      case MessageType.GetNotionImage: {
+        if (!message.url || !message.id) break;
+        getNotionImage(message.url, message.id, message.width).then((res) => {
           sendResponse(res);
         });
         break;

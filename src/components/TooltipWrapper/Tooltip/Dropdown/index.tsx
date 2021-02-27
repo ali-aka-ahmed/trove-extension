@@ -1,12 +1,11 @@
-import classNames from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { IGetPageNamesRes, ISearchPagesRes, Record } from '../../../../app/server/notion';
 import { get, get1, set } from '../../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
 
 interface DropdownProps {
   setDropdownClicked: React.Dispatch<React.SetStateAction<boolean>>;
-  setText: React.Dispatch<React.SetStateAction<string>>;
+  setItem: React.Dispatch<React.SetStateAction<Record>>;
 }
 
 export default function Dropdown(props: DropdownProps) {
@@ -22,18 +21,18 @@ export default function Dropdown(props: DropdownProps) {
     setLoading(true);
     get([ 'notionRecents', 'spaceId' ]).then((data) => {
       // if any recents have expired, remove them and do not retrieve them
-      const unexpiredRecents = data.notionRecents
+      const unexpiredRecents = (data.notionRecents || [])
         .filter((r: Record) => r.section === 'recent' && r.datetimeExpiry > Date.now());
-      set({ 'notionRecents': unexpiredRecents });
 
       // fetch recents and relevant pages for the user
-      const recentIds = unexpiredRecents.map((r: Record) => r.id);
-      sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds, spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
+      const unexpiredRecentIds = unexpiredRecents.map((r: Record) => r.id);
+      sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds: unexpiredRecentIds , spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
         setShowError(false);
         setLoading(false);
         if (res.success) {
           setItems(res.recents!.concat(res.databases!).concat(res.pages!));
           setSpaceId(res.spaceId!)
+          set({ 'notionRecents': res.recents });
         } else {
           setShowError(true);
           setErrorMessage(res.message);
@@ -60,7 +59,7 @@ export default function Dropdown(props: DropdownProps) {
       case 'Enter':
       case 'Tab': {
         e.preventDefault();
-        props.setText(items[itemIdx].name);
+        props.setItem(items[itemIdx]);
         props.setDropdownClicked(false);
         break;
       };
@@ -100,29 +99,68 @@ export default function Dropdown(props: DropdownProps) {
   // };
 
   const handleSelectItem = (item: Record) => {
-    props.setText(item.name);
+    props.setItem(item);
     props.setDropdownClicked(false);
     set({ 'notionDefault': item });
+    // ideally move this return item on backend write, and then set when receiving.
     get1('notionRecents').then((recents: Record[]) => {
+      item.section = 'recent'
+      //@ts-ignore
+      item.datetimeExpiry = Date.now() + 172800000;
       recents.unshift(item);
       set({ 'notionRecents': recents.slice(0, 5) })
     });
   };
 
-  const renderItem = (item: Record, idx: number) => {
-    if (idx <= 0) return;
+  // const renderItem = (item: Record, idx: number) => {
+  //   if (idx <= 0) return;
+  //   return (
+  //     <button
+  //       className={classNames('TroveDropdown__Item', {
+  //         'TroveDropdown__Item--selected': idx === itemIdx,
+  //       })}
+  //       key={item.id}
+  //       onClick={() => handleSelectItem(item)}
+  //     >
+  //       <p className="TroveDropdownItem__Text">{item.name}</p>
+  //     </button>
+  //   );
+  // };
+
+  const renderSection = useCallback((section: 'recent' | 'database' | 'page') => {
+    const sectionItems = items.filter((r) => r.section === section);
+    const sectionName = `${section[0].toUpperCase()}${section.slice(1)}s`
+    if (!sectionItems || sectionItems.length === 0) return;
     return (
-      <button
-        className={classNames('TroveDropdown__Item', {
-          'TroveDropdown__Item--selected': idx === itemIdx,
-        })}
-        key={item.id}
-        onClick={() => handleSelectItem(item)}
-      >
-        <p className="TroveDropdownItem__Text">{item}</p>
-      </button>
-    );
-  };
+      <div className="TroveDropdown__Section">
+        <div className="TroveDropdown__SectionName">{sectionName}</div>
+        {sectionItems.map((r) => renderItem(r))}
+      </div>
+    )
+  }, [items.length])
+
+  const renderItem = (item: Record) => {
+    let icon: any;
+    if (item.icon?.type === 'emoji') {
+      icon = <span className="TroveDropdown__Icon">{item.icon?.value}</span>
+    } else if (item.icon?.type === 'url') {
+      icon = <img
+        src={ chrome.extension.getURL('images/noIconNotion.png') }
+        className="TroveDropdown__Icon"
+      />
+      // icon = <img src={ item.icon?.value.concat('?table=block&id=7dacd67f-5ffc-4ff5-bc76-df2f866a5770&width=40&userId=35dd49dd-0fe7-44a1-886d-3f6ebfbe5429&cache=v2') } className="TroveDropdown__Icon" />
+    }
+    return (
+      <span className="TroveDropdown__Item" onClick={() => handleSelectItem(item)}>
+        <span className="TroveDropdown__ItemIconWrapper">
+          {item.icon ? ( icon ) : (
+            <img src={ chrome.extension.getURL('images/noIconNotion.png') } className="TroveDropdown__Icon" />
+          )}
+        </span>
+        <span className="TroveDropdown__ItemName">{item.name}</span>
+      </span>
+    )
+  }
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     sendMessageToExtension({ type: MessageType.SearchNotionPages, spaceId, query: e.target.value }).then((res: ISearchPagesRes) => {
@@ -130,7 +168,8 @@ export default function Dropdown(props: DropdownProps) {
       setLoading(false);
       if (res.success) {
         get1('notionRecents').then((recents: Record[]) => {
-          setItems(recents.concat(res.databases!).concat(res.pages!));
+          if (!recents) setItems(res.databases!.concat(res.pages!));
+          else setItems(recents.concat(res.databases!).concat(res.pages!));
           setSpaceId(res.spaceId!);
         })
       } else {
@@ -152,12 +191,11 @@ export default function Dropdown(props: DropdownProps) {
         }}
         onChange={onChange}
       />
-      {items.map((item, idx) => renderItem(item, idx))}
+      <div className="TroveDropdown__ItemsWrapper">
+        {renderSection('recent')}
+        {renderSection('database')}
+        {renderSection('page')}
+      </div>
     </div>
   );
 }
-
-// test the fuck and style.
-// then potentially add the cmd-D add.
-// then add create a notion thing in add.
-// then help Aki

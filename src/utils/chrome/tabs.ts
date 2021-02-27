@@ -27,6 +27,7 @@ export interface Message {
   spaceId?: string;
   limit?: number;
   recentIds?: string[];
+  width?: number;
 }
 
 export enum MessageType {
@@ -49,6 +50,7 @@ export enum MessageType {
   GoToPage,
   GetNotionPages,
   SearchNotionPages,
+  GetNotionImage,
 }
 
 /**

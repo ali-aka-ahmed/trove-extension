@@ -1,4 +1,5 @@
-import { apiNotionRoutes, AxiosRes, BaseRes } from '.';
+import { api, AxiosRes, BaseRes, notionImageApi } from '.';
+import { getCookie } from '../../utils/chrome/cookies';
 
 export type IGetPageNamesRes = GetPageNamesRes & AxiosRes;
 export type ISearchPagesRes = SearchPagesRes & AxiosRes;
@@ -7,11 +8,13 @@ export const getNotionPages = async (
   spaceId?: string,
   recentIds?: string[],
 ): Promise<IGetPageNamesRes> => {
+  const notionToken = await getCookie('https://www.notion.so', 'token_v2');
+  const config = { headers: { 'notion-token': notionToken } };
   const args: GetPageNamesReqBody = {
     ...(spaceId ? { spaceId } : {}),
     ...(recentIds ? { recentIds } : {}),
   };
-  return await apiNotionRoutes.post('/notion/getPages', args);
+  return await api.post('/notion/getPages', args, config);
 };
 
 export const searchNotionPages = async (
@@ -19,8 +22,19 @@ export const searchNotionPages = async (
   spaceId: string,
   limit?: number,
 ): Promise<ISearchPagesRes> => {
+  const notionToken = await getCookie('https://www.notion.so', 'token_v2');
+  const config = { headers: { 'notion-token': notionToken } };
   const args: SearchPagesReqBody = { query, spaceId, limit };
-  return await apiNotionRoutes.post('/notion/search', args);
+  return await api.post('/notion/search', args, config);
+};
+
+export const getNotionImage = async (url: string, id: string, width?: number,): Promise<ISearchPagesRes> => {
+  const config = { params: {
+    ...(width ? { width } : {}),
+    url,
+    id
+  }};
+  return await notionImageApi.post(`/${url}`, {}, config);
 };
 
 export type Icon = {
@@ -60,6 +74,15 @@ export interface SearchPagesReqBody {
   limit?: number;
   query: string;
   spaceId: string;
+}
+
+/**
+ * POST /notion/getImage
+ */
+export interface GetImageReqBody {
+  url: string;
+  id: string;
+  width?: number;
 }
 
 /**

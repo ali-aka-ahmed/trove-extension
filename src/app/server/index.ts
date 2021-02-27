@@ -9,20 +9,6 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-export const apiNotionRoutes = axios.create({
-  baseURL: BACKEND_URL,
-  timeout: 10000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-apiNotionRoutes.interceptors.request.use(async (config) => {
-  const token = await get1('token');
-  const notiontoken = await getCookie('https://www.notion.so', 'token_v2');
-  token ? (config.headers.Authorization = `bearer ${token}`) : null;
-  notiontoken ? (config.headers['notion-toke n'] = notiontoken) : null;
-  return config;
-});
-
 api.interceptors.request.use(async (config) => {
   const token = await get1('token');
   token ? (config.headers.Authorization = `bearer ${token}`) : null;
@@ -35,6 +21,33 @@ api.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    if (!error.response) return error;
+    error.response.data.success = false;
+    error.response.data.message = error.response.data.message || error.message;
+    return error.response.data;
+  },
+);
+
+export const notionImageApi = axios.create({
+  baseURL: 'https://www.notion.so/image',
+  timeout: 2000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+notionImageApi.interceptors.request.use(async (config) => {
+  const notionToken = await getCookie('https://www.notion.so', 'token_v2');
+  notionToken ? (config.headers.cookies = `token_v2=${notionToken}`) : null;
+  return config;
+});
+
+notionImageApi.interceptors.response.use(
+  (response) => {
+    console.info("response.data", response.data, )
+    response.data.success = true;
+    return response.data;
+  },
+  (error) => {
+    console.error("error.response.data", error.response.data)
     if (!error.response) return error;
     error.response.data.success = false;
     error.response.data.message = error.response.data.message || error.message;

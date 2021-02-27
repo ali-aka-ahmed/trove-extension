@@ -11,7 +11,7 @@ $tooltip-height: 35px;
   height: $tooltip-height;
   background-color: #fff;
   border-radius: 3px;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 30px;
+  box-shadow: rgba(199, 146, 146, 0.2) 0px 4px 30px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segose UI Symbol',
     'Noto Color Emoji' !important;
@@ -109,7 +109,6 @@ $tooltip-height: 35px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   padding: 5px 10px;
   border-radius: 3px;
-  display: inline-block;
   font-size: 13px;
   position: fixed;
   pointer-events: none;
@@ -118,4 +117,77 @@ $tooltip-height: 35px;
   color: #fff;
   background: #222;
   border: 1px solid transparent;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.TroveDropdown__Section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.TroveDropdown__SectionName {
+  font-size: 12px;
+  color: #969696;
+  padding: 5px 15px;
+}
+
+.TroveDropdown__SelectedItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  cursor: pointer;
+}
+
+.TroveDropdown__Item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  cursor: pointer;
+  padding: 5px 15px;
+  width: 100%;
+}
+
+.TroveDropdown__Item:hover {
+  background: rgba(55, 53, 47, 0.08);
+}
+
+.TroveDropdown__Icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.TroveDropdown__ItemIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.TroveDropdown__ItemName {
+  @include TbdFont;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.TroveDropdown__SelectedItemName {
+  @include TbdFont--medium;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
