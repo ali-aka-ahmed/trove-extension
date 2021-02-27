@@ -106,6 +106,7 @@ export default function Dropdown(props: DropdownProps) {
       recents.unshift(item);
       set({ 'notionRecents': recents.slice(0, 3) })
     });
+  }
   
   // const renderItem = (item: Record, idx: number) => {
   //   if (idx <= 0) return;
@@ -147,12 +148,15 @@ export default function Dropdown(props: DropdownProps) {
     }
     return (
       <span className="TroveDropdown__Item" onClick={() => handleSelectItem(item)}>
-        <span className="TroveDropdown__ItemIconWrapper">
-          {item.icon ? ( icon ) : (
-            <img src={ chrome.extension.getURL('images/noIconNotion.png') } className="TroveDropdown__Icon" />
-          )}
-        </span>
-        <span className="TroveDropdown__ItemName">{item.name}</span>
+        <div className="TroveDropdown__HeaderWrapper">
+          <span className="TroveDropdown__ItemIconWrapper">
+            {item.icon ? ( icon ) : (
+              <img src={ chrome.extension.getURL('images/noIconNotion.png') } className="TroveDropdown__Icon" />
+            )}
+          </span>
+          <span className="TroveDropdown__ItemName">{item.name}</span>
+        </div>
+        <span className="TroveDropdown__ItemPath">{item.path}</span>
       </span>
     )
   }
