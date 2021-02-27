@@ -2,7 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
-import { Record } from '../../../app/server/notion';
+import { addTextBlock, Record } from '../../../app/server/notion';
 import { HighlightParam, IPostRes, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
@@ -21,7 +21,7 @@ import {
   getHoveredRect,
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists
+  selectionExists,
 } from './helpers/selection';
 
 const TOOLTIP_MARGIN = 10;
@@ -38,9 +38,15 @@ export default function Tooltip(props: TooltipProps) {
   const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [position, setPosition] = useState(new Point(0, 0));
   const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
+
   const [dropdownClicked, setDropdownClicked] = useState(false);
   const [defaultPageLoading, setDefaultPageLoading] = useState(true);
   const [dropdownItem, setDropdownItem] = useState<Record | null>(null);
+
+  // Id of Notion page to save highlight/page to
+  const [notionPageId, setNotionPageId] = useState<string>('');
+  // Id of Notion user
+  const [notionUserId, setNotionUserId] = useState<string>('');
 
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
@@ -165,11 +171,10 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   useEffect(() => {
-
     ReactTooltip.rebuild();
 
     get1('notionDefault').then((r: Record) => {
-      if (r) setDropdownItem(r)
+      if (r) setDropdownItem(r);
       setDefaultPageLoading(false);
     });
 
@@ -333,7 +338,7 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mousemove', onMouseMovePage);
   }, [onMouseMovePage]);
 
-  const onSubmit = async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const onSaveHighlight = async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     ReactTooltip.hide();
 
     if (tempHighlight) {
@@ -346,7 +351,7 @@ export default function Tooltip(props: TooltipProps) {
       resetTooltip();
 
       // Show actual highlight when we get response from server
-      sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
+      const p1 = sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
         (res: IPostRes) => {
           if (res.success && res.post) {
             removeTempHighlight();
@@ -358,25 +363,34 @@ export default function Tooltip(props: TooltipProps) {
           }
         },
       );
-    }
 
-    // TODO WRITE HIGHLIGHT TO PAGE
+      // Write highlight text to chosen Notion page
+      const p2 = addTextBlock(notionUserId, notionPageId, tempHighlight?.textRange.text);
+      await Promise.all([p1, p2]);
+    }
+  };
+
+  const onSavePage = async () => {
+    // Write page title hyperlinked with current URL to chosen Notion page
+    const href = window.location.href;
+    const title = document.title;
+    await addTextBlock(notionUserId, notionPageId, [[title, [['a', href]]]]);
   };
 
   const renderItem = (item: Record | null) => {
     if (!item) {
-      return (
-        <span>Click to select a page</span>
-      )
-    };
+      return <span>Click to select a page</span>;
+    }
     let icon;
-    if (item.icon?.type === 'emoji') icon = <span className="TroveDropdown__Icon" >{item.icon?.value}</span>
-    else if (item.icon?.type === 'url') (
-      icon = <img
-        src={ chrome.extension.getURL('images/noIconNotion.png') }
-        className="TroveDropdown__Icon"
-      />
-    )
+    if (item.icon?.type === 'emoji')
+      icon = <span className="TroveDropdown__Icon">{item.icon?.value}</span>;
+    else if (item.icon?.type === 'url')
+      icon = (
+        <img
+          src={chrome.extension.getURL('images/noIconNotion.png')}
+          className="TroveDropdown__Icon"
+        />
+      );
     return (
       <span className="TroveDropdown__SelectedItem">
         <span className="TroveDropdown__ItemIconWrapper">
@@ -384,15 +398,15 @@ export default function Tooltip(props: TooltipProps) {
             icon
           ) : (
             <img
-              src={ chrome.extension.getURL('images/noIconNotion.png') }
+              src={chrome.extension.getURL('images/noIconNotion.png')}
               className="TroveDropdown__Icon"
             />
           )}
         </span>
         <span className="TroveDropdown__SelectedItemName">{item.name}</span>
       </span>
-    )
-  }
+    );
+  };
 
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
@@ -406,12 +420,15 @@ export default function Tooltip(props: TooltipProps) {
         e.preventDefault();
         const selection = getSelection()!;
         if (isTempHighlightVisible) {
-          // Submit current highlight
-          onSubmit();
+          // Save current highlight
+          onSaveHighlight();
         } else if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
           setIsSelectionHovered(false);
           addTempHighlight();
+        } else if (!selectionExists(selection)) {
+          // Save current page
+          onSavePage();
         }
       } else if (
         e.key === 'Tab' &&
@@ -458,7 +475,7 @@ export default function Tooltip(props: TooltipProps) {
           <p className="TroveHint__Content__SecondaryText">{`(${getOsKeyChar()}+d)`}</p>
         </div>
       </div>
-    )
+    );
   }
   return isTempHighlightVisible ? (
     <>
@@ -479,7 +496,7 @@ export default function Tooltip(props: TooltipProps) {
         <div className="TroveTooltip__Content">
           <div
             className="TroveContent__Text"
-            onClick={onSubmit}
+            onClick={onSaveHighlight}
             onMouseEnter={() => ReactTooltip.show(tooltip.current!)}
             onMouseLeave={() => ReactTooltip.hide(tooltip.current!)}
           >

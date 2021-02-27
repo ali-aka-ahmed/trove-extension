@@ -28,13 +28,29 @@ export const searchNotionPages = async (
   return await api.post('/notion/search', args, config);
 };
 
-export const getNotionImage = async (url: string, id: string, width?: number,): Promise<ISearchPagesRes> => {
-  const config = { params: {
-    ...(width ? { width } : {}),
-    url,
-    id
-  }};
+export const getNotionImage = async (
+  url: string,
+  id: string,
+  width?: number,
+): Promise<ISearchPagesRes> => {
+  const config = {
+    params: {
+      ...(width ? { width } : {}),
+      url,
+      id,
+    },
+  };
   return await notionImageApi.post(`/${url}`, {}, config);
+};
+
+export const addTextBlock = async (
+  userId: string,
+  pageId: string,
+  text: string | any[],
+): Promise<void> => {
+  const notionToken = await getCookie('https://www.notion.so', 'token_v2');
+  const config = { headers: { 'notion-token': notionToken } };
+  return await api.post('/notion/search', { userId, pageId, text }, config);
 };
 
 export type Icon = {
@@ -49,7 +65,7 @@ export type Record = {
   section?: 'database' | 'page' | 'recent';
   path?: string;
   icon?: Icon;
-}
+};
 
 /**
  * POST /notion/getPages
