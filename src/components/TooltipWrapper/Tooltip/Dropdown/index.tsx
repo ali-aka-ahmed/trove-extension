@@ -106,9 +106,9 @@ export default function Dropdown(props: DropdownProps) {
     get1('notionRecents').then((recents: Record[]) => {
       item.section = 'recent'
       //@ts-ignore
-      item.datetimeExpiry = Date.now() + 172800000;
+      item.datetimeExpiry = Date.now();
       recents.unshift(item);
-      set({ 'notionRecents': recents.slice(0, 5) })
+      set({ 'notionRecents': recents.slice(0, 3) })
     });
   };
 
