@@ -46,18 +46,10 @@ export type Record = {
   id: string;
   name: string;
   type: 'database' | 'page';
-  section?: 'database' | 'page';
+  section?: 'database' | 'page' | 'recent';
   path?: string;
   icon?: Icon;
-} | {
-  id: string;
-  name: string;
-  type: 'database' | 'page';
-  section: 'recent';
-  datetimeExpiry: number;
-  path?: string;
-  icon?: Icon;
-};
+}
 
 /**
  * POST /notion/getPages

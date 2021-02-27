@@ -21,12 +21,10 @@ export default function Dropdown(props: DropdownProps) {
     setLoading(true);
     get([ 'notionRecents', 'spaceId' ]).then((data) => {
       // if any recents have expired, remove them and do not retrieve them
-      const unexpiredRecents = (data.notionRecents || [])
-        .filter((r: Record) => r.section === 'recent' && r.datetimeExpiry > Date.now());
-
-      // fetch recents and relevant pages for the user
-      const unexpiredRecentIds = unexpiredRecents.map((r: Record) => r.id);
-      sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds: unexpiredRecentIds , spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
+      const recentIds = (data.notionRecents || [])
+        .filter((r: Record) => r.section === 'recent')
+        .map((r: Record) => r.id);
+      sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds, spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
         setShowError(false);
         setLoading(false);
         if (res.success) {
@@ -105,13 +103,10 @@ export default function Dropdown(props: DropdownProps) {
     // ideally move this return item on backend write, and then set when receiving.
     get1('notionRecents').then((recents: Record[]) => {
       item.section = 'recent'
-      //@ts-ignore
-      item.datetimeExpiry = Date.now();
       recents.unshift(item);
       set({ 'notionRecents': recents.slice(0, 3) })
     });
-  };
-
+  
   // const renderItem = (item: Record, idx: number) => {
   //   if (idx <= 0) return;
   //   return (
