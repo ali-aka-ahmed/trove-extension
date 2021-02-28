@@ -2,13 +2,14 @@ import { LoadingOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
-import { addTextBlock, Record } from '../../../app/server/notion';
+import { AxiosRes } from '../../../app/server';
+import { Record } from '../../../app/server/notion';
 import { HighlightParam, IPostRes, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import { toArray } from '../../../utils';
-import { get, get1 } from '../../../utils/chrome/storage';
+import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Dropdown from './Dropdown';
 import Edge from './helpers/Edge';
@@ -21,7 +22,7 @@ import {
   getHoveredRect,
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists,
+  selectionExists
 } from './helpers/selection';
 
 const TOOLTIP_MARGIN = 10;
@@ -44,10 +45,6 @@ export default function Tooltip(props: TooltipProps) {
   const [dropdownItem, setDropdownItem] = useState<Record | null>(null);
 
   // Id of Notion page to save highlight/page to
-  const [notionPageId, setNotionPageId] = useState<string>('');
-  // Id of Notion user
-  const [notionUserId, setNotionUserId] = useState<string>('');
-
   const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
 
@@ -173,8 +170,10 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     ReactTooltip.rebuild();
 
-    get1('notionDefault').then((r: Record) => {
-      if (r) setDropdownItem(r);
+    get(['notionDefaults', 'spaceId']).then((data) => {
+      if (data.spaceId && data.notionDefaults && data.notionDefaults[data.spaceId]) {
+        setDropdownItem(data.notionDefaults[data.spaceId]);
+      }
       setDefaultPageLoading(false);
     });
 
@@ -338,7 +337,8 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mousemove', onMouseMovePage);
   }, [onMouseMovePage]);
 
-  const onSaveHighlight = async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const onSaveHighlight = useCallback(async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!dropdownItem) return;
     ReactTooltip.hide();
 
     if (tempHighlight) {
@@ -349,33 +349,33 @@ export default function Tooltip(props: TooltipProps) {
 
       // Hide tooltip
       resetTooltip();
-
       // Show actual highlight when we get response from server
-      const p1 = sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
-        (res: IPostRes) => {
-          if (res.success && res.post) {
-            removeTempHighlight();
-            addPosts(new Post(res.post), HighlightType.Default);
-          } else {
-            // Show that highlighting failed
-            console.error('Failed to create post:', res.message);
-            throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
-          }
-        },
-      );
-
-      // Write highlight text to chosen Notion page
-      const p2 = addTextBlock(notionUserId, notionPageId, tempHighlight?.textRange.text);
-      await Promise.all([p1, p2]);
+      await sendMessageToExtension({ type: MessageType.AddTextBlock, notionPageId: dropdownItem.id, notionText: tempHighlight?.textRange.text }).then((res: AxiosRes) => {
+        if (res.success) {
+          sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
+            (res: IPostRes) => {
+              if (res.success && res.post) {
+                removeTempHighlight();
+                addPosts(new Post(res.post), HighlightType.Default);
+              } else {
+                // Show that highlighting failed
+                console.error('Failed to create post:', res.message);
+                throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
+              }
+            },
+          );
+        }
+      })
     }
-  };
+  }, [dropdownItem]);
 
-  const onSavePage = async () => {
+  const onSavePage = useCallback(async () => {
+    if (!dropdownItem) return;
     // Write page title hyperlinked with current URL to chosen Notion page
     const href = window.location.href;
     const title = document.title;
-    await addTextBlock(notionUserId, notionPageId, [[title, [['a', href]]]]);
-  };
+    sendMessageToExtension({ type: MessageType.AddTextBlock, notionPageId: dropdownItem.id, notionText: [[title, [['a', href]]]] })
+  }, [dropdownItem]);
 
   const renderItem = (item: Record | null) => {
     if (!item) {
@@ -452,6 +452,8 @@ export default function Tooltip(props: TooltipProps) {
       isSelectionHovered,
       isTempHighlightVisible,
       addTempHighlight,
+      onSaveHighlight,
+      onSavePage
     ],
   );
 

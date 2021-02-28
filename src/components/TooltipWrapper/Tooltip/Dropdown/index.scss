@@ -26,10 +26,80 @@
 
 .TroveDropdown__ItemsWrapper {
   background-color: #FFFFFF;
-  padding: 5px 0;
+  padding-top: 5px;
   max-height: 250px;
   overflow: scroll;
   max-width: 350px;
+  min-width: 250px;
+}
+
+.TroveDropdown__ChangeSpace {
+  width: 100%;
+  padding: 8px 15px;
+  color: #969696;
+  font-size: 12px;
+  font-weight: 400;
+  border-top: 1px solid #DDDDDD;
+}
+
+.TroveDropdown__ChangeSpace:hover {
+  background-color: #f3f3f3;
+  cursor: pointer;
+}
+
+.TroveDropdown__Loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px 15px 15px;
+  font-size: 18px;
+}
+
+.TroveDropdown__SpaceSelected {
+  height: 8px;
+  width: 8px;
+  border-radius: 25px;
+  background-color: #0d77e2;
+  margin-left: 5px;
+}
+
+.TroveDropdown__SpaceLoading {
+  font-size: 18px;
+  margin-left: 5px;
+}
+
+.TroveDropdown__Spaces {
+  padding: 5px 0;
+  background-color: #FFFFFF;
+  border-top: 1px solid #DDDDDD;
+}
+
+.TroveDropdown__Space {
+  padding: 5px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.TroveDropdown__Space:hover {
+  background-color: #f3f3f3;
+  cursor: pointer;
+}
+
+.TroveDropdown__SpaceName {
+  @include TbdFont--medium;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.TroveDropdown__NoResults {
+  color: #969696;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 5px 15px 10px 15px;
 }
 
 // .TroveDropdown__Item {

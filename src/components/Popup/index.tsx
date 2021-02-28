@@ -23,21 +23,24 @@ export default function Popup() {
    */
   const [isExtensionOn, setIsExtensionOn] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(null!);
+  const [spaceId, setSpaceId] = useState('');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [user, setUser] = useState<User | null>(null);
-
+  
   useEffect(() => {
     get({
       isAuthenticated: false,
       isExtensionOn: false,
       user: null,
       notifications: [],
+      spaceId: null,
     }).then((items) => {
       if (items.isAuthenticated && items.user) {
         setNotifications(items.notifications.map((n: INotification) => new Notification(n)));
         setIsExtensionOn(items.isExtensionOn);
         setUser(new User(items.user));
         setIsAuthenticated(items.isAuthenticated);
+        setSpaceId(items.spaceId);
       } else setIsAuthenticated(false);
     });
 
@@ -62,6 +65,11 @@ export default function Popup() {
         if (change.isAuthenticated.newValue !== undefined)
           setIsAuthenticated(change.isAuthenticated.newValue);
         else setIsAuthenticated(false);
+      }
+      if (change.spaceId !== undefined) {
+        if (change.spaceId.newValue !== undefined)
+          setSpaceId(change.spaceId.newValue);
+        else setSpaceId('');
       }
     });
   }, []);

@@ -28,6 +28,9 @@ export interface Message {
   limit?: number;
   recentIds?: string[];
   width?: number;
+  notionUserId?: string;
+  notionPageId?: string;
+  notionText?: string | any[];
 }
 
 export enum MessageType {
@@ -51,6 +54,8 @@ export enum MessageType {
   GetNotionPages,
   SearchNotionPages,
   GetNotionImage,
+  GetNotionUserId,
+  AddTextBlock,
 }
 
 /**

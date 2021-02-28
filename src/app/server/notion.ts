@@ -43,14 +43,16 @@ export const getNotionImage = async (
   return await notionImageApi.post(`/${url}`, {}, config);
 };
 
-export const addTextBlock = async (
-  userId: string,
+export const addNotionTextBlock = async (
   pageId: string,
   text: string | any[],
-): Promise<void> => {
-  const notionToken = await getCookie('https://www.notion.so', 'token_v2');
+): Promise<AxiosRes> => {
+  const [userId, notionToken] = await Promise.all([
+    getCookie('https://www.notion.so', 'notion_user_id'),
+    getCookie('https://www.notion.so', 'token_v2'),
+  ]);
   const config = { headers: { 'notion-token': notionToken } };
-  return await api.post('/notion/search', { userId, pageId, text }, config);
+  return await api.post('/notion/writeText', { userId, pageId, text }, config);
 };
 
 export type Icon = {
@@ -61,11 +63,20 @@ export type Icon = {
 export type Record = {
   id: string;
   name: string;
-  type: 'database' | 'page';
+  type: 'database' | 'page' | 'space';
+  icon?: Icon;
   section?: 'database' | 'page' | 'recent';
   path?: string;
-  icon?: Icon;
-};
+}
+
+/**
+ * POST /notion/writeText
+ */
+export interface WriteTextReqBody {
+  userId: string;
+  pageId: string;
+  text: string;
+}
 
 /**
  * POST /notion/getPages
@@ -94,13 +105,20 @@ export interface GetImageReqBody {
 }
 
 /**
- * GET /getPageNames
+ * POST /notion/getPages
  */
 type GetPageNamesRes = {
-  spaceId?: string;
-  recents?: Record[];
-  pages?: Record[];
-  databases?: Record[];
+  spaces?: Array<Record>;
+  results?: {
+    [spaceId: string]: {
+      recents?: Record[];
+      pages?: Record[];
+      databases?: Record[];
+    };
+  };
+  defaults?: {
+    [spaceId: string]: Record;
+  };
 } & BaseRes;
 
 /**

@@ -9,6 +9,13 @@
 //   user: IUser;
 //   notifications: INotification[]
 //   notificationDisplayIcon: boolean
+//   notionRecents: {
+//     [spaceId: string]: Record[]
+//   }
+//   notionDefaults: {
+//     [spaceId: string]: Record
+//   }
+//   spaceId: string
 // }
 
 // export interface TabSettings {
