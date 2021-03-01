@@ -365,9 +365,9 @@ export default function Tooltip(props: TooltipProps) {
             },
           );
         }
-      })
+      });
     }
-  }, [dropdownItem]);
+  }, [dropdownItem, tempHighlight]);
 
   const onSavePage = useCallback(async () => {
     if (!dropdownItem) return;
@@ -411,9 +411,7 @@ export default function Tooltip(props: TooltipProps) {
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
       // Handle case where user logs out or turns ext off, but page isn't refreshed
-      if (!isAuthenticated || !isExtensionOn) {
-        return;
-      }
+      if (!isAuthenticated || !isExtensionOn) return;
 
       // Keyboard shortcuts
       if (isOsKeyPressed(e) && e.key === 'd') {

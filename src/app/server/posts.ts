@@ -3,13 +3,15 @@ import { TextRange } from '../../components/TooltipWrapper/Tooltip/helpers/highl
 import IPost from '../../models/IPost';
 import ITopic from '../../models/ITopic';
 import IUser from '../../models/IUser';
+import { get1 } from '../../utils/chrome/storage';
 import { IUserRes } from './users';
 
 export type IPostsRes = PostsRes & AxiosRes;
 export type IPostRes = PostRes & AxiosRes;
 
 export const getPosts = async (url: string): Promise<IPostsRes | IUserRes> => {
-  const args: GetPostsReqBody = { url };
+  const userId = (await get1('user')).id;
+  const args: GetPostsReqBody = { url, userId };
   return await api.post('/posts/', args);
 };
 

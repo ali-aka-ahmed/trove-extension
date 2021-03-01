@@ -5,7 +5,7 @@ import { get1 } from '../../utils/chrome/storage';
 
 export const api = axios.create({
   baseURL: BACKEND_URL,
-  timeout: 2000,
+  timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -30,7 +30,7 @@ api.interceptors.response.use(
 
 export const notionImageApi = axios.create({
   baseURL: 'https://www.notion.so/image',
-  timeout: 2000,
+  timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });
 
