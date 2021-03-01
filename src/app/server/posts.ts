@@ -67,15 +67,9 @@ type GetPostsReqBody = {
  * POST /posts/create
  */
 export interface CreatePostReqBody {
-  highlight?: HighlightParam;
+  textRanges: TextRange[];
   url: string;
-  taggedUserIds?: string[];
 }
-
-export type HighlightParam = {
-  textRange: TextRange; // Serialized Range object
-  url: string;
-};
 
 /**
  * POST /posts/:id/comment/create
@@ -84,7 +78,7 @@ export interface CreateCommentReqBody {
   content: string;
   url: string;
   taggedUserIds?: string[]; // if you tag someone, they can see this post and tag others
-  highlight?: HighlightParam;
+  textRange: TextRange;
   topics?: Partial<ITopic>[];
 }
 

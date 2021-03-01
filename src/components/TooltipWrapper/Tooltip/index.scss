@@ -4,11 +4,11 @@ $tooltip-width: 175px;
 $tooltip-height: 35px;
 
 .TroveTooltip {
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
   width: max-content;
-  height: $tooltip-height;
+  height: max-content;
   background-color: #fff;
   border-radius: 3px;
   box-shadow: rgba(199, 146, 146, 0.2) 0px 4px 30px;
@@ -20,25 +20,9 @@ $tooltip-height: 35px;
   padding: 0;
 }
 
-.TroveTooltip--position-below {
-  margin-top: 10px;
-  margin-bottom: 0px;
-}
-
-.TroveTooltip--position-above {
-  margin-top: 0px;
-  margin-bottom: 10px;
-}
-
 .TroveTooltip__Content {
-  // display: flex;
-  // flex-direction: row;
-  // width: max-content;
-  // padding: 0px 15px;
-  // overflow: visible;
-
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   width: fit-content;
   overflow: visible;
   height: fit-content;
@@ -74,55 +58,33 @@ $tooltip-height: 35px;
 
 .TroveContent__SaveTo {
   height: $tooltip-height;
+}
+
+.TroveContent__SaveTo__Button {
+  height: $tooltip-height;
+  width: 100%;
   outline: 0;
   border: 0;
   background-color: transparent;
   display: flex;
   align-items: center;
-  justify-content: center;
   padding: 0 10px;
 }
 
-.TroveContent__SaveTo:hover {
+.TroveContent__SaveTo__Button:hover {
   background-color: #f3f3f3;
   cursor: pointer;
 }
 
-.TroveContent__Wrapper {
-  height: $tooltip-height;
-}
-
-.TroveButton__IconRight {
+.TroveContent__SaveTo__IconRight {
   @include TbdFont;
-  margin-left: 10px;
+  margin-left: 5px;
 }
 
-.TroveButton__Text {
-  @include TbdFont;
-}
-
-.TroveHint__Wrapper {
-  opacity: 0.9;
-  margin-top: 0;
-  margin-left: 0;
-  visibility: visible;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  padding: 5px 10px;
-  border-radius: 3px;
-  font-size: 13px;
-  position: fixed;
-  pointer-events: none;
-  transition: opacity 0.3s ease-out;
-  z-index: 999;
-  color: #fff;
-  background: #222;
-  border: 1px solid transparent;
-  white-space: nowrap;
+.TroveContent__ButtonList {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: row;
 }
-
 
 .TroveDropdown__Section {
   display: flex;

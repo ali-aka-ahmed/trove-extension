@@ -14,7 +14,10 @@ export const getNotionPages = async (
     ...(spaceId ? { spaceId } : {}),
     ...(recentIds ? { recentIds } : {}),
   };
-  return await api.post('/notion/getPages', args, config);
+  console.log(config, args);
+  const res = await api.post('/notion/getPages', args, config);
+  console.log('res', res);
+  return res as any;
 };
 
 export const searchNotionPages = async (
@@ -43,14 +46,14 @@ export const getNotionImage = async (
   return await notionImageApi.post(`/${url}`, {}, config);
 };
 
-export const addTextBlock = async (
+export const addTextBlocks = async (
   userId: string,
   pageId: string,
-  text: string | any[],
+  textChunks: (string | any[])[],
 ): Promise<void> => {
   const notionToken = await getCookie('https://www.notion.so', 'token_v2');
   const config = { headers: { 'notion-token': notionToken } };
-  return await api.post('/notion/search', { userId, pageId, text }, config);
+  return await api.post('/notion/search', { userId, pageId, textChunks }, config);
 };
 
 export type Icon = {

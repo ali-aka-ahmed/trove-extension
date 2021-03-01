@@ -1,9 +1,9 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import classNames from 'classnames';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
-import { addTextBlock, Record } from '../../../app/server/notion';
-import { HighlightParam, IPostRes, IPostsRes } from '../../../app/server/posts';
+import { v4 as uuid } from 'uuid';
+import { addTextBlocks, Record } from '../../../app/server/notion';
+import { IPostRes, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
@@ -11,18 +11,15 @@ import { toArray } from '../../../utils';
 import { get, get1 } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Dropdown from './Dropdown';
-import Edge from './helpers/Edge';
-import Highlighter, { HighlightType } from './helpers/highlight/Highlighter';
-import { getRangeFromTextRange, getTextRangeFromRange } from './helpers/highlight/textRange';
-import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
-import Point from './helpers/Point';
+import Highlighter, {
+  HighlightType,
+  transformUnsavedHighlightDataToCreateHighlightRequestData,
+  transformUnsavedHighlightDataToTextList,
+} from './helpers/highlight/Highlighter';
+import { getTextRangeFromRange } from './helpers/highlight/textRange';
+import { isOsKeyPressed } from './helpers/os';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
-import {
-  getHoveredRect,
-  isMouseBetweenRects,
-  isSelectionInEditableElement,
-  selectionExists,
-} from './helpers/selection';
+import { isSelectionInEditableElement, selectionExists } from './helpers/selection';
 
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
@@ -36,8 +33,12 @@ export default function Tooltip(props: TooltipProps) {
   const [didInitialGetPosts, setDidInitialGetPosts] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(false);
-  const [position, setPosition] = useState(new Point(0, 0));
-  const [positionEdge, setPositionEdge] = useState(Edge.Bottom);
+
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [numTempHighlights, setNumTempHighlights] = useState(0);
+  // Is user currently saving page
+  const [isSavingPage, setIsSavingPage] = useState(false);
+  const [isSelectionHovered, setIsSelectionHovered] = useState(false);
 
   const [dropdownClicked, setDropdownClicked] = useState(false);
   const [defaultPageLoading, setDefaultPageLoading] = useState(true);
@@ -48,66 +49,39 @@ export default function Tooltip(props: TooltipProps) {
   // Id of Notion user
   const [notionUserId, setNotionUserId] = useState<string>('');
 
-  const [posts, dispatch] = useReducer(ListReducer<Post>('id'), []);
+  const [posts, dispatchPosts] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
 
-  const [isSelectionHovered, setIsSelectionHovered] = useState(false);
-  const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
-  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
+  const [highlighter, setHighlighter] = useState(new Highlighter());
   const tooltip = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
 
-  const [highlighter, setHighlighter] = useState(new Highlighter());
-  const [isTempHighlightVisible, setIsTempHighlightVisible] = useState(false);
-  const [tempHighlight, setTempHighlight] = useState<HighlightParam | null>(null);
-  const [tempHighlightRange, setTempHighlightRange] = useState<Range | null>(null);
+  const updateNumTempHighlights = () => {
+    const newVal = highlighter.getAllUnsavedHighlights().length;
+    setNumTempHighlights(newVal);
+    return newVal;
+  };
 
-  // TODO: maybe assign this to a range state var
-  const getTooltipRange = useCallback(
-    (range?: Range) => {
-      if (range) {
-        return range;
-      }
+  useEffect(() => {
+    const newVal = isSavingPage || numTempHighlights > 0;
+    setShowTooltip(newVal);
+  }, [isSavingPage, numTempHighlights]);
 
-      if (tempHighlightRange) {
-        return tempHighlightRange;
-      }
+  // /**
+  //  * Handler for when mouse cursor enters a Trove mark element. A highlight can be composed of
+  //  * multiple marks, which can each have multiple client rects.
+  //  * TODO: Maybe move active highlight logic to highlighter?
+  //  */
+  // const onMarkMouseEnter = useCallback(
+  //   (e: MouseEvent, post: Post, mark: HTMLElement) => {
+  //     // Don't trigger mouseenter event if user is selecting text (left mouse button down)
+  //     if (!post.highlight || e.buttons === 1) return;
+  //     highlighter.modifyHighlightTemp(HighlightType.Default);
+  //     highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
 
-      const selection = getSelection()!;
-      if (selectionExists(selection)) {
-        return selection.getRangeAt(0);
-      }
-
-      return null;
-    },
-    [tempHighlightRange],
-  );
-
-  /**
-   * Position and display tooltip according to change in selection.
-   */
-  const positionTooltip = useCallback(
-    (range?: Range) => {
-      const tooltipRange = getTooltipRange(range);
-      if (!tooltipRange) return;
-
-      const rect = tooltipRange.getBoundingClientRect();
-      const height = tooltip.current?.getBoundingClientRect().height || MINI_TOOLTIP_HEIGHT;
-      if (rect.bottom + height > document.documentElement.clientHeight) {
-        setPositionEdge(Edge.Top);
-        setPosition(
-          new Point(
-            rect.left + window.scrollX,
-            rect.top + window.scrollY - height - TOOLTIP_MARGIN,
-          ),
-        );
-      } else {
-        setPositionEdge(Edge.Bottom);
-        setPosition(new Point(rect.left + window.scrollX, rect.bottom + window.scrollY));
-      }
-    },
-    [tooltip, getTooltipRange],
-  );
+  //   },
+  //   [highlighter],
+  // );
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
@@ -116,7 +90,7 @@ export default function Tooltip(props: TooltipProps) {
     }
 
     // Add post(s) to list of posts
-    dispatch({ type: ListReducerActionType.UpdateOrAdd, data: postsToAdd });
+    dispatchPosts({ type: ListReducerActionType.UpdateOrAdd, data: postsToAdd });
   };
 
   const removePosts = (postsToRemove: Post | Post[]) => {
@@ -124,51 +98,23 @@ export default function Tooltip(props: TooltipProps) {
     for (const post of postsToRemove) {
       if (!post.highlight) continue;
       highlighter.removeHighlight(post.highlight.id);
+      updateNumTempHighlights();
     }
     // Remove post(s) from list of posts
-    dispatch({ type: ListReducerActionType.Remove, data: postsToRemove });
+    dispatchPosts({ type: ListReducerActionType.Remove, data: postsToRemove });
   };
 
-  // TODO: Store temp highlight stuff inside highlighter
   const addTempHighlight = useCallback(() => {
     const selection = getSelection();
     if (selection?.toString()) {
+      const id = uuid();
       const range = selection.getRangeAt(0);
       const textRange = getTextRangeFromRange(range);
-      setTempHighlight({
-        textRange: textRange,
-        url: window.location.href,
-      });
-
-      highlighter.addHighlightTemp(range, user?.color, HighlightType.Active);
-      setIsTempHighlightVisible(true);
-
-      // Recalculate range after adding highlight because range may have shifted. Handles case
-      // where highlight starts from offset 0, which would otherwise cause previously calculated
-      // range to collapse.
-      const newRange = getRangeFromTextRange(textRange);
-      setTempHighlightRange(newRange);
-
+      highlighter.addHighlight({ id, textRange, color: user!.color }, HighlightType.Active);
+      updateNumTempHighlights();
       selection.removeAllRanges();
     }
   }, [user]);
-
-  const removeTempHighlight = useCallback(() => {
-    highlighter.removeHighlightTemp();
-    setTempHighlight(null);
-    setTempHighlightRange(null);
-    setIsTempHighlightVisible(false);
-    setDropdownClicked(false);
-  }, []);
-
-  const resetTooltip = () => {
-    removeTempHighlight();
-    setTooltipRect(null);
-
-    // Making the assumption that whenever we reset tooltip, we are also resetting selection
-    setIsSelectionHovered(false);
-    setSelectionRect(null);
-  };
 
   useEffect(() => {
     ReactTooltip.rebuild();
@@ -179,7 +125,7 @@ export default function Tooltip(props: TooltipProps) {
     });
 
     // Get user object
-    get(['user', 'isAuthenticated', 'isExtensionOn', 'lastPageName']).then((data) => {
+    get(['user', 'isAuthenticated', 'isExtensionOn']).then((data) => {
       setIsAuthenticated(data.isAuthenticated || false);
       setIsExtensionOn(data.isExtensionOn || false);
       if (!data.isAuthenticated || !data.isExtensionOn) return;
@@ -220,25 +166,14 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts]);
 
-  const onScroll = useCallback(() => {
-    setIsSelectionHovered(false);
-    setTooltipRect(null);
-    setSelectionRect(null);
-  }, []);
+  // const onResize = useCallback(() => {
+  //   positionTooltip();
+  // }, [positionTooltip]);
 
-  useEffect(() => {
-    document.addEventListener('scroll', onScroll);
-    return () => document.removeEventListener('scroll', onScroll);
-  }, [onScroll]);
-
-  const onResize = useCallback(() => {
-    positionTooltip();
-  }, [positionTooltip]);
-
-  useEffect(() => {
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [onResize]);
+  // useEffect(() => {
+  //   window.addEventListener('resize', onResize);
+  //   return () => window.removeEventListener('resize', onResize);
+  // }, [onResize]);
 
   const onSelectionChange = useCallback((e: Event) => {
     // Don't set isSelectionVisible to true here because we only want tooltip to appear after
@@ -254,32 +189,6 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('selectionchange', onSelectionChange);
   }, [onSelectionChange]);
 
-  const onMouseDownPage = useCallback((e: MouseEvent) => {
-    // Do nothing if selection exists, let onSelectionChange take care of it
-    if (selectionExists(getSelection())) {
-      return;
-    }
-
-    // Do nothing if user clicks Trove tooltip
-    const target = e.target as HTMLElement;
-    if (target.id === 'TroveTooltipWrapper') {
-      return;
-    }
-
-    // Remove temp highlight if it exists
-    resetTooltip();
-  }, []);
-
-  useEffect(() => {
-    if (isTempHighlightVisible || isSelectionHovered) {
-      document.addEventListener('mousedown', onMouseDownPage);
-    } else {
-      document.removeEventListener('mousedown', onMouseDownPage);
-    }
-
-    return () => document.removeEventListener('mousedown', onMouseDownPage);
-  }, [isTempHighlightVisible, isSelectionHovered, onMouseDownPage]);
-
   const onDocumentMouseUp = useCallback(
     (e: MouseEvent) => {
       if ((e.target as HTMLElement).id === 'TroveTooltipWrapper') {
@@ -289,10 +198,8 @@ export default function Tooltip(props: TooltipProps) {
       if ((e.target as HTMLElement).classList.contains('TroveTooltip__Dropdown')) {
         setDropdownClicked(false);
       }
-
-      positionTooltip();
     },
-    [positionTooltip],
+    [addTempHighlight],
   );
 
   useEffect(() => {
@@ -300,38 +207,35 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mouseup', onDocumentMouseUp);
   }, [onDocumentMouseUp]);
 
-  const onMouseMovePage = useCallback(
-    (e: MouseEvent) => {
-      // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
-      // as cursor enters and leaves selection
-      if (e.buttons === 1 || isSelectionInEditableElement() || tempHighlightRange) {
-        return;
-      }
+  const onMouseMovePage = useCallback((e: MouseEvent) => {
+    // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
+    // as cursor enters and leaves selection
+    if (e.buttons === 1 || isSelectionInEditableElement()) {
+      return;
+    }
 
-      let rect;
-      const selection = getSelection()!;
-      if (
-        isSelectionHovered &&
-        !!selectionRect &&
-        !!tooltipRect &&
-        isMouseBetweenRects(e, selectionRect, tooltipRect)
-      ) {
-        // Do nothing
-      } else if (
-        selectionExists(selection) &&
-        !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
-      ) {
-        setIsSelectionHovered(true);
-        setTooltipRect(tooltip.current!.getBoundingClientRect());
-        setSelectionRect(rect);
-      } else {
-        setIsSelectionHovered(false);
-        setTooltipRect(null);
-        setSelectionRect(null);
-      }
-    },
-    [tooltipRect, isSelectionHovered, selectionRect, tooltipRect],
-  );
+    // let rect;
+    // const selection = getSelection()!;
+    // if (
+    //   isSelectionHovered &&
+    //   !!selectionRect &&
+    //   !!tooltipRect &&
+    //   isMouseBetweenRects(e, selectionRect, tooltipRect)
+    // ) {
+    //   // Do nothing
+    // } else if (
+    //   selectionExists(selection) &&
+    //   !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
+    // ) {
+    //   setIsSelectionHovered(true);
+    //   setTooltipRect(tooltip.current!.getBoundingClientRect());
+    //   setSelectionRect(rect);
+    // } else {
+    //   setIsSelectionHovered(false);
+    //   setTooltipRect(null);
+    //   setSelectionRect(null);
+    // }
+  }, []);
 
   useEffect(() => {
     document.addEventListener('mousemove', onMouseMovePage);
@@ -341,20 +245,15 @@ export default function Tooltip(props: TooltipProps) {
   const onSaveHighlight = async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     ReactTooltip.hide();
 
-    if (tempHighlight) {
-      const postReq = {
-        url: window.location.href,
-        highlight: tempHighlight,
-      };
-
-      // Hide tooltip
-      resetTooltip();
+    const unsavedHighlights = highlighter.getAllUnsavedHighlights();
+    if (unsavedHighlights.length > 0) {
+      const data = transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights);
 
       // Show actual highlight when we get response from server
-      const p1 = sendMessageToExtension({ type: MessageType.CreatePost, post: postReq }).then(
+      const p1 = sendMessageToExtension({ type: MessageType.CreateHighlight, data }).then(
         (res: IPostRes) => {
           if (res.success && res.post) {
-            removeTempHighlight();
+            highlighter.removeAllUnsavedHighlights();
             addPosts(new Post(res.post), HighlightType.Default);
           } else {
             // Show that highlighting failed
@@ -365,8 +264,12 @@ export default function Tooltip(props: TooltipProps) {
       );
 
       // Write highlight text to chosen Notion page
-      const p2 = addTextBlock(notionUserId, notionPageId, tempHighlight?.textRange.text);
-      await Promise.all([p1, p2]);
+      const p2 = addTextBlocks(
+        notionUserId,
+        notionPageId,
+        transformUnsavedHighlightDataToTextList(unsavedHighlights),
+      );
+      await Promise.all([p1, p2]).then(() => updateNumTempHighlights());
     }
   };
 
@@ -374,7 +277,7 @@ export default function Tooltip(props: TooltipProps) {
     // Write page title hyperlinked with current URL to chosen Notion page
     const href = window.location.href;
     const title = document.title;
-    await addTextBlock(notionUserId, notionPageId, [[title, [['a', href]]]]);
+    await addTextBlocks(notionUserId, notionPageId, [[title, [['a', href]]]]);
   };
 
   const renderItem = (item: Record | null) => {
@@ -419,20 +322,19 @@ export default function Tooltip(props: TooltipProps) {
       if (isOsKeyPressed(e) && e.key === 'd') {
         e.preventDefault();
         const selection = getSelection()!;
-        if (isTempHighlightVisible) {
+        if (selectionExists(selection) && /\S/.test(selection.toString())) {
+          // New post on current selection
+          addTempHighlight();
+        } else if (highlighter.getAllUnsavedHighlights().length > 0) {
           // Save current highlight
           onSaveHighlight();
-        } else if (selectionExists(selection) && /\S/.test(selection.toString())) {
-          // New post on current selection
-          setIsSelectionHovered(false);
-          addTempHighlight();
         } else if (!selectionExists(selection)) {
           // Save current page
-          onSavePage();
+          setIsSavingPage(true);
         }
       } else if (
         e.key === 'Tab' &&
-        (isSelectionHovered || isTempHighlightVisible) &&
+        (isSelectionHovered || highlighter.getAllUnsavedHighlights().length > 0) &&
         !dropdownClicked
       ) {
         // Open dropdown
@@ -447,10 +349,10 @@ export default function Tooltip(props: TooltipProps) {
     },
     [
       dropdownClicked,
+      highlighter,
       isAuthenticated,
       isExtensionOn,
       isSelectionHovered,
-      isTempHighlightVisible,
       addTempHighlight,
     ],
   );
@@ -460,47 +362,44 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('keydown', onKeyDownPage);
   }, [onKeyDownPage]);
 
-  if (isSelectionHovered) {
-    return (
-      <div
-        className={classNames('', {
-          'TroveTooltip--position-above': positionEdge === Edge.Top,
-          'TroveTooltip--position-below': positionEdge === Edge.Bottom,
-        })}
-        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-        ref={tooltip}
-      >
-        <div className="TroveHint__Wrapper">
-          <p className="TroveHint__Content__PrimaryText">Highlight text</p>
-          <p className="TroveHint__Content__SecondaryText">{`(${getOsKeyChar()}+d)`}</p>
+  if (!showTooltip) {
+    return null;
+  }
+  return isSavingPage ? (
+    <>
+      <div className="TroveTooltip" ref={tooltip}>
+        <div className="TroveTooltip__Content">
+          <div className="TroveContent__Text">Send page to Notion</div>
+          <div className="TroveContent__ButtonList">
+            <button
+              onClick={() => {
+                onSavePage();
+                setIsSavingPage(false);
+              }}
+            >
+              Save
+            </button>
+            <button onClick={() => setIsSavingPage(false)}>Cancel</button>
+          </div>
         </div>
       </div>
-    );
-  }
-  return isTempHighlightVisible ? (
+      <ReactTooltip
+        place="top"
+        className="TroveTooltip__Hint"
+        effect="solid"
+        event={'mouseenter'}
+        eventOff={'mouseleave'}
+        arrowColor="transparent"
+        html={true}
+        disable={dropdownClicked}
+      />
+    </>
+  ) : (
     <>
-      <div
-        className={classNames('TroveTooltip', {
-          'TroveTooltip--position-above': positionEdge === Edge.Top,
-          'TroveTooltip--position-below': positionEdge === Edge.Bottom,
-        })}
-        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0px)` }}
-        data-tip={`
-          <div class="TroveHint__Content">
-            <p class="TroveHint__Content__PrimaryText">Save to Notion</p>
-            <p class="TroveHint__Content__SecondaryText">(${getOsKeyChar()}+d)</p>
-          </div>
-        `}
-        ref={tooltip}
-      >
+      <div className="TroveTooltip" ref={tooltip}>
         <div className="TroveTooltip__Content">
-          <div
-            className="TroveContent__Text"
-            onClick={onSaveHighlight}
-            onMouseEnter={() => ReactTooltip.show(tooltip.current!)}
-            onMouseLeave={() => ReactTooltip.hide(tooltip.current!)}
-          >
-            Save to
+          <div className="TroveContent__Text">
+            Send {numTempHighlights > 1 ? `${numTempHighlights} highlights` : 'highlight'} to Notion
           </div>
           {dropdownClicked ? (
             <Dropdown setItem={setDropdownItem} setDropdownClicked={setDropdownClicked} />
@@ -514,10 +413,10 @@ export default function Tooltip(props: TooltipProps) {
                   <p class="TroveHint__Content__SecondaryText">(Tab)</p>
                 </div>
               `}
-              className="TroveContent__Wrapper"
+              className="TroveContent__SaveTo"
             >
               <button
-                className="TroveContent__SaveTo"
+                className="TroveContent__SaveTo__Button"
                 onClick={() => {
                   const selection = getSelection()!;
                   if (selectionExists(selection) && /\S/.test(selection.toString())) {
@@ -536,33 +435,33 @@ export default function Tooltip(props: TooltipProps) {
                 ) : (
                   renderItem(dropdownItem)
                 )}
-                <div className="TroveButton__IconRight">▾</div>
+                <div className="TroveContent__SaveTo__IconRight">▾</div>
               </button>
             </div>
           )}
+          <div className="TroveContent__ButtonList">
+            <button onClick={() => onSaveHighlight()}>Save</button>
+            <button
+              onClick={() => {
+                highlighter.removeAllUnsavedHighlights();
+                updateNumTempHighlights();
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
       <ReactTooltip
-        place="bottom"
+        place="top"
         className="TroveTooltip__Hint"
         effect="solid"
         event={'mouseenter'}
         eventOff={'mouseleave'}
         arrowColor="transparent"
         html={true}
-        overridePosition={(pos) => {
-          let rect = tooltipRect;
-          if (!rect && tooltip.current) {
-            rect = tooltip.current.getBoundingClientRect();
-            setTooltipRect(rect);
-          }
-
-          const left = rect?.left || pos.left;
-          const top = (rect?.bottom || pos.top) + 10;
-          return { left, top };
-        }}
         disable={dropdownClicked}
       />
     </>
-  ) : null;
+  );
 }

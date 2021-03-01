@@ -6,6 +6,7 @@ import { UpdateUserReqBody } from '../../app/server/users';
 
 export interface Message {
   type: MessageType | SocketMessageType;
+  data?: any;
   error?: ErrorReqBody;
   forgotPasswordArgs?: ForgotReqBody;
   id?: string;
@@ -32,6 +33,7 @@ export interface Message {
 
 export enum MessageType {
   CreateComment,
+  CreateHighlight,
   CreatePost,
   Error,
   ForgotPassword,

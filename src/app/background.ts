@@ -5,14 +5,14 @@ import INotification from '../models/INotification';
 import {
   Message as EMessage,
   MessageType as EMessageType,
-  sendMessageToWebsite
+  sendMessageToWebsite,
 } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import {
   Message,
   MessageType,
   sendMessageToExtension,
-  SocketMessageType
+  SocketMessageType,
 } from '../utils/chrome/tabs';
 import { forgotPassword, login } from './server/auth';
 import { getNotionImage, getNotionPages, searchNotionPages } from './server/notion';
@@ -22,7 +22,7 @@ import {
   deletePostAndChildren,
   getPosts,
   likePost,
-  unlikePost
+  unlikePost,
 } from './server/posts';
 import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
@@ -99,6 +99,13 @@ chrome.runtime.onMessage.addListener(
       case MessageType.CreatePost: {
         if (!message.post) break;
         createPost(message.post).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
+      case MessageType.CreateHighlight: {
+        if (!message.data) break;
+        createPost(message.data).then((res) => {
           sendResponse(res);
         });
         break;
