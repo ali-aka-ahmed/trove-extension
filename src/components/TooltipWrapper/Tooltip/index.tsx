@@ -2,13 +2,14 @@ import { LoadingOutlined } from '@ant-design/icons';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
-import { addTextBlocks, Record } from '../../../app/server/notion';
+import { AxiosRes } from '../../../app/server';
+import { Record } from '../../../app/server/notion';
 import { IPostRes, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import { toArray } from '../../../utils';
-import { get, get1 } from '../../../utils/chrome/storage';
+import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Dropdown from './Dropdown';
 import Highlighter, {
@@ -43,11 +44,6 @@ export default function Tooltip(props: TooltipProps) {
   const [dropdownClicked, setDropdownClicked] = useState(false);
   const [defaultPageLoading, setDefaultPageLoading] = useState(true);
   const [dropdownItem, setDropdownItem] = useState<Record | null>(null);
-
-  // Id of Notion page to save highlight/page to
-  const [notionPageId, setNotionPageId] = useState<string>('');
-  // Id of Notion user
-  const [notionUserId, setNotionUserId] = useState<string>('');
 
   const [posts, dispatchPosts] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
@@ -119,8 +115,10 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     ReactTooltip.rebuild();
 
-    get1('notionDefault').then((r: Record) => {
-      if (r) setDropdownItem(r);
+    get(['notionDefaults', 'spaceId']).then((data) => {
+      if (data.spaceId && data.notionDefaults && data.notionDefaults[data.spaceId]) {
+        setDropdownItem(data.notionDefaults[data.spaceId]);
+      }
       setDefaultPageLoading(false);
     });
 
@@ -242,43 +240,55 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mousemove', onMouseMovePage);
   }, [onMouseMovePage]);
 
-  const onSaveHighlight = async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    ReactTooltip.hide();
+  const onSaveHighlight = useCallback(
+    async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (!dropdownItem) return;
+      ReactTooltip.hide();
 
-    const unsavedHighlights = highlighter.getAllUnsavedHighlights();
-    if (unsavedHighlights.length > 0) {
-      const data = transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights);
+      const unsavedHighlights = highlighter.getAllUnsavedHighlights();
+      if (unsavedHighlights.length > 0) {
+        // Write highlight text to chosen Notion page
+        const res = (await sendMessageToExtension({
+          type: MessageType.AddTextToNotion,
+          data: {
+            pageId: dropdownItem.id,
+            textChunks: transformUnsavedHighlightDataToTextList(unsavedHighlights),
+          },
+        })) as AxiosRes;
+        if (res.success) {
+          await sendMessageToExtension({
+            type: MessageType.CreateHighlight,
+            data: {
+              args: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights),
+            },
+          }).then((res: IPostRes) => {
+            if (res.success && res.post) {
+              // Show actual highlight when we get response from server
+              highlighter.removeAllUnsavedHighlights();
+              addPosts(new Post(res.post), HighlightType.Default);
+              updateNumTempHighlights();
+            } else {
+              // Show that highlighting failed
+              console.error('Failed to create post:', res.message);
+              throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
+            }
+          });
+        }
+      }
+    },
+    [dropdownItem],
+  );
 
-      // Show actual highlight when we get response from server
-      const p1 = sendMessageToExtension({ type: MessageType.CreateHighlight, data }).then(
-        (res: IPostRes) => {
-          if (res.success && res.post) {
-            highlighter.removeAllUnsavedHighlights();
-            addPosts(new Post(res.post), HighlightType.Default);
-          } else {
-            // Show that highlighting failed
-            console.error('Failed to create post:', res.message);
-            throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
-          }
-        },
-      );
-
-      // Write highlight text to chosen Notion page
-      const p2 = addTextBlocks(
-        notionUserId,
-        notionPageId,
-        transformUnsavedHighlightDataToTextList(unsavedHighlights),
-      );
-      await Promise.all([p1, p2]).then(() => updateNumTempHighlights());
-    }
-  };
-
-  const onSavePage = async () => {
+  const onSavePage = useCallback(async () => {
+    if (!dropdownItem) return;
     // Write page title hyperlinked with current URL to chosen Notion page
     const href = window.location.href;
     const title = document.title;
-    await addTextBlocks(notionUserId, notionPageId, [[title, [['a', href]]]]);
-  };
+    sendMessageToExtension({
+      type: MessageType.AddTextToNotion,
+      data: { pageId: dropdownItem.id, textChunks: [[[title, [['a', href]]]]] },
+    });
+  }, [dropdownItem]);
 
   const renderItem = (item: Record | null) => {
     if (!item) {
@@ -314,9 +324,7 @@ export default function Tooltip(props: TooltipProps) {
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
       // Handle case where user logs out or turns ext off, but page isn't refreshed
-      if (!isAuthenticated || !isExtensionOn) {
-        return;
-      }
+      if (!isAuthenticated || !isExtensionOn) return;
 
       // Keyboard shortcuts
       if (isOsKeyPressed(e) && e.key === 'd') {
@@ -354,6 +362,8 @@ export default function Tooltip(props: TooltipProps) {
       isExtensionOn,
       isSelectionHovered,
       addTempHighlight,
+      onSaveHighlight,
+      onSavePage,
     ],
   );
 

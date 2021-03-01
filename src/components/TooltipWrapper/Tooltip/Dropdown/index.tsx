@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { LoadingOutlined } from '@ant-design/icons';
+import debounce from 'lodash/debounce';
+import React, { useEffect, useRef, useState } from 'react';
 import { IGetPageNamesRes, ISearchPagesRes, Record } from '../../../../app/server/notion';
 import { get, get1, set } from '../../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
@@ -9,34 +11,46 @@ interface DropdownProps {
 }
 
 export default function Dropdown(props: DropdownProps) {
-  const [spaceId, setSpaceId] = useState('');
   const [itemIdx, setItemIdx] = useState(0);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Record[]>([]);
+  const [spaceId, setSpaceId] = useState('');
+  const [spaces, setSpaces] = useState<Record[]>([]);
+  const [spaceLoadingId, setSpaceLoadingId] = useState('');
+  const [showSpaces, setShowSpaces] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const input = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const seedInitialPages = async () => {
     setLoading(true);
-    get([ 'notionRecents', 'spaceId' ]).then((data) => {
-      // if any recents have expired, remove them and do not retrieve them
-      const recentIds = (data.notionRecents || [])
-        .filter((r: Record) => r.section === 'recent')
-        .map((r: Record) => r.id);
-      sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds, spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
-        setShowError(false);
-        setLoading(false);
-        if (res.success) {
-          setItems(res.recents!.concat(res.databases!).concat(res.pages!));
-          setSpaceId(res.spaceId!)
-          set({ 'notionRecents': res.recents });
-        } else {
-          setShowError(true);
-          setErrorMessage(res.message);
-        };
-      });
+    const data = await get([ 'notionRecents', 'spaceId' ])
+    const recents = data.notionRecents;
+    const spaceRecentIds = ((data.notionRecents || {})[data.spaceId] || []).map((r: Record) => r.id);
+    sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds: spaceRecentIds, spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
+      setShowError(false);
+      setLoading(false);
+      if (res.success) {
+        const spaceId = data.spaceId;
+        const results = res.results![spaceId] || {};
+        setItems((results.recents || []).concat((results.databases || [])).concat((results.pages || [])));
+        setSpaces(res.spaces!);
+        setSpaceId(spaceId);
+        recents[spaceId] = res.results![spaceId].recents;
+        set({
+          'notionDefaults': res.defaults,
+          'notionRecents': recents,
+          'spaceId': spaceId
+        });
+      } else {
+        setShowError(true);
+        setErrorMessage(res.message);
+      };
     });
+  }
+
+  useEffect(() => {
+    seedInitialPages();
   }, []);
 
   const onKeyDownTextarea = (e: KeyboardEvent) => {
@@ -96,17 +110,37 @@ export default function Dropdown(props: DropdownProps) {
   //   setItemIdx(0);
   // };
 
-  const handleSelectItem = (item: Record) => {
+  const handleSelectItem = async (item: Record) => {
     props.setItem(item);
     props.setDropdownClicked(false);
-    set({ 'notionDefault': item });
+    
     // ideally move this return item on backend write, and then set when receiving.
-    get1('notionRecents').then((recents: Record[]) => {
-      item.section = 'recent'
-      recents.unshift(item);
-      set({ 'notionRecents': recents.slice(0, 3) })
+    const data = await get([ 'notionRecents', 'notionDefaults' ])
+    item.section = 'recent'
+
+    // change recents
+    let newRecents = data.notionRecents[spaceId];
+    if (!newRecents) newRecents = [];
+
+    const existingRecentIds = newRecents.map((item: Record) => item.id)
+    if (existingRecentIds.includes(item.id)) {
+      const index = existingRecentIds.indexOf(item.id);
+      newRecents.splice(index, 1);
+    }
+    newRecents.unshift(item);
+    newRecents = newRecents.slice(0, 3);
+
+    // change defaults
+    const newDefaults = data.notionDefaults || {};
+    newDefaults[spaceId] = item;
+
+    data.notionRecents[spaceId] = newRecents
+
+    set({
+      notionRecents: data.notionRecents,
+      notionDefaults: newDefaults
     });
-  }
+  };
   
   // const renderItem = (item: Record, idx: number) => {
   //   if (idx <= 0) return;
@@ -123,17 +157,17 @@ export default function Dropdown(props: DropdownProps) {
   //   );
   // };
 
-  const renderSection = useCallback((section: 'recent' | 'database' | 'page') => {
+  const renderSection = (section: 'recent' | 'database' | 'page') => {
     const sectionItems = items.filter((r) => r.section === section);
     const sectionName = `${section[0].toUpperCase()}${section.slice(1)}s`
     if (!sectionItems || sectionItems.length === 0) return;
     return (
-      <div className="TroveDropdown__Section">
+      <div className="TroveDropdown__Section" key={section}>
         <div className="TroveDropdown__SectionName">{sectionName}</div>
         {sectionItems.map((r) => renderItem(r))}
       </div>
     )
-  }, [items.length])
+  }
 
   const renderItem = (item: Record) => {
     let icon: any;
@@ -147,7 +181,7 @@ export default function Dropdown(props: DropdownProps) {
       // icon = <img src={ item.icon?.value.concat('?table=block&id=7dacd67f-5ffc-4ff5-bc76-df2f866a5770&width=40&userId=35dd49dd-0fe7-44a1-886d-3f6ebfbe5429&cache=v2') } className="TroveDropdown__Icon" />
     }
     return (
-      <span className="TroveDropdown__Item" onClick={() => handleSelectItem(item)}>
+      <span className="TroveDropdown__Item" onClick={() => handleSelectItem(item)} key={item.id}>
         <div className="TroveDropdown__HeaderWrapper">
           <span className="TroveDropdown__ItemIconWrapper">
             {item.icon ? ( icon ) : (
@@ -161,21 +195,68 @@ export default function Dropdown(props: DropdownProps) {
     )
   }
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    sendMessageToExtension({ type: MessageType.SearchNotionPages, spaceId, query: e.target.value }).then((res: ISearchPagesRes) => {
-      setShowError(false);
-      setLoading(false);
-      if (res.success) {
-        get1('notionRecents').then((recents: Record[]) => {
-          if (!recents) setItems(res.databases!.concat(res.pages!));
-          else setItems(recents.concat(res.databases!).concat(res.pages!));
-          setSpaceId(res.spaceId!);
+  const renderSpace = (s: Record) => {
+    // let icon: any;
+    // if (s.icon?.type === 'url') {
+    //   icon = <img
+    //     src={ chrome.extension.getURL('images/noIconNotion.png') }
+    //     className="TroveDropdown__Icon"
+    //   />
+    //   // icon = <img src={ item.icon?.value.concat('?table=block&id=7dacd67f-5ffc-4ff5-bc76-df2f866a5770&width=40&userId=35dd49dd-0fe7-44a1-886d-3f6ebfbe5429&cache=v2') } className="TroveDropdown__Icon" />
+    // }
+    const changeSpace = (space: Record) => {
+      setSpaceLoadingId(space.id)
+      set({ spaceId: space.id }).then(() => {
+        seedInitialPages().then(() => {
+          setShowSpaces(false);
+          setSpaceLoadingId('')
         })
-      } else {
-        setShowError(true);
-        setErrorMessage(res.message);
-      }
-    });
+      });
+    }
+
+    return (
+      <div className="TroveDropdown__Space" onClick={() => changeSpace(s)} key={s.id}>
+        {/* <span className="TroveDropdown__ItemIconWrapper">
+          {s.icon ? ( icon ) : (
+            <img src={ chrome.extension.getURL('images/noIconNotion.png') } className="TroveDropdown__Icon" />
+          )}
+        </span> */}
+        <span className="TroveDropdown__SpaceName">{s.name}</span>
+        {spaceId === s.id && (
+          <div className="TroveDropdown__SpaceSelected"/>
+        )}
+        {spaceLoadingId === s.id && (
+          <div className="TroveDropdown__SpaceLoading">
+            <LoadingOutlined />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const onChange = async (text: string) => {
+    const debouncedSearch = debounce(async (text) => {
+      setLoading(true);
+      sendMessageToExtension({ type: MessageType.SearchNotionPages, spaceId, query: text }).then((res: ISearchPagesRes) => {
+        setShowError(false);
+        setLoading(false);
+        if (res.success) {
+          get1('notionRecents').then((recents: { [spaceId: string]: Record[] }) => {
+            setItems((recents[spaceId] || []).concat(res.databases!).concat(res.pages!));
+          })
+        } else {
+          setShowError(true);
+          setErrorMessage(res.message);
+        }
+      });
+    }, 250);
+    
+    if (text === '') {
+      debouncedSearch.cancel()
+      seedInitialPages();
+    } else {
+      await debouncedSearch(text);
+    }
   };
 
   return (
@@ -188,13 +269,35 @@ export default function Dropdown(props: DropdownProps) {
         onClick={(e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
           e.stopPropagation();
         }}
-        onChange={onChange}
+        onChange={(e) => onChange(e.target.value)}
       />
       <div className="TroveDropdown__ItemsWrapper">
-        {renderSection('recent')}
-        {renderSection('database')}
-        {renderSection('page')}
+        {loading ? (
+          <div className="TroveDropdown__Loading">
+            <LoadingOutlined />
+          </div>
+        ) : (
+          <>
+            {renderSection('recent')}
+            {renderSection('database')}
+            {renderSection('page')}
+            {items.length === 0 && (
+              <div className="TroveDropdown__NoResults">
+                No results
+              </div>
+            )}
+            <div className="TroveDropdown__ChangeSpace" onClick={() => setShowSpaces(true)}>
+              <span>Can't find a page? Click here to change your workspace</span>
+            </div>
+          </>
+        )}
       </div>
+      {showSpaces && (
+        <div className="TroveDropdown__Spaces">
+          <div className="TroveDropdown__SectionName">Workspaces</div>
+          {spaces.map((s) => renderSpace(s))}
+        </div>
+      )}
     </div>
   );
 }

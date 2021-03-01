@@ -1,7 +1,5 @@
-import io from 'socket.io-client';
-import { BACKEND_URL } from '../config';
 import User from '../entities/User';
-import INotification from '../models/INotification';
+import { getCookie } from '../utils/chrome/cookies';
 import {
   Message as EMessage,
   MessageType as EMessageType,
@@ -15,7 +13,12 @@ import {
   SocketMessageType,
 } from '../utils/chrome/tabs';
 import { forgotPassword, login } from './server/auth';
-import { getNotionImage, getNotionPages, searchNotionPages } from './server/notion';
+import {
+  addTextToNotion,
+  getNotionImage,
+  getNotionPages,
+  searchNotionPages,
+} from './server/notion';
 import {
   createComment,
   createPost,
@@ -27,44 +30,44 @@ import {
 import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
 
-export const socket = io.connect(BACKEND_URL);
+// export const socket = io.connect(BACKEND_URL);
 
-socket.on('connect', () => {
-  get1('isAuthenticated').then((isAuthenticated) => {
-    if (isAuthenticated) {
-      get1('user').then((user) => {
-        if (user?.id) socket.emit(SocketMessageType.JoinRoom, user.id);
-      });
-    }
-  });
-});
+// socket.on('connect', () => {
+//   get1('isAuthenticated').then((isAuthenticated) => {
+//     if (isAuthenticated) {
+//       get1('user').then((user) => {
+//         if (user?.id) socket.emit(SocketMessageType.JoinRoom, user.id);
+//       });
+//     }
+//   });
+// });
 
-socket.on(
-  SocketMessageType.Notifications,
-  (notifications: INotification[], notificationDisplayIcon: number) => {
-    set({
-      notifications,
-      notificationDisplayIcon,
-    });
-  },
-);
+// socket.on(
+//   SocketMessageType.Notifications,
+//   (notifications: INotification[], notificationDisplayIcon: number) => {
+//     set({
+//       notifications,
+//       notificationDisplayIcon,
+//     });
+//   },
+// );
 
-socket.on(SocketMessageType.Notification, (n: Notification) => {
-  get({
-    notifications: [],
-    notificationDisplayIcon: 0,
-  }).then((vals) => {
-    const newNotifications = [n].concat(vals.notifications);
-    const popupOpen = chrome.extension.getViews({ type: 'popup' }).length !== 0;
-    if (!popupOpen) {
-      const notificationDisplayIcon = vals.notificationDisplayIcon + 1;
-      set({
-        notifications: newNotifications,
-        notificationDisplayIcon,
-      });
-    } else set({ notifications: newNotifications });
-  });
-});
+// socket.on(SocketMessageType.Notification, (n: Notification) => {
+//   get({
+//     notifications: [],
+//     notificationDisplayIcon: 0,
+//   }).then((vals) => {
+//     const newNotifications = [n].concat(vals.notifications);
+//     const popupOpen = chrome.extension.getViews({ type: 'popup' }).length !== 0;
+//     if (!popupOpen) {
+//       const notificationDisplayIcon = vals.notificationDisplayIcon + 1;
+//       set({
+//         notifications: newNotifications,
+//         notificationDisplayIcon,
+//       });
+//     } else set({ notifications: newNotifications });
+//   });
+// });
 
 // Messages sent from extension
 chrome.runtime.onMessage.addListener(
@@ -104,8 +107,8 @@ chrome.runtime.onMessage.addListener(
         break;
       }
       case MessageType.CreateHighlight: {
-        if (!message.data) break;
-        createPost(message.data).then((res) => {
+        if (!message.data && !message.data.args) break;
+        createPost(message.data.args).then((res) => {
           sendResponse(res);
         });
         break;
@@ -167,6 +170,12 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+      case MessageType.GetNotionUserId: {
+        getCookie('https://www.notion.so', 'notion_user_id').then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
       case MessageType.GetNotionPages: {
         getNotionPages(message.spaceId, message.recentIds).then((res) => {
           sendResponse(res);
@@ -187,24 +196,31 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+      case MessageType.AddTextToNotion: {
+        if (!message.data || !message.data.pageId || !message.data.textChunks) break;
+        addTextToNotion(message.data.pageId, message.data.textChunks).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
       case SocketMessageType.JoinRoom: {
         if (!message.userId) break;
-        socket.emit(SocketMessageType.JoinRoom, message.userId);
+        // socket.emit(SocketMessageType.JoinRoom, message.userId);
         break;
       }
       case SocketMessageType.LeaveRoom: {
         if (!message.userId) break;
-        socket.emit(SocketMessageType.LeaveRoom, message.userId);
+        // socket.emit(SocketMessageType.LeaveRoom, message.userId);
         break;
       }
       case SocketMessageType.NotificationTrayOpened: {
         if (!message.userId) break;
-        socket.emit(SocketMessageType.NotificationTrayOpened, message.userId);
+        // socket.emit(SocketMessageType.NotificationTrayOpened, message.userId);
         break;
       }
       case SocketMessageType.ReadNotification: {
         if (!message.notificationId) break;
-        socket.emit(SocketMessageType.ReadNotification, message.notificationId);
+        // socket.emit(SocketMessageType.ReadNotification, message.notificationId);
         break;
       }
       case MessageType.OpenTab: {
@@ -300,11 +316,16 @@ chrome.runtime.onStartup.addListener(() => {
       remove(['token', 'user']);
     } else {
       getNotionPages().then((res) => {
-        if (res.success && res.recents) {
+        if (res.success && res.spaces && res.spaces.length > 0 && res.defaults && res.results) {
+          const spaceId = res.spaces[0].id;
+          const recents = {};
+          res.spaces.forEach((s) => {
+            recents[s.id] = res.results![spaceId].recents;
+          });
           set({
-            notionRecents: res.recents,
-            notionDefault: res.recents[0],
-            spaceId: res.spaceId,
+            notionRecents: recents,
+            notionDefaults: res.defaults,
+            spaceId,
           });
         }
       });
@@ -321,11 +342,16 @@ chrome.runtime.onInstalled.addListener(() => {
       remove(['token', 'user']);
     } else {
       getNotionPages().then((res) => {
-        if (res.success && res.recents) {
+        if (res.success && res.spaces && res.spaces.length > 0 && res.defaults && res.results) {
+          const spaceId = res.spaces[0].id;
+          const recents = {};
+          res.spaces.forEach((s) => {
+            recents[s.id] = res.results![spaceId].recents;
+          });
           set({
-            notionRecents: res.recents,
-            notionDefault: res.recents[0],
-            spaceId: res.spaceId,
+            notionRecents: recents,
+            notionDefaults: res.defaults,
+            spaceId,
           });
         }
       });

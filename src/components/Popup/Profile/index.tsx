@@ -15,9 +15,13 @@ interface ProfileProps {
   user: IUser;
 }
 
+// space in profile.
+// (change chromeStorage storing to space, not spaceId. reference everywhere else with that logic. then get it in top level and funnel down).
+// onClick getSpaces and display information. onChange change the space.
+
 export default function Profile({ user }: ProfileProps) {
   const [showEditIcon, setShowEditIcon] = useState<'displayName' | 'username' | 'color' | null>(
-    null,
+    null
   );
   const [editable, setEditable] = useState<'displayName' | 'username' | 'color' | null>(null);
   const [loading, setLoading] = useState<'displayName' | 'username' | 'color' | null>(null);
@@ -194,6 +198,9 @@ export default function Profile({ user }: ProfileProps) {
           )}
         </div>
       </div> */}
+      <div className="TroveProfile__NotionWorkspace">
+        <div></div>
+      </div>
       {editable === 'color' ? (
         <div className="TbdProfile__Color TbdProfile__EditColor EditProp">
           <div className="TbdProfile__ColorText">

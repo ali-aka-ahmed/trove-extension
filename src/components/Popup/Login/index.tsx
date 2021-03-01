@@ -59,7 +59,7 @@ export default function Login({}: LoginProps) {
     return (
       <div className="TbdAuth">
         <div className="TbdAuth__FieldWrapper">
-          <div className="TbdAuth__Label">Email or username</div>
+          <div className="TbdAuth__Label">Email</div>
           <div className="TbdAuth__InputWrapper">
             <input
               className="TbdAuth__Input"
