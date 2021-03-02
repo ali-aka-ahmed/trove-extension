@@ -184,7 +184,7 @@ export const transformUnsavedHighlightDataToCreateHighlightRequestData = (
 };
 
 export const transformUnsavedHighlightDataToTextList = (data: UnsavedHighlight[]) => {
-  return data.map((uh) => uh.data.textRange.text);
+  return data.map((uh) => [uh.data.textRange.text]);
 };
 
 export const getIdFromAnyHighlightData = (data: Post | UnsavedHighlightData): string => {

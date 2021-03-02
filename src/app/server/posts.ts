@@ -20,7 +20,7 @@ export const getPost = async (postId: string): Promise<IPostRes> => {
   return await api.get(`/posts/${params.id}`);
 };
 
-export const createPost = async (args: CreatePostReqBody): Promise<IPostRes> => {
+export const createPosts = async (args: CreatePostsReqBody): Promise<IPostsRes> => {
   return await api.post('/posts/create', args);
 };
 
@@ -68,10 +68,19 @@ type GetPostsReqBody = {
 /**
  * POST /posts/create
  */
-export interface CreatePostReqBody {
-  textRanges: TextRange[];
-  url: string;
+export interface CreatePostsReqBody {
+  posts: Array<{
+    url: string;
+    highlight: HighlightParam;
+    // content?: string;
+    // topics?: Partial<Topic>[];
+  }>
 }
+
+type HighlightParam = {
+  textRange: TextRange; // Serialized Range object
+  url: string;
+};
 
 /**
  * POST /posts/:id/comment/create

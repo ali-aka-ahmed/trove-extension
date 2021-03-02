@@ -1,8 +1,5 @@
 @import '../../../styles/general.scss';
 
-$tooltip-width: 175px;
-$tooltip-height: 35px;
-
 .TroveTooltip {
   position: fixed;
   bottom: 20px;
@@ -11,12 +8,12 @@ $tooltip-height: 35px;
   height: max-content;
   background-color: #fff;
   border-radius: 3px;
-  box-shadow: rgba(199, 146, 146, 0.2) 0px 4px 30px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 0px 30px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segose UI Symbol',
     'Noto Color Emoji' !important;
   font-size: 14px;
-  margin: 10px 0 0 0;
+  // margin: 10px 0 0 0;
   padding: 0;
 }
 
@@ -33,6 +30,12 @@ $tooltip-height: 35px;
   cursor: pointer;
 }
 
+.TroveTooltip__DropdownClosed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 // .TroveContent__Button:hover {
 //   background-color: #f3f3f3;
 // }
@@ -44,24 +47,24 @@ $tooltip-height: 35px;
   // padding: 0;
   // width: fit-content;
   // pointer-events: none;
-  height: $tooltip-height;
+  height: fit-content;
   margin: 0;
-  padding: 0;
-  width: fit-content;
+  width: 100%;
   pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 10px;
-  border-right: 1px solid #DDDDDD;
+  padding: 10px 10px;
 }
 
 .TroveContent__SaveTo {
-  height: $tooltip-height;
+  height: 35px;
+  border-radius: 3px;
+  max-width: 350px;
 }
 
 .TroveContent__SaveTo__Button {
-  height: $tooltip-height;
+  height: 36px;
   width: 100%;
   outline: 0;
   border: 0;
@@ -69,6 +72,7 @@ $tooltip-height: 35px;
   display: flex;
   align-items: center;
   padding: 0 10px;
+  border-radius: 3px;
 }
 
 .TroveContent__SaveTo__Button:hover {
@@ -84,6 +88,7 @@ $tooltip-height: 35px;
 .TroveContent__ButtonList {
   display: flex;
   flex-direction: row;
+  padding: 5px;
 }
 
 .TroveDropdown__Section {
@@ -106,6 +111,7 @@ $tooltip-height: 35px;
   user-select: none;
   transition: background 20ms ease-in 0s;
   cursor: pointer;
+  width: inherit;
 }
 
 .TroveDropdown__Item {
@@ -121,6 +127,10 @@ $tooltip-height: 35px;
 }
 
 .TroveDropdown__Item:hover {
+  background: rgba(55, 53, 47, 0.08);
+}
+
+.TroveDropdown__Selected {
   background: rgba(55, 53, 47, 0.08);
 }
 
@@ -187,4 +197,68 @@ $tooltip-height: 35px;
   outline: none;
   z-index: 999999; 
   cursor: pointer;
+}
+
+// shared
+.Trove__Button {
+  font-size: 13px;
+  font-weight: 400;
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  height: 28px;
+  border-radius: 3px;
+  box-shadow: rgba(15, 15, 15, 0.1) 0px 0px 0px 1px inset, rgba(15, 15, 15, 0.1) 0px 1px 2px;
+  background: #0d77e2;
+  color: white;
+  fill: white;
+  line-height: 1.2;
+  padding-left: 12px;
+  padding-right: 12px;
+  border: 0;
+  outline: none;
+}
+
+.Trove__Button:hover {
+  background-color: rgba(13, 119, 226, 0.8);
+}
+
+.Trove__Button--secondary:hover {
+  background-color: rgba(55, 53, 47, 0.08);
+}
+
+.Trove__Button--secondary {
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  margin-left: 5px;
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: 3px;
+  height: 28px;
+  padding: 0px 12px;
+  line-height: 1.2;
+  border: 1px solid rgba(55, 53, 47, 0.16);
+  background-color: transparent;
+  outline: none;
+}
+
+.Trove__ButtonLoading {
+  margin-right: 7px;
+}
+
+.Trove__ChevronIcon {
+  width: 10px;
+  height: 10px;
+  font-size: 18px;
+  line-height: 1.1;
 }

@@ -3,29 +3,29 @@ import { getCookie } from '../utils/chrome/cookies';
 import {
   Message as EMessage,
   MessageType as EMessageType,
-  sendMessageToWebsite,
+  sendMessageToWebsite
 } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import {
   Message,
   MessageType,
   sendMessageToExtension,
-  SocketMessageType,
+  SocketMessageType
 } from '../utils/chrome/tabs';
 import { forgotPassword, login } from './server/auth';
 import {
   addTextToNotion,
   getNotionImage,
   getNotionPages,
-  searchNotionPages,
+  searchNotionPages
 } from './server/notion';
 import {
   createComment,
-  createPost,
+  createPosts,
   deletePostAndChildren,
   getPosts,
   likePost,
-  unlikePost,
+  unlikePost
 } from './server/posts';
 import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
@@ -76,7 +76,6 @@ chrome.runtime.onMessage.addListener(
     sender: chrome.runtime.MessageSender,
     sendResponse: (response: any) => void,
   ) => {
-    // console.log(message);
     switch (message.type) {
       case MessageType.Login: {
         if (!message.loginArgs) break;
@@ -99,16 +98,9 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
-      case MessageType.CreatePost: {
-        if (!message.post) break;
-        createPost(message.post).then((res) => {
-          sendResponse(res);
-        });
-        break;
-      }
-      case MessageType.CreateHighlight: {
-        if (!message.data && !message.data.args) break;
-        createPost(message.data.args).then((res) => {
+      case MessageType.CreatePosts: {
+        if (!message.posts) break;
+        createPosts(message.posts).then((res) => {
           sendResponse(res);
         });
         break;
@@ -197,8 +189,8 @@ chrome.runtime.onMessage.addListener(
         break;
       }
       case MessageType.AddTextToNotion: {
-        if (!message.data || !message.data.pageId || !message.data.textChunks) break;
-        addTextToNotion(message.data.pageId, message.data.textChunks).then((res) => {
+        if (!message.notionPageId || !message.notionTextChunks) break;
+        addTextToNotion(message.notionPageId, message.notionTextChunks).then((res) => {
           sendResponse(res);
         });
         break;

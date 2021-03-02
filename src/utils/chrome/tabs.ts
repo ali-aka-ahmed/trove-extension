@@ -1,7 +1,7 @@
 import { toArray } from '..';
 import { ForgotReqBody, LoginReqBody } from '../../app/server/auth';
 import { ErrorReqBody } from '../../app/server/misc';
-import { CreateCommentReqBody, CreatePostReqBody } from '../../app/server/posts';
+import { CreateCommentReqBody, CreatePostsReqBody } from '../../app/server/posts';
 import { UpdateUserReqBody } from '../../app/server/users';
 
 export interface Message {
@@ -15,7 +15,7 @@ export interface Message {
   name?: string;
   notificationId?: string;
   numResults?: number;
-  post?: CreatePostReqBody;
+  posts?: CreatePostsReqBody;
   comment?: CreateCommentReqBody;
   text?: string;
   textPrefix?: string;
@@ -31,14 +31,14 @@ export interface Message {
   width?: number;
   notionUserId?: string;
   notionPageId?: string;
-  notionText?: string | any[];
+  notionTextChunks?: string[] | any[];
+  highlights?: string[];
 }
 
 export enum MessageType {
   AddTextToNotion,
   CreateComment,
-  CreateHighlight,
-  CreatePost,
+  CreatePosts,
   Error,
   ForgotPassword,
   GetNotionAuthToken,

@@ -4,7 +4,7 @@ import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
 import { AxiosRes } from '../../../app/server';
 import { Record } from '../../../app/server/notion';
-import { IPostRes, IPostsRes } from '../../../app/server/posts';
+import { CreatePostsReqBody, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
@@ -20,7 +20,7 @@ import Highlighter, {
   UnsavedHighlightData,
 } from './helpers/highlight/Highlighter';
 import { getTextRangeFromRange } from './helpers/highlight/textRange';
-import { isOsKeyPressed } from './helpers/os';
+import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
 import {
   isMouseBetweenRects,
@@ -42,11 +42,13 @@ export default function Tooltip(props: TooltipProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isExtensionOn, setIsExtensionOn] = useState(false);
 
+  const [saveLoading, setSaveLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [numTempHighlights, setNumTempHighlights] = useState(0);
   // Is user currently saving page
   const [isSavingPage, setIsSavingPage] = useState(false);
-  const [isSelectionHovered, setIsSelectionHovered] = useState(false);
+  const [isSelectionVisible, setIsSelectionVisible] = useState(false);
+  // const [isSelectionHovered, setIsSelectionHovered] = useState(false);
 
   const [hoveredHighlightRect, setHoveredHighlightRect] = useState<DOMRect | null>(null);
   const [deleteButtonRect, setDeleteButtonRect] = useState<DOMRect | null>(null);
@@ -62,6 +64,8 @@ export default function Tooltip(props: TooltipProps) {
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const tooltip = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
+  const save = useRef<HTMLButtonElement>(null);
+  const cancel = useRef<HTMLButtonElement>(null);
 
   const updateNumTempHighlights = () => {
     const newVal = highlighter.getAllUnsavedHighlights().length;
@@ -201,6 +205,22 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts]);
 
+  useEffect(() => {
+    if (isAuthenticated && isExtensionOn && didInitialGetPosts) {
+      removePosts(posts);
+      const url = window.location.href;
+      sendMessageToExtension({ type: MessageType.GetPosts, url })
+        .then((res: IPostsRes) => {
+          if (res.success) {
+            setDidInitialGetPosts(true);
+            const newPosts = res.posts!.map((p) => new Post(p));
+            addPosts(newPosts, HighlightType.Default);
+          }
+        })
+        .catch((e) => console.error('Errored while getting posts:', e));
+    }
+  }, [user]);
+
   // const onResize = useCallback(() => {
   //   positionTooltip();
   // }, [positionTooltip]);
@@ -215,7 +235,10 @@ export default function Tooltip(props: TooltipProps) {
     // user has finished dragging selection. We set this in positionTooltip instead.
     const selection = getSelection();
     if (!selectionExists(selection)) {
-      setIsSelectionHovered(false);
+      // setIsSelectionHovered(false);
+      setIsSelectionVisible(false);
+    } else {
+      setIsSelectionVisible(true);
     }
   }, []);
 
@@ -276,22 +299,30 @@ export default function Tooltip(props: TooltipProps) {
         // Write highlight text to chosen Notion page
         const res = (await sendMessageToExtension({
           type: MessageType.AddTextToNotion,
-          data: {
-            pageId: dropdownItem.id,
-            textChunks: transformUnsavedHighlightDataToTextList(unsavedHighlights),
-          },
+          notionPageId: dropdownItem.id,
+          notionTextChunks: transformUnsavedHighlightDataToTextList(unsavedHighlights),
         })) as AxiosRes;
-        if (res.success || true) {
+        if (res.success) {
+          const postsArgs: CreatePostsReqBody = {
+            posts: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights).map(
+              (highlight) => {
+                return {
+                  url: window.location.href,
+                  highlight,
+                };
+              },
+            ),
+          };
           await sendMessageToExtension({
-            type: MessageType.CreateHighlight,
-            data: {
-              args: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights),
-            },
-          }).then((res: IPostRes) => {
-            if (res.success && res.post) {
+            type: MessageType.CreatePosts,
+            posts: postsArgs,
+          }).then((res: IPostsRes) => {
+            if (res.success && res.posts) {
               // Show actual highlight when we get response from server
               highlighter.removeAllUnsavedHighlights();
-              addPosts(new Post(res.post), HighlightType.Default);
+              res.posts.map((p) => {
+                addPosts(new Post(p), HighlightType.Default);
+              });
               updateNumTempHighlights();
             } else {
               // Show that highlighting failed
@@ -312,13 +343,25 @@ export default function Tooltip(props: TooltipProps) {
     const title = document.title;
     sendMessageToExtension({
       type: MessageType.AddTextToNotion,
-      data: { pageId: dropdownItem.id, textChunks: [[[title, [['a', href]]]]] },
+      notionPageId: dropdownItem.id,
+      // notionTextChunks: [[[title, [['a', href]] ]]],
+      notionTextChunks: [[title, [['a', href]]]],
     });
   }, [dropdownItem]);
 
   const renderItem = (item: Record | null) => {
     if (!item) {
-      return <span>Click to select a page</span>;
+      return (
+        <span className="TroveDropdown__SelectedItem">
+          <span>Click to select a page</span>
+          <div className="TroveContent__SaveTo__IconRight">
+            <img
+              src={chrome.extension.getURL('images/chevronDown.png')}
+              className="Trove__ChevronIcon"
+            />
+          </div>
+        </span>
+      );
     }
     let icon;
     if (item.icon?.type === 'emoji')
@@ -343,6 +386,12 @@ export default function Tooltip(props: TooltipProps) {
           )}
         </span>
         <span className="TroveDropdown__SelectedItemName">{item.name}</span>
+        <div className="TroveContent__SaveTo__IconRight">
+          <img
+            src={chrome.extension.getURL('images/chevronDown.png')}
+            className="Trove__ChevronIcon"
+          />
+        </div>
       </span>
     );
   };
@@ -383,11 +432,74 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [hoveredHighlightRect]);
 
+  const renderButtonList = (type: 'savePage' | 'saveHighlights') => {
+    let onSave = handleSavePage;
+    let onCancel = handleCancelSavePage;
+    if (type === 'saveHighlights') {
+      onSave = handleSaveHighlights;
+      onCancel = handleCancelSaveHighlights;
+    }
+
+    return (
+      <div className="TroveContent__ButtonList">
+        <button
+          onMouseEnter={() => ReactTooltip.show(save.current!)}
+          onMouseLeave={() => ReactTooltip.hide(save.current!)}
+          data-tip={`
+            <div class="TroveHint__Content">
+              <p class="TroveHint__Content__PrimaryText">${getOsKeyChar()}+d</p>
+            </div>
+          `}
+          ref={save}
+          className="Trove__Button"
+          onClick={onSave}
+        >
+          {saveLoading && (
+            <div className="Trove__ButtonLoading">
+              <LoadingOutlined />
+            </div>
+          )}
+          Save
+        </button>
+        <button
+          onMouseEnter={() => ReactTooltip.show(cancel.current!)}
+          onMouseLeave={() => ReactTooltip.hide(cancel.current!)}
+          data-tip={`
+            <div class="TroveHint__Content">
+              <p class="TroveHint__Content__PrimaryText">esc</p>
+            </div>
+          `}
+          ref={cancel}
+          className="Trove__Button--secondary"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  };
+
+  const renderText = (type: 'savePage' | 'saveHighlights') => {
+    switch (type) {
+      case 'saveHighlights': {
+        return (
+          <div className="TroveContent__Text">
+            Send {numTempHighlights > 1 ? `${numTempHighlights} highlights` : 'highlight'} to Notion
+          </div>
+        );
+      }
+      case 'savePage': {
+        return <div className="TroveContent__Text">Send page to Notion</div>;
+      }
+      default:
+        return null;
+    }
+  };
+
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
       // Handle case where user logs out or turns ext off, but page isn't refreshed
-      if (!isAuthenticated || !isExtensionOn) return;
-
+      if (!isAuthenticated || !isExtensionOn || dropdownClicked) return;
       // Keyboard shortcuts
       if (isOsKeyPressed(e) && e.key === 'd') {
         e.preventDefault();
@@ -397,24 +509,37 @@ export default function Tooltip(props: TooltipProps) {
           addTempHighlight();
         } else if (highlighter.getAllUnsavedHighlights().length > 0) {
           // Save current highlight
-          onSaveHighlight();
-        } else if (!selectionExists(selection)) {
-          // Save current page
+          setSaveLoading(true);
+          onSaveHighlight().then(() => {
+            setSaveLoading(false);
+            setIsSavingPage(false);
+          });
+        } else if (!selectionExists(selection) && !showTooltip) {
+          // New save for current page
           setIsSavingPage(true);
+        } else if (!selectionExists(selection) && showTooltip) {
+          // Save current page
+          setSaveLoading(true);
+          onSavePage().then(() => {
+            setIsSavingPage(false);
+            setSaveLoading(false);
+          });
         }
       } else if (
         e.key === 'Tab' &&
-        (isSelectionHovered || highlighter.getAllUnsavedHighlights().length > 0) &&
-        !dropdownClicked
+        // (isSelectionHovered || highlighter.getAllUnsavedHighlights().length > 0) &&
+        // highlighter.getAllUnsavedHighlights().length > 0 &&
+        !dropdownClicked &&
+        showTooltip
       ) {
         // Open dropdown
         e.preventDefault();
-        const selection = getSelection()!;
-        if (selectionExists(selection) && /\S/.test(selection.toString())) {
-          addTempHighlight();
-        }
-
         setDropdownClicked(true);
+      } else if (e.key === 'Escape' && showTooltip) {
+        highlighter.removeAllUnsavedHighlights();
+        updateNumTempHighlights();
+        setIsSavingPage(false);
+        setSaveLoading(false);
       }
     },
     [
@@ -422,57 +547,79 @@ export default function Tooltip(props: TooltipProps) {
       highlighter,
       isAuthenticated,
       isExtensionOn,
-      isSelectionHovered,
       addTempHighlight,
       onSaveHighlight,
       onSavePage,
+      showTooltip,
     ],
   );
 
   useEffect(() => {
     document.addEventListener('keydown', onKeyDownPage);
     return () => document.removeEventListener('keydown', onKeyDownPage);
-  }, [onKeyDownPage]);
+  }, [onKeyDownPage, dropdownClicked]);
 
-  if (!showTooltip) {
-    return renderHighlightDeleteButton();
+  const handleSaveHighlights = () => {
+    setSaveLoading(true);
+    onSaveHighlight().then(() => {
+      setSaveLoading(false);
+      setIsSavingPage(false);
+    });
+  };
+
+  const handleSavePage = () => {
+    setSaveLoading(true);
+    onSavePage().then(() => {
+      setIsSavingPage(false);
+      setSaveLoading(false);
+    });
+  };
+
+  const handleCancelSaveHighlights = () => {
+    highlighter.removeAllUnsavedHighlights();
+    updateNumTempHighlights();
+    setSaveLoading(false);
+  };
+
+  const handleCancelSavePage = () => {
+    setIsSavingPage(false);
+    setSaveLoading(false);
+  };
+
+  if (!showTooltip && isSelectionVisible) {
+    return (
+      <>
+        <div className="TroveTooltip" ref={tooltip} style={{ width: '155px', height: '38px' }}>
+          <div className="TroveHint__Wrapper">
+            <p className="TroveHint__Content__PrimaryText">Highlight text</p>
+            <p className="TroveHint__Content__SecondaryText">{`(${getOsKeyChar()}+d)`}</p>
+          </div>
+        </div>
+        {renderHighlightDeleteButton()}
+      </>
+    );
   }
 
-  return (
-    <>
-      <div className="TroveTooltip" ref={tooltip}>
-        <div className="TroveTooltip__Content">
-          {isSavingPage ? (
-            <>
-              <div className="TroveContent__Text">Send page to Notion</div>
-              <div className="TroveContent__ButtonList">
-                <button
-                  onClick={() => {
-                    onSavePage();
-                    setIsSavingPage(false);
-                  }}
-                >
-                  Save
-                </button>
-                <button onClick={() => setIsSavingPage(false)}>Cancel</button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="TroveContent__Text">
-                Send {numTempHighlights > 1 ? `${numTempHighlights} highlights` : 'highlight'} to
-                Notion
-              </div>
-              {dropdownClicked ? (
-                <Dropdown setItem={setDropdownItem} setDropdownClicked={setDropdownClicked} />
-              ) : (
+  if (showTooltip) {
+    return (
+      <>
+        <div className="TroveTooltip" ref={tooltip}>
+          <div className="TroveTooltip__Content">
+            {renderText(isSavingPage ? 'savePage' : 'saveHighlights')}
+            {dropdownClicked ? (
+              <Dropdown
+                setItem={setDropdownItem}
+                setDropdownClicked={setDropdownClicked}
+                root={props.root}
+              />
+            ) : (
+              <div className="TroveTooltip__DropdownClosed">
                 <div
                   onMouseEnter={() => ReactTooltip.show(button.current!)}
                   onMouseLeave={() => ReactTooltip.hide(button.current!)}
                   data-tip={`
                     <div class="TroveHint__Content">
-                      <p class="TroveHint__Content__PrimaryText">Pick Notion page</p>
-                      <p class="TroveHint__Content__SecondaryText">(Tab)</p>
+                      <p class="TroveHint__Content__PrimaryText">tab</p>
                     </div>
                   `}
                   className="TroveContent__SaveTo"
@@ -484,7 +631,6 @@ export default function Tooltip(props: TooltipProps) {
                       if (selectionExists(selection) && /\S/.test(selection.toString())) {
                         addTempHighlight();
                       }
-
                       setDropdownClicked(true);
                       ReactTooltip.hide();
                     }}
@@ -497,36 +643,27 @@ export default function Tooltip(props: TooltipProps) {
                     ) : (
                       renderItem(dropdownItem)
                     )}
-                    <div className="TroveContent__SaveTo__IconRight">▾</div>
                   </button>
                 </div>
-              )}
-              <div className="TroveContent__ButtonList">
-                <button onClick={() => onSaveHighlight()}>Save</button>
-                <button
-                  onClick={() => {
-                    highlighter.removeAllUnsavedHighlights();
-                    updateNumTempHighlights();
-                  }}
-                >
-                  Cancel
-                </button>
+                {renderButtonList(isSavingPage ? 'savePage' : 'saveHighlights')}
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-      {renderHighlightDeleteButton()}
-      <ReactTooltip
-        place="top"
-        className="TroveTooltip__Hint"
-        effect="solid"
-        event={'mouseenter'}
-        eventOff={'mouseleave'}
-        arrowColor="transparent"
-        html={true}
-        disable={dropdownClicked}
-      />
-    </>
-  );
+        {renderHighlightDeleteButton()}
+        <ReactTooltip
+          place="top"
+          className="TroveTooltip__Hint"
+          effect="solid"
+          event={'mouseenter'}
+          eventOff={'mouseleave'}
+          arrowColor="transparent"
+          html={true}
+          disable={dropdownClicked}
+        />
+      </>
+    );
+  }
+
+  return renderHighlightDeleteButton();
 }

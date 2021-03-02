@@ -55,6 +55,7 @@
     "images/comment.png",
     "images/commentOutlined.png",
     "images/noIconNotion.png",
+    "images/chevronDown.png",
     "https://s3-us-west-2.amazonaws.com/secure.notion-static.com/*"
   ]
 }

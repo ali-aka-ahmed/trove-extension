@@ -49,9 +49,9 @@ export default function Profile({ user }: ProfileProps) {
     else if (args.displayName) argString = 'displayName';
 
     if (
-      args.color === user.color ||
-      args.username === user.username ||
-      args.displayName === user.displayName
+      args.color === user.color
+      // args.username === user.username ||
+      // args.displayName === user.displayName
     ) {
       setEditable(null);
       setShowError(null);
@@ -69,7 +69,7 @@ export default function Profile({ user }: ProfileProps) {
       }
     }
 
-    sendMessageToExtension({
+    await sendMessageToExtension({
       type: MessageType.UpdateUser,
       updateUserArgs: args,
     }).then((res: IUserRes) => {
@@ -90,6 +90,10 @@ export default function Profile({ user }: ProfileProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, onPressEnterFn: () => void) => {
     if (e.key === 'Enter') onPressEnterFn();
   };
+
+  const goToFeedback = () => {
+    sendMessageToExtension({ type: MessageType.OpenTab, url: 'https://www.notion.so/simplata/Trove-Community-Board-c2c9fe006c29404b967497ae2d2f3079', active: true })
+  }
 
   return (
     <div className="TbdProfile__Wrapper">
@@ -233,6 +237,11 @@ export default function Profile({ user }: ProfileProps) {
           </div>
         </div>
       )}
+      <div className="TbdPopupContainer__ButtonWrapper TbdPopupContainer__ButtonWrapper--Feedback">
+        <button className="Trove__Button" onClick={goToFeedback}>
+          Give Feedback
+        </button>
+      </div>
       <div
         className={`TbdProfile__Error ${
           showError ? 'TbdProfile__Error--show' : 'TbdProfile__Error--hide'
