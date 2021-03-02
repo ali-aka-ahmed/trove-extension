@@ -8,11 +8,13 @@ import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/ta
 interface DropdownProps {
   setDropdownClicked: React.Dispatch<React.SetStateAction<boolean>>;
   setItem: React.Dispatch<React.SetStateAction<Record>>;
+  root: ShadowRoot;
 }
 
 export default function Dropdown(props: DropdownProps) {
   const [itemIdx, setItemIdx] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingHeight, setLoadingHeight] = useState(250);
   const [items, setItems] = useState<Record[]>([]);
   const [spaceId, setSpaceId] = useState('');
   const [spaces, setSpaces] = useState<Record[]>([]);
@@ -20,7 +22,8 @@ export default function Dropdown(props: DropdownProps) {
   const [showSpaces, setShowSpaces] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const input = useRef<HTMLInputElement>(null);
+  const input = useRef<HTMLInputElement | null>(null);
+  const dropdownWrapper = useRef<HTMLDivElement | null>(null);
 
   const seedInitialPages = async () => {
     setLoading(true);
@@ -59,7 +62,7 @@ export default function Dropdown(props: DropdownProps) {
     switch (e.key) {
       case 'ArrowUp': {
         e.preventDefault();
-        setItemIdx(Math.max(1, itemIdx - 1));
+        setItemIdx(Math.max(0, itemIdx - 1));
         break;
       };
       case 'ArrowDown': {
@@ -180,8 +183,16 @@ export default function Dropdown(props: DropdownProps) {
       />
       // icon = <img src={ item.icon?.value.concat('?table=block&id=7dacd67f-5ffc-4ff5-bc76-df2f866a5770&width=40&userId=35dd49dd-0fe7-44a1-886d-3f6ebfbe5429&cache=v2') } className="TroveDropdown__Icon" />
     }
+
+    const idx = items.indexOf(item)
+
     return (
-      <span className="TroveDropdown__Item" onClick={() => handleSelectItem(item)} key={item.id}>
+      <span
+        className={`TroveDropdown__Item ${itemIdx === idx ? 'TroveDropdown__Selected' : ''}`}
+        onClick={() => handleSelectItem(item)}
+        key={item.id}
+        id={item.id}
+      >
         <div className="TroveDropdown__HeaderWrapper">
           <span className="TroveDropdown__ItemIconWrapper">
             {item.icon ? ( icon ) : (
@@ -195,6 +206,17 @@ export default function Dropdown(props: DropdownProps) {
     )
   }
 
+  const changeSpace = (space: Record) => {
+    if (input.current) input.current.value = ''
+    setSpaceLoadingId(space.id)
+    set({ spaceId: space.id }).then(() => {
+      seedInitialPages().then(() => {
+        setShowSpaces(false);
+        setSpaceLoadingId('')
+      })
+    });
+  }
+  
   const renderSpace = (s: Record) => {
     // let icon: any;
     // if (s.icon?.type === 'url') {
@@ -204,15 +226,6 @@ export default function Dropdown(props: DropdownProps) {
     //   />
     //   // icon = <img src={ item.icon?.value.concat('?table=block&id=7dacd67f-5ffc-4ff5-bc76-df2f866a5770&width=40&userId=35dd49dd-0fe7-44a1-886d-3f6ebfbe5429&cache=v2') } className="TroveDropdown__Icon" />
     // }
-    const changeSpace = (space: Record) => {
-      setSpaceLoadingId(space.id)
-      set({ spaceId: space.id }).then(() => {
-        seedInitialPages().then(() => {
-          setShowSpaces(false);
-          setSpaceLoadingId('')
-        })
-      });
-    }
 
     return (
       <div className="TroveDropdown__Space" onClick={() => changeSpace(s)} key={s.id}>
@@ -234,26 +247,34 @@ export default function Dropdown(props: DropdownProps) {
     )
   }
 
+  const debouncedSearch = debounce(async (text) => {
+    setLoading(true);
+    return await sendMessageToExtension({ type: MessageType.SearchNotionPages, spaceId, query: text }).then((res: ISearchPagesRes) => {
+      setShowError(false);
+      setLoading(false);
+      if (res.success) {
+        get1('notionRecents').then((recents: { [spaceId: string]: Record[] }) => {
+          setItems((recents[spaceId] || []).concat(res.databases!).concat(res.pages!));
+        })
+      } else {
+        setShowError(true);
+        setErrorMessage(res.message);
+      }
+    });
+  }, 350);
+  
   const onChange = async (text: string) => {
-    const debouncedSearch = debounce(async (text) => {
-      setLoading(true);
-      sendMessageToExtension({ type: MessageType.SearchNotionPages, spaceId, query: text }).then((res: ISearchPagesRes) => {
-        setShowError(false);
-        setLoading(false);
-        if (res.success) {
-          get1('notionRecents').then((recents: { [spaceId: string]: Record[] }) => {
-            setItems((recents[spaceId] || []).concat(res.databases!).concat(res.pages!));
-          })
-        } else {
-          setShowError(true);
-          setErrorMessage(res.message);
-        }
-      });
-    }, 250);
-    
+    // set height for loading drawer
+    const height = dropdownWrapper.current?.clientHeight;
+    if (height) {
+      if (height > 250) setLoadingHeight(250)
+      else setLoadingHeight(height)
+    }
+
+    // search
     if (text === '') {
       debouncedSearch.cancel()
-      seedInitialPages();
+      await seedInitialPages();
     } else {
       await debouncedSearch(text);
     }
@@ -273,11 +294,11 @@ export default function Dropdown(props: DropdownProps) {
       />
       <div className="TroveDropdown__ItemsWrapper">
         {loading ? (
-          <div className="TroveDropdown__Loading">
+          <div className="TroveDropdown__Loading" style={{height: loadingHeight}}>
             <LoadingOutlined />
           </div>
         ) : (
-          <>
+          <div ref={dropdownWrapper}>
             {renderSection('recent')}
             {renderSection('database')}
             {renderSection('page')}
@@ -286,10 +307,10 @@ export default function Dropdown(props: DropdownProps) {
                 No results
               </div>
             )}
-            <div className="TroveDropdown__ChangeSpace" onClick={() => setShowSpaces(true)}>
+            <div className="TroveDropdown__ChangeSpace" onClick={() => setShowSpaces(!showSpaces)}>
               <span>Can't find a page? Click here to change your workspace</span>
             </div>
-          </>
+          </div>
         )}
       </div>
       {showSpaces && (
