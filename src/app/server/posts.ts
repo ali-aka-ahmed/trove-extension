@@ -20,7 +20,7 @@ export const getPost = async (postId: string): Promise<IPostRes> => {
   return await api.get(`/posts/${params.id}`);
 };
 
-export const createPosts = async (args: CreatePostsReqBody): Promise<IPostRes> => {
+export const createPosts = async (args: CreatePostsReqBody): Promise<IPostsRes> => {
   return await api.post('/posts/create', args);
 };
 

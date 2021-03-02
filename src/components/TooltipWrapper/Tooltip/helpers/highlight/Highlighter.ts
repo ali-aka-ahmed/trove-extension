@@ -138,5 +138,5 @@ export const transformUnsavedHighlightDataToCreateHighlightRequestData = (
 };
 
 export const transformUnsavedHighlightDataToTextList = (data: UnsavedHighlight[]) => {
-  return data.map((uh) => uh.data.textRange.text);
+  return data.map((uh) => [uh.data.textRange.text]);
 };

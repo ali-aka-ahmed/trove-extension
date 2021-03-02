@@ -4,7 +4,7 @@ import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
 import { AxiosRes } from '../../../app/server';
 import { Record } from '../../../app/server/notion';
-import { CreatePostsReqBody, IPostRes, IPostsRes } from '../../../app/server/posts';
+import { CreatePostsReqBody, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
@@ -288,11 +288,13 @@ export default function Tooltip(props: TooltipProps) {
           await sendMessageToExtension({
             type: MessageType.CreatePosts,
             posts: postsArgs,
-          }).then((res: IPostRes) => {
-            if (res.success && res.post) {
+          }).then((res: IPostsRes) => {
+            if (res.success && res.posts) {
               // Show actual highlight when we get response from server
               highlighter.removeAllUnsavedHighlights();
-              addPosts(new Post(res.post), HighlightType.Default);
+              res.posts.map((p) => {
+                addPosts(new Post(p), HighlightType.Default);
+              })
               updateNumTempHighlights();
             } else {
               // Show that highlighting failed
@@ -314,7 +316,8 @@ export default function Tooltip(props: TooltipProps) {
     sendMessageToExtension({
       type: MessageType.AddTextToNotion,
       notionPageId: dropdownItem.id,
-      notionTextChunks: [[[title, [['a', href]]]]],
+      // notionTextChunks: [[[title, [['a', href]] ]]],
+      notionTextChunks: [[title, [['a', href]]]],
     });
   }, [dropdownItem]);
 
