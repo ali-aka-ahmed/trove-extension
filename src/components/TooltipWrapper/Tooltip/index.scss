@@ -186,14 +186,14 @@
 .TroveMark__DeleteButton {
   height: 16px;
   width: 16px;
-  border-radius: 10px;
+  border-radius: 8px;
   position: absolute;
   background-color: rgba(0, 0, 0, 0.7);
   background-image: url('../../../../public/images/exit1.svg');
-  background-position: center center;
+  background-position: 50% 50%;
   background-repeat: no-repeat;
-  background-size: 10px 10px;
-  border: none;
+  background-size: contain;
+  border: 1.5px solid #fff;
   outline: none;
   z-index: 999999; 
   cursor: pointer;

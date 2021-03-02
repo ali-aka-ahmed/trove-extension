@@ -147,7 +147,10 @@ export default function Tooltip(props: TooltipProps) {
       const id = uuid();
       const range = selection.getRangeAt(0);
       const textRange = getTextRangeFromRange(range);
+
+      // Replace active highlight and then make this inactive so there are no active highlights
       highlighter.addHighlight({ id, textRange, color: user!.color }, HighlightType.Active);
+      highlighter.modifyHighlight(id, HighlightType.Default);
       updateNumTempHighlights();
       selection.removeAllRanges();
     }
@@ -398,9 +401,14 @@ export default function Tooltip(props: TooltipProps) {
 
   const renderHighlightDeleteButton = () => {
     if (!!hoveredHighlightRect) {
-      // const position = new Point(hoveredHighlightRect.right, hoveredHighlightRect.top);
-      const x = -window.innerWidth + window.scrollX + hoveredHighlightRect.right + 5;
-      const y = -window.innerHeight + window.scrollY + hoveredHighlightRect.top;
+      const width =
+        document.documentElement.clientWidth ||
+        window.innerWidth - (document.querySelector('html')?.offsetWidth || 0);
+      const height =
+        document.documentElement.clientHeight ||
+        window.innerHeight - (document.querySelector('html')?.offsetHeight || 0);
+      const x = -width + window.scrollX + hoveredHighlightRect.right + 5;
+      const y = -height + window.scrollY + hoveredHighlightRect.top;
       return (
         <button
           className="TroveMark__DeleteButton"
