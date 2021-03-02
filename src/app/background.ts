@@ -3,21 +3,21 @@ import { getCookie } from '../utils/chrome/cookies';
 import {
   Message as EMessage,
   MessageType as EMessageType,
-  sendMessageToWebsite,
+  sendMessageToWebsite
 } from '../utils/chrome/external';
 import { get, get1, remove, set } from '../utils/chrome/storage';
 import {
   Message,
   MessageType,
   sendMessageToExtension,
-  SocketMessageType,
+  SocketMessageType
 } from '../utils/chrome/tabs';
 import { forgotPassword, login } from './server/auth';
 import {
   addTextToNotion,
   getNotionImage,
   getNotionPages,
-  searchNotionPages,
+  searchNotionPages
 } from './server/notion';
 import {
   createComment,
@@ -25,7 +25,7 @@ import {
   deletePostAndChildren,
   getPosts,
   likePost,
-  unlikePost,
+  unlikePost
 } from './server/posts';
 import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
@@ -76,7 +76,6 @@ chrome.runtime.onMessage.addListener(
     sender: chrome.runtime.MessageSender,
     sendResponse: (response: any) => void,
   ) => {
-    // console.log(message);
     switch (message.type) {
       case MessageType.Login: {
         if (!message.loginArgs) break;

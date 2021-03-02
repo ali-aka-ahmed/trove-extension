@@ -168,6 +168,22 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [didInitialGetPosts, isAuthenticated, isExtensionOn, posts]);
 
+  useEffect(() => {
+    if (isAuthenticated && isExtensionOn && didInitialGetPosts) {
+      removePosts(posts);
+      const url = window.location.href;
+      sendMessageToExtension({ type: MessageType.GetPosts, url })
+        .then((res: IPostsRes) => {
+          if (res.success) {
+            setDidInitialGetPosts(true);
+            const newPosts = res.posts!.map((p) => new Post(p));
+            addPosts(newPosts, HighlightType.Default);
+          }
+        })
+        .catch((e) => console.error('Errored while getting posts:', e));
+    }
+  }, [user])
+
   // const onResize = useCallback(() => {
   //   positionTooltip();
   // }, [positionTooltip]);
@@ -299,7 +315,17 @@ export default function Tooltip(props: TooltipProps) {
 
   const renderItem = (item: Record | null) => {
     if (!item) {
-      return <span>Click to select a page</span>;
+      return (
+        <span className="TroveDropdown__SelectedItem">
+          <span>Click to select a page</span>
+          <div className="TroveContent__SaveTo__IconRight">
+            <img
+              src={chrome.extension.getURL('images/chevronDown.png')}
+              className="Trove__ChevronIcon"
+            />
+          </div>
+        </span>
+      )
     }
     let icon;
     if (item.icon?.type === 'emoji')
