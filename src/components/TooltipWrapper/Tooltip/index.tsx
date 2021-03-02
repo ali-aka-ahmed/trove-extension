@@ -4,7 +4,7 @@ import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
 import { AxiosRes } from '../../../app/server';
 import { Record } from '../../../app/server/notion';
-import { IPostRes, IPostsRes } from '../../../app/server/posts';
+import { CreatePostsReqBody, IPostRes, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
@@ -273,17 +273,21 @@ export default function Tooltip(props: TooltipProps) {
         // Write highlight text to chosen Notion page
         const res = (await sendMessageToExtension({
           type: MessageType.AddTextToNotion,
-          data: {
-            pageId: dropdownItem.id,
-            textChunks: transformUnsavedHighlightDataToTextList(unsavedHighlights),
-          },
+          notionPageId: dropdownItem.id,
+          notionTextChunks: transformUnsavedHighlightDataToTextList(unsavedHighlights),
         })) as AxiosRes;
         if (res.success) {
+          const postsArgs: CreatePostsReqBody = {
+            posts: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights).map((highlight) => {
+              return {
+                url: window.location.href,
+                highlight
+              }
+            })
+          }
           await sendMessageToExtension({
-            type: MessageType.CreateHighlight,
-            data: {
-              args: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights),
-            },
+            type: MessageType.CreatePosts,
+            posts: postsArgs,
           }).then((res: IPostRes) => {
             if (res.success && res.post) {
               // Show actual highlight when we get response from server
@@ -309,7 +313,8 @@ export default function Tooltip(props: TooltipProps) {
     const title = document.title;
     sendMessageToExtension({
       type: MessageType.AddTextToNotion,
-      data: { pageId: dropdownItem.id, textChunks: [[[title, [['a', href]]]]] },
+      notionPageId: dropdownItem.id,
+      notionTextChunks: [[[title, [['a', href]]]]],
     });
   }, [dropdownItem]);
 

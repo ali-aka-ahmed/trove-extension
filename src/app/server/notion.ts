@@ -45,7 +45,7 @@ export const getNotionImage = async (
 
 export const addTextToNotion = async (
   pageId: string,
-  textChunks: (string | any[])[],
+  textChunks: string[] | any[],
 ): Promise<AxiosRes> => {
   const [userId, notionToken] = await Promise.all([
     getCookie('https://www.notion.so', 'notion_user_id'),
@@ -75,7 +75,7 @@ export type Record = {
 export interface WriteTextReqBody {
   userId: string;
   pageId: string;
-  text: string;
+  textChunks: string[] | any[];
 }
 
 /**
