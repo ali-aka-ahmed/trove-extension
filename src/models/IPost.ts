@@ -16,6 +16,6 @@ export default interface IPost {
   liked: boolean;
   comments?: IPost[];
   parentPostId?: string; // only exists if comment
-  highlight?: IHighlight;
+  highlight: IHighlight;
   references?: IPost[]; // posts in which other people referenced this post
 }

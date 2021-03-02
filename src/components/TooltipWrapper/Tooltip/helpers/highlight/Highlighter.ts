@@ -1,5 +1,5 @@
 import Color from 'color';
-import Post from '../../../../../entities/Post';
+import Post, { isPost } from '../../../../../entities/Post';
 import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from './domHighlight';
 import { getRangeFromTextRange, TextRange } from './textRange';
 
@@ -18,6 +18,7 @@ type UnsavedHighlight = {
   handlers: { [event: string]: (e: MouseEvent) => void };
   isTemporary: true;
 };
+
 export interface UnsavedHighlightData {
   id: string;
   color: string;
@@ -31,9 +32,11 @@ export enum HighlightType {
 
 export default class Highlighter {
   highlights: Map<string, AnyHighlight>; // Highlight id -> highlight data
+  activeHighlightId: string;
 
   constructor() {
     this.highlights = new Map<string, AnyHighlight>();
+    this.activeHighlightId = '';
   }
 
   public addHighlight = (
@@ -41,9 +44,8 @@ export default class Highlighter {
     type: HighlightType = HighlightType.Default,
   ) => {
     let id: string, userColor: string, textRange: TextRange, isTemporary: boolean;
-    if (!!(data as Post).highlight) {
+    if (isPost(data)) {
       // Add saved highlight from server
-      data = data as Post;
       if (!data.highlight || !data.creator) {
         console.error('Tried to add highlight for post without required data. Post id:', data.id);
         return null;
@@ -55,8 +57,8 @@ export default class Highlighter {
       isTemporary = false;
     } else {
       // Add temporary highlight
-      data = data as UnsavedHighlightData;
-      ({ id, color: userColor, textRange } = data);
+      ({ id, textRange } = data);
+      userColor = data.color = 'yellow';
       isTemporary = true;
     }
 
@@ -79,24 +81,64 @@ export default class Highlighter {
       return null;
     }
 
-    const marks = addDOMHighlight(range, color);
-    const highlightData = {
-      marks,
-      data,
-      type,
-      isTemporary,
-      handlers: {},
-    } as AnyHighlight;
-    this.highlights.set(id, highlightData);
+    // Add highlight to DOM
+    try {
+      const marks = addDOMHighlight(range, color);
+      const highlightData = {
+        marks,
+        data,
+        type,
+        isTemporary,
+        handlers: {},
+      } as AnyHighlight;
+      this.highlights.set(id, highlightData);
+
+      // Handle new active highlight
+      if (type === HighlightType.Active && this.activeHighlightId !== id) {
+        this.modifyHighlight(this.activeHighlightId, HighlightType.Default);
+        this.activeHighlightId = id;
+      }
+
+      return highlightData;
+    } catch (e) {
+      console.error(
+        `Failed to add highlight to DOM. Post id: ${data.id}. URL: ${window.location.href}`,
+        data.id,
+      );
+      console.error(e);
+      return null;
+    }
+  };
+
+  public getHighlight = (id: string) => {
+    return this.highlights.get(id) || null;
   };
 
   public modifyHighlight = (id: string, type: HighlightType) => {
+    if (!id) return;
+
     const highlight = this.highlights.get(id);
     if (highlight) {
-      const userColor = highlight.isTemporary ? highlight.data.color : highlight.data.creator.color;
-      const color = this.getColor(userColor, type);
-      modifyDOMHighlight(highlight.marks, 'backgroundColor', color);
-      this.highlights.set(id, { ...highlight, type });
+      try {
+        // Modify highlight in DOM
+        const userColor = highlight.isTemporary
+          ? highlight.data.color
+          : highlight.data.creator.color;
+        const color = this.getColor(userColor, type);
+        modifyDOMHighlight(highlight.marks, 'backgroundColor', color);
+        this.highlights.set(id, { ...highlight, type });
+
+        if (type === HighlightType.Active && this.activeHighlightId !== id) {
+          // Handle new active highlight
+          this.modifyHighlight(this.activeHighlightId, HighlightType.Default);
+          this.activeHighlightId = id;
+        } else if (type === HighlightType.Default && this.activeHighlightId === id) {
+          // Handle active highlight becoming inactive
+          this.activeHighlightId = '';
+        }
+      } catch (e) {
+        console.error('Failed to modify highlight in DOM.', e);
+      }
     } else {
       console.error('Attempted to modify nonexistent highlight. id: ' + id);
     }
@@ -107,6 +149,10 @@ export default class Highlighter {
     if (highlight) {
       removeDOMHighlight(highlight.marks);
       this.highlights.delete(id);
+    }
+
+    if (this.activeHighlightId === id) {
+      this.activeHighlightId = '';
     }
   };
 
@@ -123,7 +169,7 @@ export default class Highlighter {
   private getColor = (colorStr: string, type: HighlightType): string => {
     const color = Color(colorStr);
     const rgba = (c: Color<string>, o: number) => `rgba(${c.red()},${c.green()},${c.blue()},${o})`;
-    if (type === HighlightType.Default) return rgba(color, 0.25);
+    if (type === HighlightType.Default) return rgba(color, 0.35);
     return rgba(color, 0.65);
   };
 }
@@ -139,4 +185,12 @@ export const transformUnsavedHighlightDataToCreateHighlightRequestData = (
 
 export const transformUnsavedHighlightDataToTextList = (data: UnsavedHighlight[]) => {
   return data.map((uh) => uh.data.textRange.text);
+};
+
+export const getIdFromAnyHighlightData = (data: Post | UnsavedHighlightData): string => {
+  if (isPost(data)) {
+    return data.highlight.id;
+  } else {
+    return data.id;
+  }
 };

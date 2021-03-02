@@ -13,7 +13,7 @@ export default class Post implements IPost {
   public taggedUsers: User[]; // must contain values for parent post
   public numComments: number;
   public numLikes: number;
-  public highlight?: Highlight;
+  public highlight: Highlight;
   public comments: Post[];
   public liked: boolean;
   public id: string;
@@ -37,7 +37,7 @@ export default class Post implements IPost {
     this.numComments = p.numComments;
     this.numLikes = p.numLikes;
     this.liked = p.liked;
-    if (p.highlight) this.highlight = new Highlight(p.highlight);
+    this.highlight = new Highlight(p.highlight);
     if (p.parentPostId) this.parentPostId = p.parentPostId;
     if (p.comments) {
       this.comments = p.comments.map((p) => new Post(p));
@@ -62,8 +62,8 @@ export default class Post implements IPost {
     let hostname = new URL(this.url).hostname;
     if (hostname.slice(0, 4) === 'www.') hostname = hostname.slice(4);
     let path = new URL(this.url).pathname;
-    if (path.slice(-1) === '/') path = path.slice(0, -1)
-    return `${hostname}${path}`
+    if (path.slice(-1) === '/') path = path.slice(0, -1);
+    return `${hostname}${path}`;
   }
 
   removeTopic = (topicId: string) => {
@@ -95,11 +95,15 @@ export default class Post implements IPost {
   addComment = async (comment: Post) => {
     this.numComments += 1;
     this.comments.unshift(comment);
-  }
+  };
 
   deleteComment = async (commentId: string) => {
     this.numComments -= 1;
     const i = this.comments.findIndex((c) => c.id === commentId);
     if (i > -1) this.comments.splice(i, 1);
-  }
+  };
 }
+
+export const isPost = (data: any): data is Post => {
+  return !!data.highlight;
+};

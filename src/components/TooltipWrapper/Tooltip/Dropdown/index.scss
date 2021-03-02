@@ -1,5 +1,4 @@
 @import '../../../../styles/general.scss';
-@import '../index.scss';
 
 .TroveTooltip__Dropdown {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
@@ -20,7 +19,7 @@
   padding: 0 0 0 10px;
   border: none;
   outline: none;
-  height: $tooltip-height;
+  height: 35px; // $tooltip-height
   min-width: 235px;
 }
 

@@ -13,18 +13,25 @@ import { get } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Dropdown from './Dropdown';
 import Highlighter, {
+  getIdFromAnyHighlightData,
   HighlightType,
   transformUnsavedHighlightDataToCreateHighlightRequestData,
   transformUnsavedHighlightDataToTextList,
+  UnsavedHighlightData,
 } from './helpers/highlight/Highlighter';
 import { getTextRangeFromRange } from './helpers/highlight/textRange';
 import { isOsKeyPressed } from './helpers/os';
 import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReducer';
-import { isSelectionInEditableElement, selectionExists } from './helpers/selection';
+import {
+  isMouseBetweenRects,
+  isSelectionInEditableElement,
+  selectionExists,
+} from './helpers/selection';
 
 const TOOLTIP_MARGIN = 10;
 const TOOLTIP_HEIGHT = 200;
 const MINI_TOOLTIP_HEIGHT = 32;
+const DELETE_BUTTON_DIAMETER = 20;
 
 interface TooltipProps {
   root: ShadowRoot;
@@ -40,6 +47,10 @@ export default function Tooltip(props: TooltipProps) {
   // Is user currently saving page
   const [isSavingPage, setIsSavingPage] = useState(false);
   const [isSelectionHovered, setIsSelectionHovered] = useState(false);
+
+  const [hoveredHighlightRect, setHoveredHighlightRect] = useState<DOMRect | null>(null);
+  const [deleteButtonRect, setDeleteButtonRect] = useState<DOMRect | null>(null);
+  const deleteButton = useRef<HTMLButtonElement>(null);
 
   const [dropdownClicked, setDropdownClicked] = useState(false);
   const [defaultPageLoading, setDefaultPageLoading] = useState(true);
@@ -63,21 +74,46 @@ export default function Tooltip(props: TooltipProps) {
     setShowTooltip(newVal);
   }, [isSavingPage, numTempHighlights]);
 
-  // /**
-  //  * Handler for when mouse cursor enters a Trove mark element. A highlight can be composed of
-  //  * multiple marks, which can each have multiple client rects.
-  //  * TODO: Maybe move active highlight logic to highlighter?
-  //  */
-  // const onMarkMouseEnter = useCallback(
-  //   (e: MouseEvent, post: Post, mark: HTMLElement) => {
-  //     // Don't trigger mouseenter event if user is selecting text (left mouse button down)
-  //     if (!post.highlight || e.buttons === 1) return;
-  //     highlighter.modifyHighlightTemp(HighlightType.Default);
-  //     highlighter.modifyHighlight(post.highlight.id, HighlightType.Active);
+  /**
+   * Handler for when mouse cursor enters a Trove mark element. A highlight can be composed of
+   * multiple marks, which can each have multiple client rects.
+   */
+  const onMarkMouseEnter = useCallback(
+    (e: MouseEvent, data: Post | UnsavedHighlightData, mark: HTMLElement) => {
+      // Don't trigger mouseenter event if user is selecting text (left mouse button down)
+      if (e.buttons === 1) return;
+      const id = getIdFromAnyHighlightData(data);
+      highlighter.modifyHighlight(id, HighlightType.Active);
+      setHoveredHighlightRect(mark.getBoundingClientRect());
+    },
+    [highlighter],
+  );
 
-  //   },
-  //   [highlighter],
-  // );
+  const onMarkMouseLeave = useCallback(
+    (data: Post | UnsavedHighlightData) => {
+      const id = getIdFromAnyHighlightData(data);
+      highlighter.modifyHighlight(id, HighlightType.Default);
+      setHoveredHighlightRect(null);
+    },
+    [highlighter],
+  );
+
+  /**
+   * Attach handlers to highlights. We don't need to return a cleanup function since we're using
+   * the .onevent notation (as opposed to addEventListener) to add the listeners, which only
+   * accepts one event at a time. We have to include posts as a dependency to add handler to new
+   * posts on page.
+   * TODO: don't refresh handlers on already existing highlights
+   */
+  useEffect(() => {
+    highlighter.highlights.forEach((highlight, id) => {
+      for (const mark of highlight.marks) {
+        mark.onmouseenter = (e: MouseEvent) => onMarkMouseEnter(e, highlight.data, mark);
+      }
+
+      highlight.handlers.mouseleave = () => onMarkMouseLeave(highlight.data);
+    });
+  }, [highlighter.getAllUnsavedHighlights(), posts, onMarkMouseEnter]);
 
   const addPosts = (postsToAdd: Post | Post[], type: HighlightType) => {
     postsToAdd = toArray(postsToAdd);
@@ -96,6 +132,7 @@ export default function Tooltip(props: TooltipProps) {
       highlighter.removeHighlight(post.highlight.id);
       updateNumTempHighlights();
     }
+
     // Remove post(s) from list of posts
     dispatchPosts({ type: ListReducerActionType.Remove, data: postsToRemove });
   };
@@ -205,35 +242,24 @@ export default function Tooltip(props: TooltipProps) {
     return () => document.removeEventListener('mouseup', onDocumentMouseUp);
   }, [onDocumentMouseUp]);
 
-  const onMouseMovePage = useCallback((e: MouseEvent) => {
-    // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
-    // as cursor enters and leaves selection
-    if (e.buttons === 1 || isSelectionInEditableElement()) {
-      return;
-    }
+  const onMouseMovePage = useCallback(
+    (e: MouseEvent) => {
+      // Don't show mini-tooltip when dragging selection or it will repeatedly disappear and appear
+      // as cursor enters and leaves selection
+      if (e.buttons === 1 || isSelectionInEditableElement()) {
+        return;
+      }
 
-    // let rect;
-    // const selection = getSelection()!;
-    // if (
-    //   isSelectionHovered &&
-    //   !!selectionRect &&
-    //   !!tooltipRect &&
-    //   isMouseBetweenRects(e, selectionRect, tooltipRect)
-    // ) {
-    //   // Do nothing
-    // } else if (
-    //   selectionExists(selection) &&
-    //   !!(rect = getHoveredRect(e, selection.getRangeAt(0).getClientRects()))
-    // ) {
-    //   setIsSelectionHovered(true);
-    //   setTooltipRect(tooltip.current!.getBoundingClientRect());
-    //   setSelectionRect(rect);
-    // } else {
-    //   setIsSelectionHovered(false);
-    //   setTooltipRect(null);
-    //   setSelectionRect(null);
-    // }
-  }, []);
+      if (
+        !!hoveredHighlightRect &&
+        !!deleteButtonRect &&
+        !isMouseBetweenRects(e, hoveredHighlightRect, deleteButtonRect)
+      ) {
+        highlighter.getHighlight(highlighter.activeHighlightId)?.handlers.mouseleave(e);
+      }
+    },
+    [hoveredHighlightRect, deleteButtonRect],
+  );
 
   useEffect(() => {
     document.addEventListener('mousemove', onMouseMovePage);
@@ -255,7 +281,7 @@ export default function Tooltip(props: TooltipProps) {
             textChunks: transformUnsavedHighlightDataToTextList(unsavedHighlights),
           },
         })) as AxiosRes;
-        if (res.success) {
+        if (res.success || true) {
           await sendMessageToExtension({
             type: MessageType.CreateHighlight,
             data: {
@@ -321,6 +347,42 @@ export default function Tooltip(props: TooltipProps) {
     );
   };
 
+  const renderHighlightDeleteButton = () => {
+    if (!!hoveredHighlightRect) {
+      // const position = new Point(hoveredHighlightRect.right, hoveredHighlightRect.top);
+      const x = -window.innerWidth + window.scrollX + hoveredHighlightRect.right + 5;
+      const y = -window.innerHeight + window.scrollY + hoveredHighlightRect.top;
+      return (
+        <button
+          className="TroveMark__DeleteButton"
+          style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}
+          onClick={() => {
+            const highlight = highlighter.getHighlight(highlighter.activeHighlightId);
+            if (highlight && !highlight.isTemporary) {
+              // Remove from server
+              sendMessageToExtension({
+                type: MessageType.DeletePost,
+                id: highlighter.activeHighlightId,
+              });
+            }
+
+            highlighter.removeHighlight(highlighter.activeHighlightId);
+            setHoveredHighlightRect(null);
+          }}
+          ref={deleteButton}
+        ></button>
+      );
+    }
+
+    return null;
+  };
+
+  useEffect(() => {
+    if (!!hoveredHighlightRect && deleteButton.current) {
+      setDeleteButtonRect(deleteButton.current.getBoundingClientRect());
+    }
+  }, [hoveredHighlightRect]);
+
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
       // Handle case where user logs out or turns ext off, but page isn't refreshed
@@ -373,95 +435,88 @@ export default function Tooltip(props: TooltipProps) {
   }, [onKeyDownPage]);
 
   if (!showTooltip) {
-    return null;
+    return renderHighlightDeleteButton();
   }
-  return isSavingPage ? (
-    <>
-      <div className="TroveTooltip" ref={tooltip}>
-        <div className="TroveTooltip__Content">
-          <div className="TroveContent__Text">Send page to Notion</div>
-          <div className="TroveContent__ButtonList">
-            <button
-              onClick={() => {
-                onSavePage();
-                setIsSavingPage(false);
-              }}
-            >
-              Save
-            </button>
-            <button onClick={() => setIsSavingPage(false)}>Cancel</button>
-          </div>
-        </div>
-      </div>
-      <ReactTooltip
-        place="top"
-        className="TroveTooltip__Hint"
-        effect="solid"
-        event={'mouseenter'}
-        eventOff={'mouseleave'}
-        arrowColor="transparent"
-        html={true}
-        disable={dropdownClicked}
-      />
-    </>
-  ) : (
-    <>
-      <div className="TroveTooltip" ref={tooltip}>
-        <div className="TroveTooltip__Content">
-          <div className="TroveContent__Text">
-            Send {numTempHighlights > 1 ? `${numTempHighlights} highlights` : 'highlight'} to Notion
-          </div>
-          {dropdownClicked ? (
-            <Dropdown setItem={setDropdownItem} setDropdownClicked={setDropdownClicked} />
-          ) : (
-            <div
-              onMouseEnter={() => ReactTooltip.show(button.current!)}
-              onMouseLeave={() => ReactTooltip.hide(button.current!)}
-              data-tip={`
-                <div class="TroveHint__Content">
-                  <p class="TroveHint__Content__PrimaryText">Pick Notion page</p>
-                  <p class="TroveHint__Content__SecondaryText">(Tab)</p>
-                </div>
-              `}
-              className="TroveContent__SaveTo"
-            >
-              <button
-                className="TroveContent__SaveTo__Button"
-                onClick={() => {
-                  const selection = getSelection()!;
-                  if (selectionExists(selection) && /\S/.test(selection.toString())) {
-                    addTempHighlight();
-                  }
 
-                  setDropdownClicked(true);
-                  ReactTooltip.hide();
-                }}
-                ref={button}
-              >
-                {defaultPageLoading ? (
-                  <div>
-                    <LoadingOutlined />
-                  </div>
-                ) : (
-                  renderItem(dropdownItem)
-                )}
-                <div className="TroveContent__SaveTo__IconRight">▾</div>
-              </button>
-            </div>
+  return (
+    <>
+      <div className="TroveTooltip" ref={tooltip}>
+        <div className="TroveTooltip__Content">
+          {isSavingPage ? (
+            <>
+              <div className="TroveContent__Text">Send page to Notion</div>
+              <div className="TroveContent__ButtonList">
+                <button
+                  onClick={() => {
+                    onSavePage();
+                    setIsSavingPage(false);
+                  }}
+                >
+                  Save
+                </button>
+                <button onClick={() => setIsSavingPage(false)}>Cancel</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="TroveContent__Text">
+                Send {numTempHighlights > 1 ? `${numTempHighlights} highlights` : 'highlight'} to
+                Notion
+              </div>
+              {dropdownClicked ? (
+                <Dropdown setItem={setDropdownItem} setDropdownClicked={setDropdownClicked} />
+              ) : (
+                <div
+                  onMouseEnter={() => ReactTooltip.show(button.current!)}
+                  onMouseLeave={() => ReactTooltip.hide(button.current!)}
+                  data-tip={`
+                    <div class="TroveHint__Content">
+                      <p class="TroveHint__Content__PrimaryText">Pick Notion page</p>
+                      <p class="TroveHint__Content__SecondaryText">(Tab)</p>
+                    </div>
+                  `}
+                  className="TroveContent__SaveTo"
+                >
+                  <button
+                    className="TroveContent__SaveTo__Button"
+                    onClick={() => {
+                      const selection = getSelection()!;
+                      if (selectionExists(selection) && /\S/.test(selection.toString())) {
+                        addTempHighlight();
+                      }
+
+                      setDropdownClicked(true);
+                      ReactTooltip.hide();
+                    }}
+                    ref={button}
+                  >
+                    {defaultPageLoading ? (
+                      <div>
+                        <LoadingOutlined />
+                      </div>
+                    ) : (
+                      renderItem(dropdownItem)
+                    )}
+                    <div className="TroveContent__SaveTo__IconRight">▾</div>
+                  </button>
+                </div>
+              )}
+              <div className="TroveContent__ButtonList">
+                <button onClick={() => onSaveHighlight()}>Save</button>
+                <button
+                  onClick={() => {
+                    highlighter.removeAllUnsavedHighlights();
+                    updateNumTempHighlights();
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
           )}
-          <div className="TroveContent__ButtonList">
-            <button onClick={() => onSaveHighlight()}>Save</button>
-            <button
-              onClick={() => {
-                highlighter.removeAllUnsavedHighlights();
-                updateNumTempHighlights();
-              }}
-            >
-              Cancel
-            </button>
-          </div>
         </div>
       </div>
+      {renderHighlightDeleteButton()}
       <ReactTooltip
         place="top"
         className="TroveTooltip__Hint"

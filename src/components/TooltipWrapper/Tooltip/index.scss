@@ -142,17 +142,17 @@ $tooltip-height: 35px;
 }
 
 .TroveDropdown__ItemName {
-  @include TbdFont;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  @include TbdFont;
 }
 
 .TroveDropdown__SelectedItemName {
-  @include TbdFont--medium;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  @include TbdFont--medium;
 }
 
 .TroveDropdown__ItemPath {
@@ -171,4 +171,20 @@ $tooltip-height: 35px;
   align-items: center;
   justify-content: flex-start;
   width: inherit;
+}
+
+.TroveMark__DeleteButton {
+  height: 16px;
+  width: 16px;
+  border-radius: 10px;
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.7);
+  background-image: url('../../../../public/images/exit1.svg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 10px 10px;
+  border: none;
+  outline: none;
+  z-index: 999999; 
+  cursor: pointer;
 }
