@@ -458,7 +458,7 @@ export default function Tooltip(props: TooltipProps) {
           onMouseLeave={() => ReactTooltip.hide(save.current!)}
           data-tip={`
             <div class="TroveHint__Content">
-              <p class="TroveHint__Content__PrimaryText">enter</p>
+              <p class="TroveHint__Content__PrimaryText">${getOsKeyChar()}+d</p>
             </div>
           `}
           ref={save}
@@ -521,10 +521,7 @@ export default function Tooltip(props: TooltipProps) {
         } else if (!selectionExists(selection) && !showTooltip) {
           // New save for current page
           setIsSavingPage(true);
-        }
-      } else if (e.key === 'Enter') {
-        const selection = getSelection()!;
-        if (highlighter.getAllUnsavedHighlights().length > 0) {
+        } else if (highlighter.getAllUnsavedHighlights().length > 0) {
           // Save current highlight
           setSaveLoading(true);
           onSaveHighlight().then(() => {
