@@ -17,7 +17,7 @@ import Highlighter, {
   HighlightType,
   transformUnsavedHighlightDataToCreateHighlightRequestData,
   transformUnsavedHighlightDataToTextList,
-  UnsavedHighlightData
+  UnsavedHighlightData,
 } from './helpers/highlight/Highlighter';
 import { getTextRangeFromRange } from './helpers/highlight/textRange';
 import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
@@ -25,7 +25,7 @@ import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReduc
 import {
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists
+  selectionExists,
 } from './helpers/selection';
 
 const TOOLTIP_MARGIN = 10;
@@ -404,7 +404,7 @@ export default function Tooltip(props: TooltipProps) {
       let width =
         document.documentElement.clientWidth ||
         window.innerWidth - (document.querySelector('html')?.offsetWidth || 0);
-      let height = 
+      let height =
         document.documentElement.clientHeight ||
         window.innerHeight - (document.querySelector('html')?.offsetHeight || 0);
       if (height > window.innerHeight) height = window.innerHeight;
@@ -609,7 +609,7 @@ export default function Tooltip(props: TooltipProps) {
         {renderHighlightDeleteButton()}
       </>
     );
-  };
+  }
 
   if (showTooltip) {
     return (

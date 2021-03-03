@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Trove DEV",
   "description": "A hidden layer of the internet.",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "browser_action": {
     "default_icon": "icons/dev/icon16.png",
     "default_popup": "popup.html"
