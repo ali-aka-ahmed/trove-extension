@@ -17,7 +17,7 @@ import Highlighter, {
   HighlightType,
   transformUnsavedHighlightDataToCreateHighlightRequestData,
   transformUnsavedHighlightDataToTextList,
-  UnsavedHighlightData,
+  UnsavedHighlightData
 } from './helpers/highlight/Highlighter';
 import { getTextRangeFromRange } from './helpers/highlight/textRange';
 import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
@@ -25,7 +25,7 @@ import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReduc
 import {
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists,
+  selectionExists
 } from './helpers/selection';
 
 const TOOLTIP_MARGIN = 10;
@@ -401,14 +401,17 @@ export default function Tooltip(props: TooltipProps) {
 
   const renderHighlightDeleteButton = () => {
     if (!!hoveredHighlightRect) {
-      const width =
+      let width =
         document.documentElement.clientWidth ||
         window.innerWidth - (document.querySelector('html')?.offsetWidth || 0);
-      const height =
+      let height = 
         document.documentElement.clientHeight ||
         window.innerHeight - (document.querySelector('html')?.offsetHeight || 0);
+      if (height > window.innerHeight) height = window.innerHeight;
+      if (width > window.innerWidth) width = window.innerWidth;
       const x = -width + window.scrollX + hoveredHighlightRect.right + 5;
       const y = -height + window.scrollY + hoveredHighlightRect.top;
+
       return (
         <button
           className="TroveMark__DeleteButton"
@@ -419,7 +422,7 @@ export default function Tooltip(props: TooltipProps) {
               // Remove from server
               sendMessageToExtension({
                 type: MessageType.DeletePost,
-                id: highlighter.activeHighlightId,
+                id: highlight.data.id,
               });
             }
 
@@ -455,7 +458,7 @@ export default function Tooltip(props: TooltipProps) {
           onMouseLeave={() => ReactTooltip.hide(save.current!)}
           data-tip={`
             <div class="TroveHint__Content">
-              <p class="TroveHint__Content__PrimaryText">${getOsKeyChar()}+d</p>
+              <p class="TroveHint__Content__PrimaryText">enter</p>
             </div>
           `}
           ref={save}
@@ -515,16 +518,19 @@ export default function Tooltip(props: TooltipProps) {
         if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
           addTempHighlight();
-        } else if (highlighter.getAllUnsavedHighlights().length > 0) {
+        } else if (!selectionExists(selection) && !showTooltip) {
+          // New save for current page
+          setIsSavingPage(true);
+        }
+      } else if (e.key === 'Enter') {
+        const selection = getSelection()!;
+        if (highlighter.getAllUnsavedHighlights().length > 0) {
           // Save current highlight
           setSaveLoading(true);
           onSaveHighlight().then(() => {
             setSaveLoading(false);
             setIsSavingPage(false);
           });
-        } else if (!selectionExists(selection) && !showTooltip) {
-          // New save for current page
-          setIsSavingPage(true);
         } else if (!selectionExists(selection) && showTooltip) {
           // Save current page
           setSaveLoading(true);
@@ -606,7 +612,7 @@ export default function Tooltip(props: TooltipProps) {
         {renderHighlightDeleteButton()}
       </>
     );
-  }
+  };
 
   if (showTooltip) {
     return (
