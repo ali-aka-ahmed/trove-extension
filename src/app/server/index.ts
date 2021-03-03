@@ -42,12 +42,10 @@ notionImageApi.interceptors.request.use(async (config) => {
 
 notionImageApi.interceptors.response.use(
   (response) => {
-    console.info("response.data", response.data, )
     response.data.success = true;
     return response.data;
   },
   (error) => {
-    console.error("error.response.data", error.response.data)
     if (!error.response) return error;
     error.response.data.success = false;
     error.response.data.message = error.response.data.message || error.message;

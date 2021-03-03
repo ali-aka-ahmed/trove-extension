@@ -1,4 +1,5 @@
 import { LoadingOutlined } from '@ant-design/icons';
+import { Alert } from 'antd';
 import debounce from 'lodash/debounce';
 import React, { useEffect, useRef, useState } from 'react';
 import { IGetPageNamesRes, ISearchPagesRes, Record } from '../../../../app/server/notion';
@@ -20,8 +21,9 @@ export default function Dropdown(props: DropdownProps) {
   const [spaces, setSpaces] = useState<Record[]>([]);
   const [spaceLoadingId, setSpaceLoadingId] = useState('');
   const [showSpaces, setShowSpaces] = useState(false);
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertType, setAlertType] = useState<'error' | 'success' | 'info' | 'warning' | undefined>('error');
+  const [alertMessage, setAlertMessage] = useState<any>(null!);
   const input = useRef<HTMLInputElement | null>(null);
   const dropdownWrapper = useRef<HTMLDivElement | null>(null);
 
@@ -31,7 +33,7 @@ export default function Dropdown(props: DropdownProps) {
     const recents = data.notionRecents;
     const spaceRecentIds = ((data.notionRecents || {})[data.spaceId] || []).map((r: Record) => r.id);
     sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds: spaceRecentIds, spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
-      setShowError(false);
+      setShowAlert(false);
       setLoading(false);
       if (res.success) {
         const spaceId = data.spaceId;
@@ -46,8 +48,9 @@ export default function Dropdown(props: DropdownProps) {
           'spaceId': spaceId
         });
       } else {
-        setShowError(true);
-        setErrorMessage(res.message);
+        setAlertType('error')
+        setShowAlert(true);
+        setAlertMessage(<span>You're not logged into Notion on the web! Click <strong><a style={{color: '#0d77e2', cursor: 'pointer'}} href='https://www.notion.so/login' target='_blank' onClick={handleLoginCase}>here</a></strong> to login.</span>);
       };
     });
   }
@@ -55,6 +58,11 @@ export default function Dropdown(props: DropdownProps) {
   useEffect(() => {
     seedInitialPages();
   }, []);
+
+  const handleLoginCase = () => {
+    setAlertType('success')
+    setAlertMessage(<span>Click <strong><span onClick={seedInitialPages} style={{color: '#0d77e2', cursor: 'pointer'}}>here</span></strong> once you've logged in!</span>)
+  }
 
   const onKeyDownTextarea = (e: KeyboardEvent) => {
     e.stopPropagation();
@@ -250,15 +258,16 @@ export default function Dropdown(props: DropdownProps) {
   const debouncedSearch = debounce(async (text) => {
     setLoading(true);
     return await sendMessageToExtension({ type: MessageType.SearchNotionPages, spaceId, query: text }).then((res: ISearchPagesRes) => {
-      setShowError(false);
+      setShowAlert(false);
       setLoading(false);
       if (res.success) {
         get1('notionRecents').then((recents: { [spaceId: string]: Record[] }) => {
           setItems((recents[spaceId] || []).concat(res.databases!).concat(res.pages!));
         })
       } else {
-        setShowError(true);
-        setErrorMessage(res.message);
+        setAlertType('error')
+        setShowAlert(true);
+        setAlertMessage(res.message);
       }
     });
   }, 350);
@@ -302,9 +311,14 @@ export default function Dropdown(props: DropdownProps) {
             {renderSection('recent')}
             {renderSection('database')}
             {renderSection('page')}
-            {items.length === 0 && (
+            {items.length === 0 && !showAlert && (
               <div className="TroveDropdown__NoResults">
                 No results
+              </div>
+            )}
+            {showAlert && (
+              <div className='TroveDropdown__Error'>
+                <Alert showIcon message={alertMessage} type={alertType} className="TbdAuth__Alert" />
               </div>
             )}
             <div className="TroveDropdown__ChangeSpace" onClick={() => setShowSpaces(!showSpaces)}>

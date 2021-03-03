@@ -27,10 +27,11 @@
   background-color: #FFFFFF;
   padding-top: 5px;
   max-height: 250px;
-  overflow: scroll;
+  overflow-y: scroll;
   max-width: 350px;
   min-width: 350px;
   width: 350px;
+  overflow-x: hidden;
 }
 
 .TroveDropdown__ItemsWrapper:last-child {
@@ -105,6 +106,10 @@
   font-size: 14px;
   font-weight: 400;
   padding: 5px 15px 10px 15px;
+}
+
+.TroveDropdown__Error {
+  padding: 15px 30px;
 }
 
 // .TroveDropdown__Item {
