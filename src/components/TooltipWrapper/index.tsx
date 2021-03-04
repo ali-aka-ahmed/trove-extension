@@ -1,7 +1,6 @@
 import antdStyles from 'antd/dist/antd.min.css?inject';
 import React, { useEffect } from 'react';
 import { ErrorOrigin } from '../../app/server/misc';
-import { EXCLUDED_HOSTNAMES } from '../../constants';
 import contentStyles from '../content/index.scss?inject';
 import ErrorBoundary from '../errorBoundary/index';
 import './index.scss';
@@ -17,6 +16,7 @@ interface TooltipWrapperProps {
 }
 
 export default function TooltipWrapper(props: TooltipWrapperProps) {
+
   // Special case where we want to disable native bookmarks shortcut even if user isn't
   // logged in or extension is off
   const onKeyDownPage = (e: KeyboardEvent) => {
@@ -31,9 +31,9 @@ export default function TooltipWrapper(props: TooltipWrapperProps) {
   }, [onKeyDownPage]);
 
   const url = new URL(window.location.href);
-  if (EXCLUDED_HOSTNAMES.includes(url.hostname)) {
-    return <div />;
-  } else {
+  // if (EXCLUDED_HOSTNAMES.includes(url.hostname)) {
+  //   return <div />;
+  // } else {
     return (
       <>
         <ErrorBoundary origin={ErrorOrigin.ContentScript}>
@@ -48,4 +48,4 @@ export default function TooltipWrapper(props: TooltipWrapperProps) {
       </>
     );
   }
-}
+// }

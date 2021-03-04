@@ -264,7 +264,7 @@ chrome.runtime.onMessageExternal.addListener(
           isExtensionOn: true,
         })
           .then(() => set({ isAuthenticated: true }))
-          .then(() => sendResponse(true));
+          .then(() => sendResponse(true))
         break;
       }
       case EMessageType.IsAuthenticated: {
@@ -319,9 +319,9 @@ chrome.runtime.onStartup.addListener(() => {
             notionDefaults: res.defaults,
             spaceId,
           });
-        }
+        };
       });
-    }
+    };
   });
   sendMessageToWebsite({ type: EMessageType.Exists });
 });
@@ -345,9 +345,9 @@ chrome.runtime.onInstalled.addListener(() => {
             notionDefaults: res.defaults,
             spaceId,
           });
-        }
+        };
       });
-    }
+    };
   });
   sendMessageToWebsite({ type: EMessageType.Exists });
 });
