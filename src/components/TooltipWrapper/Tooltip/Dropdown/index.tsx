@@ -30,13 +30,14 @@ export default function Dropdown(props: DropdownProps) {
   const seedInitialPages = async () => {
     setLoading(true);
     const data = await get([ 'notionRecents', 'spaceId' ])
-    const recents = data.notionRecents;
-    const spaceRecentIds = ((data.notionRecents || {})[data.spaceId] || []).map((r: Record) => r.id);
+    const recents = data.notionRecents || {};
+    let spaceRecentIds = [];
+    if (data.spaceId) spaceRecentIds = (recents[data.spaceId] || []).map((r: Record) => r.id);
     sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds: spaceRecentIds, spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
       setShowAlert(false);
       setLoading(false);
       if (res.success) {
-        const spaceId = data.spaceId;
+        const spaceId = data.spaceId || res.spaces![0].id;
         const results = res.results![spaceId] || {};
         setItems((results.recents || []).concat((results.databases || [])).concat((results.pages || [])));
         setSpaces(res.spaces!);
