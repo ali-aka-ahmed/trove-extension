@@ -1,6 +1,7 @@
 import antdStyles from 'antd/dist/antd.min.css?inject';
 import React, { useEffect } from 'react';
 import { ErrorOrigin } from '../../app/server/misc';
+import { EXCLUDED_HOSTNAMES } from '../../constants/index';
 import contentStyles from '../content/index.scss?inject';
 import ErrorBoundary from '../errorBoundary/index';
 import './index.scss';
@@ -31,9 +32,9 @@ export default function TooltipWrapper(props: TooltipWrapperProps) {
   }, [onKeyDownPage]);
 
   const url = new URL(window.location.href);
-  // if (EXCLUDED_HOSTNAMES.includes(url.hostname)) {
-  //   return <div />;
-  // } else {
+  if (EXCLUDED_HOSTNAMES.includes(url.hostname)) {
+    return <div />;
+  } else {
     return (
       <>
         <ErrorBoundary origin={ErrorOrigin.ContentScript}>
@@ -48,4 +49,4 @@ export default function TooltipWrapper(props: TooltipWrapperProps) {
       </>
     );
   }
-// }
+}
