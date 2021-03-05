@@ -51,7 +51,7 @@ export default function Login({}: LoginProps) {
     });
   };
 
-  const goToSignup = () => chrome.tabs.update({ url: ORIGIN });
+  const goToSignup = () => chrome.tabs.update({ url: `${ORIGIN}/signup` });
 
   if (showForgotPassword) {
     return <ForgotPassword goToLogin={() => setShowForgotPassword(false)} />;
@@ -95,9 +95,9 @@ export default function Login({}: LoginProps) {
             {loading && <div className='TbdAuth__Loading'><LoadingOutlined /></div>}
             Login
           </button>
-          {/* <div className='TbdLogin__SignupHere' onClick={goToSignup}>
+          <div className='TbdLogin__SignupHere' onClick={goToSignup}>
             or signup here
-          </div> */}
+          </div>
         </div>
         <div className={`TbdAuth__Error ${errorMessage 
             ? 'TbdAuth__Error--show' 
