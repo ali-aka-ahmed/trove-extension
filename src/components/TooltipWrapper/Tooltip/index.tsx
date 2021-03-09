@@ -8,8 +8,9 @@ import { CreatePostsReqBody, IPostsRes } from '../../../app/server/posts';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
+import IUser from '../../../models/IUser';
 import { toArray } from '../../../utils';
-import { get } from '../../../utils/chrome/storage';
+import { get, get1 } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Dropdown from './Dropdown';
 import Highlighter, {
@@ -17,7 +18,7 @@ import Highlighter, {
   HighlightType,
   transformUnsavedHighlightDataToCreateHighlightRequestData,
   transformUnsavedHighlightDataToTextList,
-  UnsavedHighlightData,
+  UnsavedHighlightData
 } from './helpers/highlight/Highlighter';
 import { getTextRangeFromRange } from './helpers/highlight/textRange';
 import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
@@ -25,7 +26,7 @@ import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReduc
 import {
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists,
+  selectionExists
 } from './helpers/selection';
 
 const TOOLTIP_MARGIN = 10;
@@ -159,13 +160,6 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     ReactTooltip.rebuild();
 
-    get(['notionDefaults', 'spaceId']).then((data) => {
-      if (data.spaceId && data.notionDefaults && data.notionDefaults[data.spaceId]) {
-        setDropdownItem(data.notionDefaults[data.spaceId]);
-      }
-      setDefaultPageLoading(false);
-    });
-
     // Get user object
     get(['user', 'isAuthenticated', 'isExtensionOn']).then((data) => {
       setIsAuthenticated(data.isAuthenticated || false);
@@ -183,6 +177,12 @@ export default function Tooltip(props: TooltipProps) {
 
       if (change.isAuthenticated !== undefined) {
         setIsAuthenticated(change.isAuthenticated.newValue || false);
+        if (change.isAuthenticated.newValue === true) {
+          setIsExtensionOn(true);
+          get1('user').then((user: IUser) => {
+            setUser(new User(user));
+          });
+        }
       }
 
       if (change.user !== undefined) {
@@ -458,7 +458,7 @@ export default function Tooltip(props: TooltipProps) {
           onMouseLeave={() => ReactTooltip.hide(save.current!)}
           data-tip={`
             <div class="TroveHint__Content">
-              <p class="TroveHint__Content__PrimaryText">${getOsKeyChar()}+d</p>
+              <p class="TroveHint__Content__PrimaryText">enter</p>
             </div>
           `}
           ref={save}
@@ -514,6 +514,12 @@ export default function Tooltip(props: TooltipProps) {
       // Keyboard shortcuts
       if (isOsKeyPressed(e) && e.key === 'd') {
         e.preventDefault();
+        get(['notionDefaults', 'spaceId']).then((data) => {
+          if (data.spaceId && data.notionDefaults && data.notionDefaults[data.spaceId]) {
+            setDropdownItem(data.notionDefaults[data.spaceId]);
+          }
+          setDefaultPageLoading(false);
+        });
         const selection = getSelection()!;
         if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
@@ -521,7 +527,27 @@ export default function Tooltip(props: TooltipProps) {
         } else if (!selectionExists(selection) && !showTooltip) {
           // New save for current page
           setIsSavingPage(true);
-        } else if (highlighter.getAllUnsavedHighlights().length > 0) {
+        }
+      } else if (
+        e.key === 'Tab' &&
+        // (isSelectionHovered || highlighter.getAllUnsavedHighlights().length > 0) &&
+        // highlighter.getAllUnsavedHighlights().length > 0 &&
+        !dropdownClicked &&
+        showTooltip
+      ) {
+        // Open dropdown
+        e.preventDefault();
+        setDropdownClicked(true);
+      } else if (e.key === 'Escape' && showTooltip) {
+        e.preventDefault();
+        highlighter.removeAllUnsavedHighlights();
+        updateNumTempHighlights();
+        setIsSavingPage(false);
+        setSaveLoading(false);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const selection = getSelection()!;
+        if (highlighter.getAllUnsavedHighlights().length > 0) {
           // Save current highlight
           setSaveLoading(true);
           onSaveHighlight().then(() => {
@@ -536,21 +562,6 @@ export default function Tooltip(props: TooltipProps) {
             setSaveLoading(false);
           });
         }
-      } else if (
-        e.key === 'Tab' &&
-        // (isSelectionHovered || highlighter.getAllUnsavedHighlights().length > 0) &&
-        // highlighter.getAllUnsavedHighlights().length > 0 &&
-        !dropdownClicked &&
-        showTooltip
-      ) {
-        // Open dropdown
-        e.preventDefault();
-        setDropdownClicked(true);
-      } else if (e.key === 'Escape' && showTooltip) {
-        highlighter.removeAllUnsavedHighlights();
-        updateNumTempHighlights();
-        setIsSavingPage(false);
-        setSaveLoading(false);
       }
     },
     [

@@ -32,8 +32,14 @@ export default function Dropdown(props: DropdownProps) {
     const data = await get([ 'notionRecents', 'spaceId' ])
     const recents = data.notionRecents || {};
     let spaceRecentIds = [];
-    if (data.spaceId) spaceRecentIds = (recents[data.spaceId] || []).map((r: Record) => r.id);
-    sendMessageToExtension({ type: MessageType.GetNotionPages, recentIds: spaceRecentIds, spaceId: data.spaceId }).then((res: IGetPageNamesRes) => {
+    if (data.spaceId) {
+      spaceRecentIds = (recents[data.spaceId] || []).map((r: Record) => r.id);
+    }
+    sendMessageToExtension({
+      type: MessageType.GetNotionPages,
+      recentIds: spaceRecentIds,
+      spaceId: data.spaceId
+    }).then((res: IGetPageNamesRes) => {
       setShowAlert(false);
       setLoading(false);
       if (res.success) {
@@ -43,11 +49,7 @@ export default function Dropdown(props: DropdownProps) {
         setSpaces(res.spaces!);
         setSpaceId(spaceId);
         recents[spaceId] = res.results![spaceId].recents;
-        set({
-          'notionDefaults': res.defaults,
-          'notionRecents': recents,
-          'spaceId': spaceId
-        });
+        set({ notionRecents: recents, spaceId });
       } else {
         setAlertType('error')
         if (res.status === 401) {
@@ -87,8 +89,8 @@ export default function Dropdown(props: DropdownProps) {
       case 'Enter':
       case 'Tab': {
         e.preventDefault();
-        props.setItem(items[itemIdx]);
-        props.setDropdownClicked(false);
+        e.stopPropagation();
+        handleSelectItem(items[itemIdx]);
         break;
       };
       case 'Escape': {

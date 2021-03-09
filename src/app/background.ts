@@ -337,10 +337,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason == "install") {
     sendMessageToWebsite({ type: EMessageType.Exists });
     chrome.tabs.update({ url: `${ORIGIN}/signup` })
-  };
-  // else if (details.reason == "update") {
-
-  // } else {}
+  }
 });
 
 // On tab create
