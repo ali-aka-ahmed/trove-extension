@@ -50,8 +50,12 @@ export default function Dropdown(props: DropdownProps) {
         });
       } else {
         setAlertType('error')
+        if (res.status === 401) {
+          setAlertMessage(<span>You're not logged into Notion on the web! Click <strong><a style={{color: '#0d77e2', cursor: 'pointer'}} href='https://www.notion.so/login' target='_blank' onClick={handleLoginCase}>here</a></strong> to login.</span>);
+        } else {
+          setAlertMessage(res.message);
+        }
         setShowAlert(true);
-        setAlertMessage(<span>You're not logged into Notion on the web! Click <strong><a style={{color: '#0d77e2', cursor: 'pointer'}} href='https://www.notion.so/login' target='_blank' onClick={handleLoginCase}>here</a></strong> to login.</span>);
       };
     });
   }
