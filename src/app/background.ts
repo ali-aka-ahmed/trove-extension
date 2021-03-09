@@ -80,8 +80,23 @@ chrome.runtime.onMessage.addListener(
     switch (message.type) {
       case MessageType.Login: {
         if (!message.loginArgs) break;
-        login(message.loginArgs).then((res) => {
-          sendResponse(res);
+        Promise.all([
+          login(message.loginArgs),
+          getNotionPages(),
+        ]).then(([loginRes, notionPagesRes]) => {
+          if (notionPagesRes.success && notionPagesRes.spaces && notionPagesRes.spaces.length > 0 && notionPagesRes.defaults && notionPagesRes.results) {
+            const spaceId = notionPagesRes.spaces[0].id;
+            const recents = {};
+            notionPagesRes.spaces.forEach((s) => {
+              recents[s.id] = notionPagesRes.results![spaceId].recents;
+            });
+            set({
+              notionRecents: recents,
+              notionDefaults: notionPagesRes.defaults,
+              spaceId,
+            });
+          };
+          sendResponse(loginRes)
         });
         break;
       }
