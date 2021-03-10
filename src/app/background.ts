@@ -1,3 +1,4 @@
+import { ORIGIN } from '../config';
 import User from '../entities/User';
 import { getCookie } from '../utils/chrome/cookies';
 import {
@@ -5,7 +6,7 @@ import {
   MessageType as EMessageType,
   sendMessageToWebsite
 } from '../utils/chrome/external';
-import { get, get1, remove, set } from '../utils/chrome/storage';
+import { get, set } from '../utils/chrome/storage';
 import {
   Message,
   MessageType,
@@ -79,8 +80,23 @@ chrome.runtime.onMessage.addListener(
     switch (message.type) {
       case MessageType.Login: {
         if (!message.loginArgs) break;
-        login(message.loginArgs).then((res) => {
-          sendResponse(res);
+        Promise.all([
+          login(message.loginArgs),
+          getNotionPages(),
+        ]).then(([loginRes, notionPagesRes]) => {
+          if (notionPagesRes.success && notionPagesRes.spaces && notionPagesRes.spaces.length > 0 && notionPagesRes.defaults && notionPagesRes.results) {
+            const spaceId = notionPagesRes.spaces[0].id;
+            const recents = {};
+            notionPagesRes.spaces.forEach((s) => {
+              recents[s.id] = notionPagesRes.results![spaceId].recents;
+            });
+            set({
+              notionRecents: recents,
+              notionDefaults: notionPagesRes.defaults,
+              spaceId,
+            });
+          };
+          sendResponse(loginRes)
         });
         break;
       }
@@ -264,6 +280,22 @@ chrome.runtime.onMessageExternal.addListener(
           isExtensionOn: true,
         })
           .then(() => set({ isAuthenticated: true }))
+          .then(() => {
+            getNotionPages().then((res) => {
+              if (res.success && res.spaces && res.spaces.length > 0 && res.defaults && res.results) {
+                const spaceId = res.spaces[0].id;
+                const recents = {};
+                res.spaces.forEach((s) => {
+                  recents[s.id] = res.results![spaceId].recents;
+                });
+                set({
+                  notionRecents: recents,
+                  notionDefaults: res.defaults,
+                  spaceId,
+                });
+              };
+            });
+          })
           .then(() => sendResponse(true))
         break;
       }
@@ -300,56 +332,12 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
   console.log(`Tab ${activeInfo.tabId} active.`);
 });
 
-// When a profile that has this extension installed first starts up
-chrome.runtime.onStartup.addListener(() => {
-  get1('isAuthenticated').then((isAuthenticated: boolean) => {
-    if (!isAuthenticated) {
-      set({ isExtensionOn: false });
-      remove(['token', 'user']);
-    } else {
-      getNotionPages().then((res) => {
-        if (res.success && res.spaces && res.spaces.length > 0 && res.defaults && res.results) {
-          const spaceId = res.spaces[0].id;
-          const recents = {};
-          res.spaces.forEach((s) => {
-            recents[s.id] = res.results![spaceId].recents;
-          });
-          set({
-            notionRecents: recents,
-            notionDefaults: res.defaults,
-            spaceId,
-          });
-        };
-      });
-    };
-  });
-  sendMessageToWebsite({ type: EMessageType.Exists });
-});
-
 // Extension installed or updated
-chrome.runtime.onInstalled.addListener(() => {
-  get1('isAuthenticated').then((isAuthenticated: boolean) => {
-    if (!isAuthenticated) {
-      set({ isExtensionOn: false });
-      remove(['token', 'user']);
-    } else {
-      getNotionPages().then((res) => {
-        if (res.success && res.spaces && res.spaces.length > 0 && res.defaults && res.results) {
-          const spaceId = res.spaces[0].id;
-          const recents = {};
-          res.spaces.forEach((s) => {
-            recents[s.id] = res.results![spaceId].recents;
-          });
-          set({
-            notionRecents: recents,
-            notionDefaults: res.defaults,
-            spaceId,
-          });
-        };
-      });
-    };
-  });
-  sendMessageToWebsite({ type: EMessageType.Exists });
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason == "install") {
+    sendMessageToWebsite({ type: EMessageType.Exists });
+    chrome.tabs.update({ url: `${ORIGIN}/signup` })
+  }
 });
 
 // On tab create

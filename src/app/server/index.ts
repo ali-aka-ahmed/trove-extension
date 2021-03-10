@@ -16,16 +16,14 @@ api.interceptors.request.use(async (config) => {
 });
 
 api.interceptors.response.use(
-  (response) => {
-    response.data.success = true;
-    return response.data;
-  },
-  (error) => {
-    if (!error.response) return error;
-    error.response.data.success = false;
-    error.response.data.message = error.response.data.message || error.message;
-    return error.response.data;
-  },
+  // (200-299)
+  (res) => ({ success: true, status: res.status, ...res.data }),
+  // outside of (200-299)
+  (err) => ({
+    success: false,
+    status: (err.response ? err.response.status : 500),
+    message: (err.response ? err.response.data.message : err.message)
+  }),
 );
 
 export const notionImageApi = axios.create({
@@ -59,9 +57,11 @@ notionImageApi.interceptors.response.use(
 export type AxiosRes =
   | {
       success: true;
+      status: number;
     }
   | {
       success: false;
+      status: number;
       message: string;
     };
 
