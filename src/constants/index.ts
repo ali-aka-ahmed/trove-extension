@@ -13,3 +13,10 @@ export const DEFAULT_TOPIC_COLORS = [
 export const EXCLUDED_HOSTNAMES = [
   'localhost',
 ];
+
+export const MINIMUM_REQ_TIME = 250;
+
+// const TOOLTIP_MARGIN = 10;
+// const TOOLTIP_HEIGHT = 200;
+// const MINI_TOOLTIP_HEIGHT = 32;
+// const DELETE_BUTTON_DIAMETER = 20;

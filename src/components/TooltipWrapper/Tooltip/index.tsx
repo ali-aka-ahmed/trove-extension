@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { AxiosRes } from '../../../app/server';
 import { Record } from '../../../app/server/notion';
 import { CreatePostsReqBody, IPostsRes } from '../../../app/server/posts';
+import { MINIMUM_REQ_TIME } from '../../../constants';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
@@ -28,11 +29,6 @@ import {
   isSelectionInEditableElement,
   selectionExists
 } from './helpers/selection';
-
-const TOOLTIP_MARGIN = 10;
-const TOOLTIP_HEIGHT = 200;
-const MINI_TOOLTIP_HEIGHT = 32;
-const DELETE_BUTTON_DIAMETER = 20;
 
 interface TooltipProps {
   root: ShadowRoot;
@@ -294,7 +290,7 @@ export default function Tooltip(props: TooltipProps) {
 
   const onSaveHighlight = useCallback(
     async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (!dropdownItem) return;
+      if (!dropdownItem) return null;
       ReactTooltip.hide();
 
       const unsavedHighlights = highlighter.getAllUnsavedHighlights();
@@ -316,7 +312,7 @@ export default function Tooltip(props: TooltipProps) {
               },
             ),
           };
-          await sendMessageToExtension({
+          return await sendMessageToExtension({
             type: MessageType.CreatePosts,
             posts: postsArgs,
           }).then((res: IPostsRes) => {
@@ -333,23 +329,56 @@ export default function Tooltip(props: TooltipProps) {
               throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
             }
           });
-        }
-      }
+        } else return res;
+      } else return null;
     },
     [dropdownItem],
   );
 
   const onSavePage = useCallback(async () => {
-    if (!dropdownItem) return;
+    if (!dropdownItem) return null;
     // Write page title hyperlinked with current URL to chosen Notion page
     const href = window.location.href;
     const title = document.title;
-    sendMessageToExtension({
+    const res = (await sendMessageToExtension({
       type: MessageType.AddTextToNotion,
       notionPageId: dropdownItem.id,
       // notionTextChunks: [[[title, [['a', href]] ]]],
       notionTextChunks: [[title, [['a', href]]]],
-    });
+    }) as AxiosRes);
+
+    // adding to database that they created a post with just a url and domain associated with it.
+    // no text, but at least they have something associated with it
+    if (res.success) {
+      // const postsArgs: CreatePostsReqBody = {
+      //   posts: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights).map(
+      //     (highlight) => {
+      //       return {
+      //         url: window.location.href,
+      //         highlight,
+      //       };
+      //     },
+      //   ),
+      // };
+      // await sendMessageToExtension({
+      //   type: MessageType.CreatePosts,
+      //   posts: postsArgs,
+      // }).then((res: IPostsRes) => {
+      //   if (res.success && res.posts) {
+      //     // Show actual highlight when we get response from server
+      //     highlighter.removeAllUnsavedHighlights();
+      //     res.posts.map((p) => {
+      //       addPosts(new Post(p), HighlightType.Default);
+      //     });
+      //     updateNumTempHighlights();
+      //   } else {
+      //     // Show that highlighting failed
+      //     console.error('Failed to create post:', res.message);
+      //     throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
+      //   }
+      // });
+    }
+    return res;
   }, [dropdownItem]);
 
   const renderItem = (item: Record | null) => {
@@ -551,17 +580,11 @@ export default function Tooltip(props: TooltipProps) {
         if (highlighter.getAllUnsavedHighlights().length > 0) {
           // Save current highlight
           setSaveLoading(true);
-          onSaveHighlight().then(() => {
-            setSaveLoading(false);
-            setIsSavingPage(false);
-          });
+          handleSaveHighlights();
         } else if (!selectionExists(selection) && showTooltip) {
           // Save current page
           setSaveLoading(true);
-          onSavePage().then(() => {
-            setIsSavingPage(false);
-            setSaveLoading(false);
-          });
+          handleSavePage();
         }
       }
     },
@@ -584,17 +607,33 @@ export default function Tooltip(props: TooltipProps) {
 
   const handleSaveHighlights = () => {
     setSaveLoading(true);
-    onSaveHighlight().then(() => {
-      setSaveLoading(false);
-      setIsSavingPage(false);
+    onSaveHighlight().then((res) => {
+      if (!res) return;
+      if (res.time < MINIMUM_REQ_TIME) {
+        setTimeout(() => {
+          setSaveLoading(false);
+          setIsSavingPage(false);
+        }, MINIMUM_REQ_TIME - res.time);
+      } else {
+        setSaveLoading(false);
+        setIsSavingPage(false);
+      }
     });
   };
 
   const handleSavePage = () => {
     setSaveLoading(true);
-    onSavePage().then(() => {
-      setIsSavingPage(false);
-      setSaveLoading(false);
+    onSavePage().then((res) => {
+      if (!res) return;
+      if (res.time < MINIMUM_REQ_TIME) {
+        setTimeout(() => {
+          setIsSavingPage(false);
+          setSaveLoading(false);
+        }, MINIMUM_REQ_TIME - res.time);
+      } else {
+        setIsSavingPage(false);
+        setSaveLoading(false);
+      }
     });
   };
 
