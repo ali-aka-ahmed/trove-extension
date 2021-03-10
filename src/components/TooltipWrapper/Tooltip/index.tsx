@@ -428,6 +428,7 @@ export default function Tooltip(props: TooltipProps) {
 
             highlighter.removeHighlight(highlighter.activeHighlightId);
             setHoveredHighlightRect(null);
+            updateNumTempHighlights();
           }}
           ref={deleteButton}
         ></button>
