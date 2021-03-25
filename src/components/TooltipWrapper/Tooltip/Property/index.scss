@@ -1,0 +1,373 @@
+.TroveProperty__Property {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 30px;
+};
+
+.TroveProperty__Property:first-child {
+  margin-top: 10px;
+}
+
+.TroveProperty__Property:last-child {
+  margin-bottom: 10px;
+}
+
+.TroveProperty__PropertyImgWrapper {
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.TroveProperty__PropertyImg {
+  width: 10px;
+}
+
+.TroveProperty__PropertyNameWrapper {
+  padding: 5px 6px;
+  width: 45%;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  // cursor: pointer;
+  border-radius: 3px;
+  user-select: none;
+  height: 100%;
+  max-width: 200px;
+}
+
+// .TroveProperty__PropertyNameWrapper:hover {
+//   background-color: rgba(55, 53, 47, 0.07);
+// }
+
+.TroveProperty__PropertyName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(55, 53, 47, 0.6);
+  font-size: 12px;
+  text-align: left;
+  height: fit-content;
+}
+
+.TroveProperty__PropertyInputWrapper {
+  width: 100%;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+  user-select: none;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  min-height: inherit;
+}
+
+.TroveProperty__PropertyInputWrapper:hover {
+  background-color: rgba(55, 53, 47, 0.07);
+}
+
+.TroveProperty__Checkbox {
+  width: 100%;
+  height: 100%;
+  padding: 5px 10px;
+}
+
+.TroveProperty__CheckboxInterior {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  width: 13px;
+  height: 13px;
+  transition: background 200ms ease-out 0s;
+}
+
+.TroveProperty__CheckboxInteriorChecked {
+  background-color: #2eaadc;
+}
+
+.TroveProperty__PropertyValue {
+  color: rgba(55, 53, 47, 0.6);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.TroveProperty__EditorWrapper {
+  font-size: 12px;
+  box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
+  background-color: transparent;
+  border-radius: 3px;
+  width: 100%;
+  min-height: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  user-select: none;
+  height: 100%;
+  position: relative;
+}
+
+.TroveProperty__InputWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  background-color: #fff;
+  border-radius: 3px;
+  width: 100%;
+  min-height: inherit;
+  display: flex;
+  cursor: pointer;
+  user-select: none;
+  height: 100%;
+  position: relative;
+}
+
+.TroveProperty__InputWrapper--Select {
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  background-color: #F4F4F2;
+  border-radius: 0;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.TroveProperty__Input {
+  width: 100%;
+  height: 100%;
+  outline: 0;
+  border: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  caret-color: rgb(55, 53, 47);
+  padding: 0;
+}
+
+.TroveProperty__LinkIconWrapper {
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  cursor: pointer;
+  border-radius: 3px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: break-word;
+  white-space: pre-wrap;
+  background: #fff;
+  position: absolute;
+  right: 6px;
+  z-index: 15px;
+  box-shadow: rgba(15, 15, 15, 0.1) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 2px 4px;
+}
+
+.TroveProperty__ReadOnlyInputTypeWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  padding: 5px 10px;
+}
+
+.TroveProperty__ReadOnlyTypeWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  padding: 5px 10px;
+  cursor: default;
+}
+
+.TroveProperty__ReadOnlyWrapper {
+  width: 100%;
+  cursor: pointer;
+  border-radius: 3px;
+  user-select: none;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  min-height: inherit;
+  overflow: hidden;
+};
+
+.TroveProperty__ReadOnlyWrapper--ReadOnly {
+  width: 100%;
+  cursor: default;
+  border-radius: 3px;
+  user-select: none;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  min-height: inherit;
+  overflow: hidden;
+}
+
+.TroveProperty__ReadOnlyWrapper:hover {
+  background-color: rgba(55, 53, 47, 0.08);
+};
+
+.TroveProperty__LinkIconWrapper:hover {
+  background: #EFEFEF;
+};
+
+.TroveProperty__LinkIcon {
+  display: flex;
+  text-decoration: none;
+  user-select: none;
+  cursor: pointer;
+  color: inherit;
+};
+
+.TroveProperty__LinkReadOnly {
+  word-break: break-word;
+  white-space: pre-wrap;
+  text-decoration: underline;
+  text-decoration-color: rgba(55, 53, 47, 0.16);
+};
+
+.TrovePill {
+  padding: 0 4px;
+  border-radius: 3px;
+  overflow: hidden;
+  min-height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: #37352f;
+  cursor: inherit;
+  width: fit-content;
+  word-break: break-word;
+};
+
+.TrovePill--nowrap {
+  white-space: nowrap;
+}
+
+.TrovePill__CloseButton {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 3px;
+  width: 13px;
+  cursor: pointer;
+  min-height: 16px;
+  border-radius: 2px;
+};
+
+.TrovePill__CloseButton:hover {
+  background-color: rgba(0,0,0,0.1);
+}
+
+.TrovePill__Value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: inherit;
+}
+
+.TroveProperty__PillRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 25px;
+  padding: 0 10px;
+  cursor: pointer;
+};
+
+.TroveProperty__PillRow:hover {
+  background-color: #EEEEED;
+}
+
+.TroveProperty__SelectWrapper {
+  width: 100%;
+  position: absolute;
+  top: 2px;
+  left: 0;
+  box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
+  border-radius: 3px;
+  z-index: 1;
+}
+
+.TroveProperty__Options {
+  background-color: #fff;
+  padding-top: 10px;
+  padding-bottom: 5px;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  cursor: default;
+}
+
+.TroveProperty__SelectReadOnlyWrapper {
+  color: rgba(55, 53, 47, 0.6);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  position: relative;
+  padding: 5px 10px;
+};
+
+.TroveProperty__SelectReadOnlyWrapper > * {
+  overflow: visible;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+.TroveProperty__CreateTopic {
+  color: rgb(55, 53, 47);
+  margin-right: 5px;
+};
+
+.TroveProperty__SelectedPills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  cursor: default;
+};
+
+.TroveProperty__SelectedPills >  * {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  overflow: visible;
+}
+
+.TroveProperty__OptionDropdownExplainer {
+  color: rgba(55, 53, 47, 0.6);
+  font-size: 10px;
+  font-weight: 500;
+  margin-bottom: 5px;
+  padding: 0 10px;
+};
+
+.TroveProperty--loading {
+  font-size: 12px;
+}
+
+.TroveProperty__PersonIconWrapper {
+
+}
+
+.TroveProperty__ReadOnlyPersonName {
+  margin-left: 5px;
+}

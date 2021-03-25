@@ -1,4 +1,4 @@
-const MARK_CLASS_NAME = 'TroveMark';
+export const MARK_CLASS_NAME = 'TroveMark';
 
 export const addDOMHighlight = (range: Range, color: string = 'yellow') => {
   let start = range.startContainer;

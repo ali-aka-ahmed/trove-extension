@@ -1,6 +1,10 @@
-import { api, AxiosRes, BaseRes, notionImageApi } from '.';
+import { api, AxiosRes, BaseRes } from '.';
 import { getCookie } from '../../utils/chrome/cookies';
+import { Record } from '../notionTypes';
+import { PropertyUpdate } from '../notionTypes/dbUpdate';
+import { SchemaValue } from '../notionTypes/schema';
 
+export type ISchemaRes = SchemaRes & AxiosRes;
 export type IGetPageNamesRes = GetPageNamesRes & AxiosRes;
 export type ISearchPagesRes = SearchPagesRes & AxiosRes;
 
@@ -28,21 +32,6 @@ export const searchNotionPages = async (
   return await api.post('/notion/search', args, config);
 };
 
-export const getNotionImage = async (
-  url: string,
-  id: string,
-  width?: number,
-): Promise<ISearchPagesRes> => {
-  const config = {
-    params: {
-      ...(width ? { width } : {}),
-      url,
-      id,
-    },
-  };
-  return await notionImageApi.post(`/${url}`, {}, config);
-};
-
 export const addTextToNotion = async (
   pageId: string,
   textChunks: string[] | any[],
@@ -52,21 +41,29 @@ export const addTextToNotion = async (
     getCookie('https://www.notion.so', 'token_v2'),
   ]);
   const config = { headers: { 'notion-token': notionToken } };
-  return await api.post('/notion/writeText', { userId, pageId, textChunks }, config);
+  const data: WriteTextReqBody = { userId: userId!, pageId, textChunks };
+  return await api.post('/notion/writeText', data, config);
 };
 
-export type Icon = {
-  value: string;
-  type: 'url' | 'emoji';
+export const getDBSchema = async (dbId: string): Promise<ISchemaRes> => {
+  const notionToken = await getCookie('https://www.notion.so', 'token_v2');
+  const config = { headers: { 'notion-token': notionToken } };
+  const data: GetSchemaReqBody = { pageId: dbId };
+  return await api.post('/notion/getSchema', data, config);
 };
 
-export type Record = {
-  id: string;
-  name: string;
-  type: 'database' | 'page' | 'space';
-  icon?: Icon;
-  section?: 'database' | 'page' | 'recent';
-  path?: string;
+export const addEntryToDB = async (
+  dbId: string,
+  updates: PropertyUpdate[],
+  textChunks: string[] | unknown[],
+): Promise<AxiosRes> => {
+  const [userId, notionToken] = await Promise.all([
+    getCookie('https://www.notion.so', 'notion_user_id'),
+    getCookie('https://www.notion.so', 'token_v2'),
+  ]);
+  const config = { headers: { 'notion-token': notionToken } };
+  const data: AddRowReqBody = { pageId: dbId, userId: userId!, updates, textChunks };
+  return await api.post('/notion/addRow', data, config);
 };
 
 /**
@@ -96,13 +93,21 @@ export interface SearchPagesReqBody {
 }
 
 /**
- * POST /notion/getImage
+ * POST /notion/getSchema
  */
-export interface GetImageReqBody {
-  url: string;
-  id: string;
-  width?: number;
-}
+type GetSchemaReqBody = {
+  pageId: string;
+};
+
+/**
+ * POST /notion/addRow
+ */
+type AddRowReqBody = {
+  userId: string;
+  pageId: string;
+  updates: PropertyUpdate[];
+  textChunks: string[] | unknown[];
+};
 
 /**
  * POST /notion/getPages
@@ -128,4 +133,11 @@ type SearchPagesRes = {
   spaceId?: string;
   pages?: Record[];
   databases?: Record[];
+} & BaseRes;
+
+/**
+ * POST /notion/getSchema
+ */
+export type SchemaRes = {
+  schema: Array<SchemaValue>;
 } & BaseRes;

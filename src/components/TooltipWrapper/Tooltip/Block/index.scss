@@ -1,0 +1,35 @@
+.TroveBlock {
+  width: 100%;
+  height: fit-content;
+  border-radius: 3px;
+  margin: 15px 0;
+}
+
+.TroveBlock__TextArea {
+  outline: 0px;
+  border: none;
+  resize: none;
+  width: 100%;
+  padding: 0;
+}
+
+.TroveBlock__AddButton {
+  width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #969696;
+  border-radius: 3px;
+  vertical-align: middle;
+  font-size: 14px;
+  padding-bottom: 3px;
+  user-select: none;
+}
+
+.TroveBlock__EmptyBlock {
+  height: 15px;
+  padding: 0 3px;
+  width: 100%;
+  cursor: pointer;
+}

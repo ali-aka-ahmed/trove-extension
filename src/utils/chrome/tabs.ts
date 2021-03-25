@@ -1,4 +1,6 @@
 import { toArray } from '..';
+import { GetImageReqBody } from '../../app/notionServer/getImage';
+import { PropertyUpdate } from '../../app/notionTypes/dbUpdate';
 import { ForgotReqBody, LoginReqBody } from '../../app/server/auth';
 import { ErrorReqBody } from '../../app/server/misc';
 import { CreateCommentReqBody, CreatePostsReqBody } from '../../app/server/posts';
@@ -31,8 +33,11 @@ export interface Message {
   width?: number;
   notionUserId?: string;
   notionPageId?: string;
-  notionTextChunks?: string[] | any[];
+  notionTextChunks?: string[] | unknown[];
   highlights?: string[];
+  imageOptions?: GetImageReqBody;
+  dbId?: string;
+  updates?: Array<PropertyUpdate>;
 }
 
 export enum MessageType {
@@ -58,6 +63,9 @@ export enum MessageType {
   SearchNotionPages,
   GetNotionImage,
   GetNotionUserId,
+  GetNotionSpaceUsers,
+  GetNotionDBSchema,
+  AddNotionRow,
 }
 
 /**

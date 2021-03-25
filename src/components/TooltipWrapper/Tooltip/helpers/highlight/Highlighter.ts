@@ -1,9 +1,10 @@
 import Color from 'color';
+import { PostReqBody } from '../../../../../app/server/posts';
 import Post, { isPost } from '../../../../../entities/Post';
 import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from './domHighlight';
 import { getRangeFromTextRange, TextRange } from './textRange';
 
-type AnyHighlight = SavedHighlight | UnsavedHighlight;
+export type AnyHighlight = SavedHighlight | UnsavedHighlight;
 type SavedHighlight = {
   marks: HTMLElement[];
   data: Post;
@@ -11,12 +12,13 @@ type SavedHighlight = {
   handlers: { [event: string]: (e: MouseEvent) => void };
   isTemporary: false; // Is this highlight saved or not
 };
-type UnsavedHighlight = {
+export type UnsavedHighlight = {
   marks: HTMLElement[];
   data: UnsavedHighlightData;
   type: HighlightType;
   handlers: { [event: string]: (e: MouseEvent) => void };
   isTemporary: true;
+  content: string;
 };
 
 export interface UnsavedHighlightData {
@@ -38,6 +40,24 @@ export default class Highlighter {
     this.highlights = new Map<string, AnyHighlight>();
     this.activeHighlightId = '';
   }
+
+  public static getColor = (colorStr: string, type: HighlightType): string => {
+    const color = Color(colorStr);
+    const rgba = (c: Color<string>, o: number) => `rgba(${c.red()},${c.green()},${c.blue()},${o})`;
+    if (type === HighlightType.Default) return rgba(color, 0.35);
+    return rgba(color, 0.65);
+  };
+
+  public modifyContent = (highlightId: string, newContent: string): void => {
+    const highlight = this.getHighlight(highlightId);
+    if (!highlight) return;
+    if (highlight.isTemporary) {
+      highlight.content = newContent;
+    } else {
+      highlight.data.content = newContent;
+    }
+    this.highlights.set(highlightId, highlight);
+  };
 
   public addHighlight = (
     data: Post | UnsavedHighlightData,
@@ -66,7 +86,7 @@ export default class Highlighter {
     this.removeHighlight(id);
 
     // Calculate range
-    const color = this.getColor(userColor, type);
+    const color = Highlighter.getColor(userColor, type);
     let range: Range | null;
     try {
       range = getRangeFromTextRange(textRange);
@@ -124,7 +144,7 @@ export default class Highlighter {
         const userColor = highlight.isTemporary
           ? highlight.data.color
           : highlight.data.creator.color;
-        const color = this.getColor(userColor, type);
+        const color = Highlighter.getColor(userColor, type);
         modifyDOMHighlight(highlight.marks, 'backgroundColor', color);
         this.highlights.set(id, { ...highlight, type });
 
@@ -165,26 +185,40 @@ export default class Highlighter {
   public removeAllUnsavedHighlights = () => {
     this.getAllUnsavedHighlights().forEach((highlight) => this.removeHighlight(highlight.data.id));
   };
-
-  private getColor = (colorStr: string, type: HighlightType): string => {
-    const color = Color(colorStr);
-    const rgba = (c: Color<string>, o: number) => `rgba(${c.red()},${c.green()},${c.blue()},${o})`;
-    if (type === HighlightType.Default) return rgba(color, 0.35);
-    return rgba(color, 0.65);
-  };
 }
 
 export const transformUnsavedHighlightDataToCreateHighlightRequestData = (
   data: UnsavedHighlight[],
-) => {
-  return data.map((uh) => ({
-    textRange: uh.data.textRange,
-    url: window.location.href,
-  }));
+): Array<PostReqBody> => {
+  return data.map((uh) => {
+    const postBody: Partial<PostReqBody> = {
+      url: window.location.href,
+      highlight: {
+        textRange: uh.data.textRange,
+        url: window.location.href,
+      },
+    };
+    if (uh.content) postBody.content = uh.content;
+    return postBody as PostReqBody;
+  });
 };
 
-export const transformUnsavedHighlightDataToTextList = (data: UnsavedHighlight[]) => {
-  return data.map((uh) => [uh.data.textRange.text]);
+/**
+ * Returns text and quote chunks formatted in the way Notion formats write text.
+ * Format of each list item in return value is one of the below
+ * ex. ["This is a quote", [["h", "yellow_background"]]]
+ * ex. ["Comment"]
+ * @param data
+ * @returns any[][]
+ */
+export const transformUnsavedHighlightDataToTextList = (data: UnsavedHighlight[]): any[][] => {
+  const retVals: any[][] = [];
+  data.forEach((uh) => {
+    const highlightText = [uh.data.textRange.text, [['h', 'yellow_background']]];
+    retVals.push(highlightText);
+    if (uh.content) retVals.push([uh.content]);
+  });
+  return retVals;
 };
 
 export const getIdFromAnyHighlightData = (data: Post | UnsavedHighlightData): string => {
