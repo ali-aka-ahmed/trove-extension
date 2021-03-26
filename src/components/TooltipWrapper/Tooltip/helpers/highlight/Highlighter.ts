@@ -35,10 +35,12 @@ export enum HighlightType {
 export default class Highlighter {
   highlights: Map<string, AnyHighlight>; // Highlight id -> highlight data
   activeHighlightId: string;
+  activePostId: string;
 
   constructor() {
     this.highlights = new Map<string, AnyHighlight>();
     this.activeHighlightId = '';
+    this.activePostId = '';
   }
 
   public static getColor = (colorStr: string, type: HighlightType): string => {

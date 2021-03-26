@@ -480,7 +480,7 @@ export default function Tooltip(props: TooltipProps) {
       // Remove from server
       sendMessageToExtension({
         type: MessageType.DeletePost,
-        id: highlightId,
+        id: highlight.data.id,
       });
     }
 
