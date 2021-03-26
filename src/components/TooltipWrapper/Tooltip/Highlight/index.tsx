@@ -22,15 +22,6 @@ const Highlight = ({
   const [isHovered, setIsHovered] = useState(false);
   const [hasContent, setHasContent] = useState(false);
 
-  // useEffect(() => {
-  //   console.log('text', highlight.data.textRange.text);
-  //   console.log('highlight.content', highlight.content);
-  //   console.log('display content', commentValue);
-  //   console.log('!!highlight.content', !!highlight.content);
-  //   console.log('hasContent', hasContent);
-  //   console.log('\n');
-  // });
-
   useEffect(() => {
     const elem = root.getElementById(`${highlight.data.id}Block`);
     if (elem) {
@@ -42,10 +33,13 @@ const Highlight = ({
   }, [hasContent]);
 
   useEffect(() => {
-    if (highlight.content === undefined) setHasContent(false);
-    if (highlight.content) setCommentValue(highlight.content);
-    else setCommentValue('');
-  }, [highlight.content]);
+    if (highlight.content === undefined) {
+      setHasContent(false);
+    } else if (highlight.content) {
+      setHasContent(true);
+      setCommentValue(highlight.content);
+    }
+  }, []);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement> | KeyboardEvent) => {
     e.stopPropagation();
@@ -59,10 +53,6 @@ const Highlight = ({
     modifyHighlightContent(highlight.data.id, e.target.value); // modifies actual data
     setCommentValue(e.target.value); // modifies local input. without this the above doesn't trigger a change.
   };
-
-  // useEffect(() => {
-  //   if (hasContent && scrollToElement) scrollToElement(`${highlight.data.id}Block`);
-  // }, [hasContent]);
 
   return (
     <div className="TroveHighlightWrapper" style={hasContent ? { marginBottom: '0' } : {}}>
