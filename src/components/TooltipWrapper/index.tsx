@@ -12,6 +12,7 @@ import { isOsKeyPressed } from './Tooltip/helpers/os';
 import highlightStyles from './Tooltip/Highlight/index.scss?inject';
 import hintStyles from './Tooltip/hint.scss?inject';
 import tooltipStyles from './Tooltip/index.scss?inject';
+import linkStyles from './Tooltip/Link/index.scss?inject';
 import propertyStyles from './Tooltip/Property/index.scss?inject';
 import titleStyles from './Tooltip/Title/index.scss?inject';
 
@@ -49,6 +50,7 @@ export default function TooltipWrapper(props: TooltipWrapperProps) {
         <style type="text/css">{tooltipStyles}</style>
         <style type="text/css">{contentStyles}</style>
         <style type="text/css">{propertyStyles}</style>
+        <style type="text/css">{linkStyles}</style>
         <style type="text/css">{highlightStyles}</style>
         <style type="text/css">{titleStyles}</style>
       </>

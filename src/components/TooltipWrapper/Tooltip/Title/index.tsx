@@ -23,6 +23,10 @@ const Title = ({ existingTitle, updateProperty, setCollapsed, collapsed }: Title
     if (title !== existingTitle) updateProperty('title', SchemaPropertyType.Title, title);
   }, [title]);
 
+  useEffect(() => {
+    if (existingTitle) setTitle(existingTitle);
+  }, [existingTitle]);
+
   const handleCollapsed = () => {
     setCollapsed(!collapsed);
     if (button.current) button.current.blur();

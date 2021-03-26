@@ -1,0 +1,77 @@
+.TroveHighlightWrapper {
+  width: 100%;
+}
+
+.TroveHighlightWrapper:not(:last-child) {
+  margin-bottom: 15px;
+}
+
+.TroveHighlight__ButtonWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 5px;
+  position: absolute;
+  z-index: 5;
+}
+
+.TroveHighlight__OptionButton {
+  font-weight: 400;
+  cursor: pointer;
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: 3px;
+  height: 20px;
+  padding: 0px 6px;
+  line-height: 1.2;
+  border: 1px solid #dddddd;
+  background-color: #FFFFFF;
+  outline: none;
+  font-size: 10px;
+  color: #969696;
+  transition: 100ms;
+}
+
+.TroveHighlight__OptionButton:hover {
+  background-color: #EFEFEE;
+  border-color: inherit;
+  color: inherit;
+}
+
+.TroveHighlight__OptionButton--delete:hover {
+  color: #FF0000;
+}
+
+.TroveHighlight__OptionButton--delete {
+
+}
+
+.TroveBlock__TextArea {
+  outline: 0px;
+  border: none;
+  resize: none;
+  width: 100%;
+  padding: 0;
+}
+
+.TroveBlock {
+  width: 100%;
+  height: fit-content;
+  border-radius: 3px;
+  margin: 15px 0;
+  padding: 2px 0;
+}
+
+.TroveLink {
+  position: relative;
+  cursor: default;
+}
+
+.TroveLink__Title {
+  text-decoration: underline;
+  color: #969696;
+}

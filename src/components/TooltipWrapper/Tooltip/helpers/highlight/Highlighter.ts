@@ -1,10 +1,12 @@
 import Color from 'color';
+import { v4 as uuid } from 'uuid';
 import { PostReqBody } from '../../../../../app/server/posts';
 import Post, { isPost } from '../../../../../entities/Post';
 import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from './domHighlight';
 import { getRangeFromTextRange, TextRange } from './textRange';
 
 export type AnyHighlight = SavedHighlight | UnsavedHighlight;
+
 type SavedHighlight = {
   marks: HTMLElement[];
   data: Post;
@@ -32,16 +34,36 @@ export enum HighlightType {
   Active, // Click, hover, new post
 }
 
+export type Link = {
+  id: string;
+  url: string;
+  title: string;
+  content: string;
+  toSend: boolean;
+};
+
 export default class Highlighter {
+  link: Link;
   highlights: Map<string, AnyHighlight>; // Highlight id -> highlight data
   activeHighlightId: string;
-  activePostId: string;
 
   constructor() {
+    this.link = {
+      id: uuid(),
+      url: window.location.href,
+      title: document.title,
+      content: '',
+      toSend: true,
+    };
     this.highlights = new Map<string, AnyHighlight>();
     this.activeHighlightId = '';
-    this.activePostId = '';
   }
+
+  public removeLink = () => (this.link.toSend = false);
+  public reset = () => {
+    this.link.toSend = true;
+    this.link.content = '';
+  };
 
   public static getColor = (colorStr: string, type: HighlightType): string => {
     const color = Color(colorStr);
@@ -50,15 +72,19 @@ export default class Highlighter {
     return rgba(color, 0.65);
   };
 
-  public modifyContent = (highlightId: string, newContent: string): void => {
-    const highlight = this.getHighlight(highlightId);
-    if (!highlight) return;
-    if (highlight.isTemporary) {
-      highlight.content = newContent;
+  public modifyContent = (id: string, newContent: string): void => {
+    if (this.link.id === id) {
+      this.link.content = newContent;
     } else {
-      highlight.data.content = newContent;
+      const highlight = this.getHighlight(id);
+      if (!highlight) return;
+      if (highlight.isTemporary) {
+        highlight.content = newContent;
+      } else {
+        highlight.data.content = newContent;
+      }
+      this.highlights.set(id, highlight);
     }
-    this.highlights.set(highlightId, highlight);
   };
 
   public addHighlight = (
@@ -220,6 +246,12 @@ export const transformUnsavedHighlightDataToTextList = (data: UnsavedHighlight[]
     retVals.push(highlightText);
     if (uh.content) retVals.push([uh.content]);
   });
+  return retVals;
+};
+
+export const transformLinkDataToTextList = (link: Link): any[][] => {
+  const retVals: any[][] = [[link.title, [['a', link.url]]]];
+  if (link.content) retVals.push([link.content]);
   return retVals;
 };
 

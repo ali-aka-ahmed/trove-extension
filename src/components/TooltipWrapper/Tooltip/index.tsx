@@ -8,12 +8,12 @@ import {
   AnyPropertyUpdateData,
   MultiSelectOptionPropertyUpdate,
   PropertyUpdate,
-  SelectOptionPropertyUpdate,
+  SelectOptionPropertyUpdate
 } from '../../../app/notionTypes/dbUpdate';
 import {
   MultiSelectProperty,
   SchemaPropertyType,
-  SelectProperty,
+  SelectProperty
 } from '../../../app/notionTypes/schema';
 import { AxiosRes } from '../../../app/server';
 import { ISchemaRes } from '../../../app/server/notion';
@@ -30,9 +30,10 @@ import Dropdown from './Dropdown';
 import Highlighter, {
   getIdFromAnyHighlightData,
   HighlightType,
+  transformLinkDataToTextList,
   transformUnsavedHighlightDataToCreateHighlightRequestData,
   transformUnsavedHighlightDataToTextList,
-  UnsavedHighlightData,
+  UnsavedHighlightData
 } from './helpers/highlight/Highlighter';
 import { getTextRangeFromRange } from './helpers/highlight/textRange';
 import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
@@ -40,9 +41,10 @@ import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReduc
 import {
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists,
+  selectionExists
 } from './helpers/selection';
 import Highlight from './Highlight';
+import Link from './Link';
 import Property from './Property';
 import Title from './Title';
 
@@ -61,9 +63,8 @@ export default function Tooltip(props: TooltipProps) {
   const [isDBSupported, setIsDBSupported] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
   const [numTempHighlights, setNumTempHighlights] = useState(0);
+  const [linkShowing, setLinkShowing] = useState(true);
   // const [tempHighlights, setTempHighlights] = useState([]);
-  // Is user currently saving page
-  const [isSavingPage, setIsSavingPage] = useState(false);
   const [isSelectionVisible, setIsSelectionVisible] = useState(false);
   // const [isSelectionHovered, setIsSelectionHovered] = useState(false);
 
@@ -95,10 +96,18 @@ export default function Tooltip(props: TooltipProps) {
     return newVal;
   };
 
+  const removeLink = () => {
+    setLinkShowing(false);
+    highlighter.removeLink();
+  };
+
   useEffect(() => {
-    const newVal = isSavingPage || numTempHighlights > 0;
-    setShowTooltip(newVal);
-  }, [isSavingPage, numTempHighlights]);
+    if (!linkShowing && numTempHighlights === 0) {
+      setShowTooltip(false);
+      highlighter.reset();
+      setLinkShowing(true);
+    }
+  }, [numTempHighlights, linkShowing]);
 
   useEffect(() => {
     if (!propertiesLoading) scrollToElement('TroveBottomContent');
@@ -338,7 +347,8 @@ export default function Tooltip(props: TooltipProps) {
     async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       if (!dropdownItem) return null;
       const unsavedHighlights = highlighter.getAllUnsavedHighlights();
-      if (unsavedHighlights.length === 0) return null;
+      const link = highlighter.link;
+      if (unsavedHighlights.length === 0 && !link.toSend) return null;
       ReactTooltip.hide();
 
       let res: AxiosRes;
@@ -347,7 +357,9 @@ export default function Tooltip(props: TooltipProps) {
         res = (await sendMessageToExtension({
           type: MessageType.AddTextToNotion,
           notionPageId: dropdownItem.id,
-          notionTextChunks: transformUnsavedHighlightDataToTextList(unsavedHighlights),
+          notionTextChunks: transformLinkDataToTextList(link).concat(
+            transformUnsavedHighlightDataToTextList(unsavedHighlights),
+          ),
         })) as AxiosRes;
       } else {
         const updates: PropertyUpdate[] = [];
@@ -359,7 +371,9 @@ export default function Tooltip(props: TooltipProps) {
           type: MessageType.AddNotionRow,
           dbId: dropdownItem.collectionId || dropdownItem.id,
           updates,
-          notionTextChunks: transformUnsavedHighlightDataToTextList(unsavedHighlights),
+          notionTextChunks: transformLinkDataToTextList(link).concat(
+            transformUnsavedHighlightDataToTextList(unsavedHighlights),
+          ),
         })) as AxiosRes;
       }
       // Add to our own servers
@@ -378,6 +392,9 @@ export default function Tooltip(props: TooltipProps) {
               addPosts(new Post(p), HighlightType.Default);
             });
             updateNumTempHighlights();
+            setShowTooltip(false);
+            highlighter.reset();
+            setLinkShowing(true);
           } else {
             // Show that highlighting failed
             console.error('Failed to create post:', res.message);
@@ -388,51 +405,6 @@ export default function Tooltip(props: TooltipProps) {
     },
     [dropdownItem, propertyUpdates],
   );
-
-  const onSavePage = useCallback(async () => {
-    if (!dropdownItem) return null;
-    // Write page title hyperlinked with current URL to chosen Notion page
-    const href = window.location.href;
-    const title = document.title;
-    const res = (await sendMessageToExtension({
-      type: MessageType.AddTextToNotion,
-      notionPageId: dropdownItem.id,
-      notionTextChunks: [[title, [['a', href]]]],
-    })) as AxiosRes;
-
-    // adding to database that they created a post with just a url and domain associated with it.
-    // no text, but at least they have something associated with it
-    if (res.success) {
-      // const postsArgs: CreatePostsReqBody = {
-      //   posts: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights).map(
-      //     (highlight) => {
-      //       return {
-      //         url: window.location.href,
-      //         highlight,
-      //       };
-      //     },
-      //   ),
-      // };
-      // await sendMessageToExtension({
-      //   type: MessageType.CreatePosts,
-      //   posts: postsArgs,
-      // }).then((res: IPostsRes) => {
-      //   if (res.success && res.posts) {
-      //     // Show actual highlight when we get response from server
-      //     highlighter.removeAllUnsavedHighlights();
-      //     res.posts.map((p) => {
-      //       addPosts(new Post(p), HighlightType.Default);
-      //     });
-      //     updateNumTempHighlights();
-      //   } else {
-      //     // Show that highlighting failed
-      //     console.error('Failed to create post:', res.message);
-      //     throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
-      //   }
-      // });
-    }
-    return res;
-  }, [dropdownItem]);
 
   const renderItem = (item: Record | null) => {
     if (!item) {
@@ -528,19 +500,12 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [hoveredHighlightRect]);
 
-  const renderButtonList = (type: 'savePage' | 'saveHighlights') => {
+  const renderButtonList = () => {
     let onSave = () => {
       setSaveLoading(true);
-      handleSavePage();
+      handleSaveHighlights();
     };
-    let onCancel = handleCancelSavePage;
-    if (type === 'saveHighlights') {
-      onSave = () => {
-        setSaveLoading(true);
-        handleSaveHighlights();
-      };
-      onCancel = handleCancelSaveHighlights;
-    }
+    let onCancel = handleCancelSaveHighlights;
 
     return (
       <div className="TroveContent__ButtonList" style={saveLoading ? { width: '156px' } : {}}>
@@ -581,34 +546,32 @@ export default function Tooltip(props: TooltipProps) {
     );
   };
 
-  const renderText = useCallback(
-    (type: 'savePage' | 'saveHighlights') => {
-      switch (type) {
-        case 'saveHighlights': {
-          const highlights = highlighter.getAllUnsavedHighlights();
-          return (
-            <div className="TroveContent__Text">
-              {highlights.map((h, i) => (
-                <Highlight
-                  highlight={h}
-                  removeHighlight={removeHighlight}
-                  modifyHighlightContent={highlighter.modifyContent}
-                  scrollToElement={scrollToElement}
-                  root={props.root}
-                />
-              ))}
-            </div>
-          );
-        }
-        case 'savePage': {
-          return <div className="TroveContent__Text">Send page to Notion</div>;
-        }
-        default:
-          return null;
-      }
-    },
-    [numTempHighlights],
-  );
+  const renderText = useCallback(() => {
+    const highlights = highlighter.getAllUnsavedHighlights();
+    const link = highlighter.link;
+    return (
+      <div className="TroveContent__Text">
+        {linkShowing && (
+          <Link
+            link={link}
+            root={props.root}
+            modifyLinkContent={highlighter.modifyContent}
+            removeLink={removeLink}
+            scrollToElement={scrollToElement}
+          />
+        )}
+        {highlights.map((h) => (
+          <Highlight
+            highlight={h}
+            removeHighlight={removeHighlight}
+            modifyHighlightContent={highlighter.modifyContent}
+            scrollToElement={scrollToElement}
+            root={props.root}
+          />
+        ))}
+      </div>
+    );
+  }, [numTempHighlights, linkShowing]);
 
   useEffect(() => {
     setIsDBSupported(true);
@@ -664,8 +627,7 @@ export default function Tooltip(props: TooltipProps) {
             }
             setDefaultPageLoading(false);
           });
-          // New save for current page
-          if (!selectionExists(selection)) setIsSavingPage(true);
+          setShowTooltip(true);
         }
         if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
@@ -685,22 +647,18 @@ export default function Tooltip(props: TooltipProps) {
         window.scrollTo(0, document.body.scrollHeight);
       } else if (e.key === 'Escape' && showTooltip) {
         e.preventDefault();
-        highlighter.removeAllUnsavedHighlights();
-        updateNumTempHighlights();
-        setIsSavingPage(false);
-        setSaveLoading(false);
-      } else if (e.key === 'Enter' && showTooltip && !dropdownClicked && !collapsed) {
+        handleCancelSaveHighlights();
+      } else if (
+        e.key === 'Enter' &&
+        showTooltip &&
+        !dropdownClicked &&
+        !collapsed &&
+        (highlighter.getAllUnsavedHighlights().length > 0 || highlighter.link.toSend)
+      ) {
         e.preventDefault();
-        const selection = getSelection()!;
-        if (highlighter.getAllUnsavedHighlights().length > 0) {
-          // Save current highlight
-          setSaveLoading(true);
-          handleSaveHighlights();
-        } else if (!selectionExists(selection) && showTooltip) {
-          // Save current page
-          setSaveLoading(true);
-          handleSavePage();
-        }
+        // Save current highlight
+        setSaveLoading(true);
+        handleSaveHighlights();
       }
     },
     [
@@ -711,7 +669,6 @@ export default function Tooltip(props: TooltipProps) {
       isExtensionOn,
       addTempHighlight,
       onSaveHighlight,
-      onSavePage,
       showTooltip,
     ],
   );
@@ -724,22 +681,10 @@ export default function Tooltip(props: TooltipProps) {
   const handleSaveHighlights = () => {
     setSaveLoading(true);
     onSaveHighlight().then((res) => {
-      setSaveLoading(false);
-      if (!res) return;
-      if (res.time < MINIMUM_REQUEST_TIME) {
-        setTimeout(() => {
-          setIsSavingPage(false);
-        }, MINIMUM_REQUEST_TIME - res.time);
-      } else {
-        setIsSavingPage(false);
+      if (!res) {
+        setSaveLoading(false);
+        return;
       }
-    });
-  };
-
-  const handleSavePage = () => {
-    setSaveLoading(true);
-    onSavePage().then((res) => {
-      if (!res) return;
       if (res.time < MINIMUM_REQUEST_TIME) {
         setTimeout(() => {
           setSaveLoading(false);
@@ -752,12 +697,9 @@ export default function Tooltip(props: TooltipProps) {
 
   const handleCancelSaveHighlights = () => {
     highlighter.removeAllUnsavedHighlights();
+    highlighter.reset();
     updateNumTempHighlights();
-    setSaveLoading(false);
-  };
-
-  const handleCancelSavePage = () => {
-    setIsSavingPage(false);
+    setLinkShowing(false);
     setSaveLoading(false);
   };
 
@@ -916,7 +858,7 @@ export default function Tooltip(props: TooltipProps) {
                         {(dropdownItem?.type === 'database' || dropdownItem?.hasSchema) && (
                           <div className="TroveTooltip__Divider" />
                         )}
-                        {renderText(isSavingPage ? 'savePage' : 'saveHighlights')}
+                        {renderText()}
                       </>
                     )}
                     <div className="TroveTooltip__BottomContent" id="TroveBottomContent">
@@ -945,7 +887,7 @@ export default function Tooltip(props: TooltipProps) {
                           renderItem(dropdownItem)
                         )}
                       </button>
-                      {renderButtonList(isSavingPage ? 'savePage' : 'saveHighlights')}
+                      {renderButtonList()}
                     </div>
                   </>
                 )}
