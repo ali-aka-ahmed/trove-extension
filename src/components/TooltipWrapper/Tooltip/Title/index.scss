@@ -23,17 +23,23 @@
   border-radius: 100px;
   height: 20px;
   outline: none;
+  box-shadow: none;
   font-size: 20px;
   color: #969696;
   transition: 100ms;
   width: 20px;
   transform: rotateZ(90deg);
   transition: 100ms;
-}
+};
 
 .TroveDropdown__CollapseButton:hover {
   color: inherit;
-}
+};
+
+.TroveDropdown__CollapseButton:active:focus {
+  outline: none;
+  box-shadow: none;
+};
 
 .TroveTooltip__Title {
   max-width: 100%;
@@ -52,7 +58,8 @@
   border-bottom: 1px solid #DDDDDD;
   resize: none;
   padding-right: 35px;
-}
+};
+
 .TroveTooltip__Title::placeholder {
   color: rgb(225, 225, 225);
-}
+};

@@ -4,8 +4,17 @@ import React, { useCallback, useEffect, useReducer, useRef, useState } from 'rea
 import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
 import { Record } from '../../../app/notionTypes';
-import { AnyPropertyUpdateData, PropertyUpdate } from '../../../app/notionTypes/dbUpdate';
-import { SchemaPropertyType } from '../../../app/notionTypes/schema';
+import {
+  AnyPropertyUpdateData,
+  MultiSelectOptionPropertyUpdate,
+  PropertyUpdate,
+  SelectOptionPropertyUpdate,
+} from '../../../app/notionTypes/dbUpdate';
+import {
+  MultiSelectProperty,
+  SchemaPropertyType,
+  SelectProperty,
+} from '../../../app/notionTypes/schema';
 import { AxiosRes } from '../../../app/server';
 import { ISchemaRes } from '../../../app/server/notion';
 import { CreatePostsReqBody, IPostsRes } from '../../../app/server/posts';
@@ -89,7 +98,6 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     const newVal = isSavingPage || numTempHighlights > 0;
     setShowTooltip(newVal);
-    setCollapsed(false);
   }, [isSavingPage, numTempHighlights]);
 
   useEffect(() => {
@@ -389,7 +397,6 @@ export default function Tooltip(props: TooltipProps) {
     const res = (await sendMessageToExtension({
       type: MessageType.AddTextToNotion,
       notionPageId: dropdownItem.id,
-      // notionTextChunks: [[[title, [['a', href]] ]]],
       notionTextChunks: [[title, [['a', href]]]],
     })) as AxiosRes;
 
@@ -613,10 +620,11 @@ export default function Tooltip(props: TooltipProps) {
         dbId: dropdownItem.collectionId || dropdownItem.id,
       }).then((res: ISchemaRes) => {
         if (res.success) {
+          setShowPropertiesLoadError(false);
           if (!res.isSupported) {
             setIsDBSupported(false);
+            setPropertiesLoading(false);
           } else {
-            setShowPropertiesLoadError(false);
             // reset item for new properties to render
             const newSchema = res.schema;
             if (_.isEqual(newSchema, dropdownItem.schema)) {
@@ -681,7 +689,7 @@ export default function Tooltip(props: TooltipProps) {
         updateNumTempHighlights();
         setIsSavingPage(false);
         setSaveLoading(false);
-      } else if (e.key === 'Enter' && showTooltip && !dropdownClicked) {
+      } else if (e.key === 'Enter' && showTooltip && !dropdownClicked && !collapsed) {
         e.preventDefault();
         const selection = getSelection()!;
         if (highlighter.getAllUnsavedHighlights().length > 0) {
@@ -696,6 +704,7 @@ export default function Tooltip(props: TooltipProps) {
       }
     },
     [
+      collapsed,
       dropdownClicked,
       highlighter,
       isAuthenticated,
@@ -765,6 +774,38 @@ export default function Tooltip(props: TooltipProps) {
         ))}
       </div>
     );
+  };
+
+  const collapse = (val: boolean) => {
+    if (val) {
+      setCollapsed(true);
+    } else {
+      // sync property values to dropdownItem schema and load through there
+      const newSchema = dropdownItem?.schema?.map((sv) => {
+        const { propertyId } = sv;
+        if (!propertyUpdates[propertyId]) return sv;
+        const { type, data } = propertyUpdates[propertyId];
+        if (type === SchemaPropertyType.Select) {
+          sv.value = (data as SelectOptionPropertyUpdate).selected;
+          (sv as SelectProperty).options = (sv as SelectProperty).options.concat(
+            (data as SelectOptionPropertyUpdate).newOptions,
+          );
+        } else if (type === SchemaPropertyType.MultiSelect) {
+          sv.value = (data as MultiSelectOptionPropertyUpdate).selected;
+          (sv as MultiSelectProperty).options = (sv as MultiSelectProperty).options.concat(
+            (data as MultiSelectOptionPropertyUpdate).newOptions,
+          );
+        } else {
+          sv.value = data;
+        }
+        return sv;
+      });
+      if (dropdownItem) {
+        dropdownItem.schema = newSchema;
+        setDropdownItem(dropdownItem);
+      }
+      setCollapsed(false);
+    }
   };
 
   const goToFeedback = () => {
@@ -851,7 +892,7 @@ export default function Tooltip(props: TooltipProps) {
                       dropdownItem?.type !== 'database' ? dropdownItem?.name : undefined
                     }
                     updateProperty={setPropertyUpdate}
-                    setCollapsed={setCollapsed}
+                    setCollapsed={collapse}
                     collapsed={collapsed}
                   />
                 )}

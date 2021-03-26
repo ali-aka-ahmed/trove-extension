@@ -3,6 +3,7 @@ export type SchemaValue =
       name: string;
       propertyId: string;
       type: SchemaPropertyType.Title;
+      value?: string;
     }
   | TextProperty
   | NumberProperty
