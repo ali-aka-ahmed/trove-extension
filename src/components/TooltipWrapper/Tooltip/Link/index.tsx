@@ -86,6 +86,7 @@ const Link = ({ link, removeLink, modifyLinkContent, scrollToElement, root }: Hi
             onChange={handleCommentChange}
             value={commentValue}
             onKeyDown={onKeyDown}
+            onKeyPress={(e) => e.stopPropagation()}
             placeholder={'Write something...'}
             autoFocus
           />

@@ -101,6 +101,7 @@ const Highlight = ({
             onChange={handleCommentChange}
             value={commentValue}
             onKeyDown={onKeyDown}
+            onKeyPress={(e) => e.stopPropagation()}
             placeholder={'Write something...'}
             autoFocus
           />

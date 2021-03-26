@@ -47,6 +47,7 @@ const Title = ({ existingTitle, updateProperty, setCollapsed, collapsed }: Title
       <TextareaAutosize
         className="TroveTooltip__Title"
         onChange={(e) => setTitle(e.target.value)}
+        onKeyPress={(e) => e.stopPropagation()}
         value={title}
         placeholder="Untitled"
         disabled={!!existingTitle}
