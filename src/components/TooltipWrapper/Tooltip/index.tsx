@@ -49,6 +49,7 @@ export default function Tooltip(props: TooltipProps) {
   const [saveLoading, setSaveLoading] = useState(false);
   const [propertiesLoading, setPropertiesLoading] = useState(false);
   const [showPropertiesLoadError, setShowPropertiesLoadError] = useState(false);
+  const [isDBSupported, setIsDBSupported] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
   const [numTempHighlights, setNumTempHighlights] = useState(0);
   // const [tempHighlights, setTempHighlights] = useState([]);
@@ -603,6 +604,7 @@ export default function Tooltip(props: TooltipProps) {
   );
 
   useEffect(() => {
+    setIsDBSupported(true);
     // if the default is a database, re-fetch properties in case they changed
     if (dropdownItem?.hasSchema) {
       setPropertiesLoading(true);
@@ -611,18 +613,24 @@ export default function Tooltip(props: TooltipProps) {
         dbId: dropdownItem.collectionId || dropdownItem.id,
       }).then((res: ISchemaRes) => {
         if (res.success) {
-          setShowPropertiesLoadError(false);
-          // reset item for new properties to render
-          const newSchema = res.schema;
-          if (_.isEqual(newSchema, dropdownItem.schema)) {
+          if (!res.isSupported) {
+            setIsDBSupported(false);
+          } else {
+            setShowPropertiesLoadError(false);
+            // reset item for new properties to render
+            const newSchema = res.schema;
+            if (_.isEqual(newSchema, dropdownItem.schema)) {
+              setPropertiesLoading(false);
+              return;
+            }
+            dropdownItem.schema = newSchema;
+            setDropdownItem(dropdownItem);
             setPropertiesLoading(false);
-            return;
+            // save adjusted defaultItem in the notionDefaults and notionRecents
+            get1('spaceId').then((spaceId: string) =>
+              updateItemInNotionStore(spaceId, dropdownItem),
+            );
           }
-          dropdownItem.schema = newSchema;
-          setDropdownItem(dropdownItem);
-          setPropertiesLoading(false);
-          // save adjusted defaultItem in the notionDefaults and notionRecents
-          get1('spaceId').then((spaceId: string) => updateItemInNotionStore(spaceId, dropdownItem));
         } else {
           setShowPropertiesLoadError(true);
           setPropertiesLoading(false);
@@ -759,6 +767,14 @@ export default function Tooltip(props: TooltipProps) {
     );
   };
 
+  const goToFeedback = () => {
+    sendMessageToExtension({
+      type: MessageType.OpenTab,
+      url: 'https://www.notion.so/simplata/Trove-Community-Board-c2c9fe006c29404b967497ae2d2f3079',
+      active: true,
+    });
+  };
+
   if (!showTooltip && isSelectionVisible) {
     return (
       <>
@@ -829,19 +845,39 @@ export default function Tooltip(props: TooltipProps) {
                     </span>
                   </div>
                 )}
-                <Title
-                  existingTitle={dropdownItem?.type !== 'database' ? dropdownItem?.name : undefined}
-                  updateProperty={setPropertyUpdate}
-                  setCollapsed={setCollapsed}
-                  collapsed={collapsed}
-                />
+                {isDBSupported && (
+                  <Title
+                    existingTitle={
+                      dropdownItem?.type !== 'database' ? dropdownItem?.name : undefined
+                    }
+                    updateProperty={setPropertyUpdate}
+                    setCollapsed={setCollapsed}
+                    collapsed={collapsed}
+                  />
+                )}
                 {!collapsed && (
                   <>
-                    {renderProperties(dropdownItem)}
-                    {(dropdownItem?.type === 'database' || dropdownItem?.hasSchema) && (
-                      <div className="TroveTooltip__Divider" />
+                    {!isDBSupported ? (
+                      <div className="TroveDBNotSupported">
+                        <div className="TroveDBNotSupported__Title">
+                          Database currently not supported
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          <span>Want this fixed?</span>
+                          <span className="TroveDBNotSupported__LinkedText" onClick={goToFeedback}>
+                            Let us know
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {renderProperties(dropdownItem)}
+                        {(dropdownItem?.type === 'database' || dropdownItem?.hasSchema) && (
+                          <div className="TroveTooltip__Divider" />
+                        )}
+                        {renderText(isSavingPage ? 'savePage' : 'saveHighlights')}
+                      </>
                     )}
-                    {renderText(isSavingPage ? 'savePage' : 'saveHighlights')}
                     <div className="TroveTooltip__BottomContent" id="TroveBottomContent">
                       <button
                         className="TroveContent__SaveTo__Button"

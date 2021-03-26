@@ -140,4 +140,5 @@ type SearchPagesRes = {
  */
 export type SchemaRes = {
   schema: Array<SchemaValue>;
+  isSupported: boolean;
 } & BaseRes;

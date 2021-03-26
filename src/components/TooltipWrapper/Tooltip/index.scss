@@ -327,3 +327,38 @@
 .TroveTooltip__LoadingPropertiesText {
   margin-left: 5px;
 }
+
+.TroveDBNotSupported {
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.TroveDBNotSupported__Title {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.TroveDBNotSupported__SubTitle {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  margin-top: 3px;
+  font-weight: 500;
+  color: #969696;
+}
+
+.TroveDBNotSupported__LinkedText {
+  margin-left: 3px;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: 100ms;
+}
+
+.TroveDBNotSupported__LinkedText:hover {
+  color: #0d77e2;
+}
