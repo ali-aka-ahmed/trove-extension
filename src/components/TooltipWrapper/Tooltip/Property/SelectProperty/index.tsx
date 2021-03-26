@@ -26,6 +26,7 @@ interface SelectPropertyProps {
 
 const SelectProperty = ({ property, root, updateProperty }: SelectPropertyProps) => {
   const [editing, setEditing] = useState(false);
+  const [editingHeight, setEditingHeight] = useState('100%');
   const [inputValue, setInputValue] = useState('');
   const [showNewOption, setShowNewOption] = useState(false);
   const [optionIdx, setOptionIdx] = useState(0);
@@ -45,9 +46,11 @@ const SelectProperty = ({ property, root, updateProperty }: SelectPropertyProps)
   const [options, setOptions] = useState<(SelectOption & { new?: true })[]>(property.options || []);
 
   const handleClickOutsidePropertyInput = (e: MouseEvent) => {
-    const elems = root.getElementById('TroveEditorWrapper');
+    const elems = root.getElementById(`TroveEditorWrapper--${property.propertyId}`);
     if (elems && !elems?.contains(e.target as Element)) {
       e.preventDefault();
+      setInputValue('');
+      setOptionIdx(0);
       setEditing(false);
     }
   };
@@ -98,7 +101,11 @@ const SelectProperty = ({ property, root, updateProperty }: SelectPropertyProps)
     if (!options.map((o) => o.id).includes(option.id)) setOptions([...options, option]);
 
     // Handle drawer
-    if (property.type === SchemaPropertyType.Select) setEditing(false);
+    if (property.type === SchemaPropertyType.Select) {
+      setInputValue('');
+      setOptionIdx(0);
+      setEditing(false);
+    }
     setShowNewOption(false);
     setNewOption({
       id: uuid(),
@@ -141,7 +148,11 @@ const SelectProperty = ({ property, root, updateProperty }: SelectPropertyProps)
         if (filteredOptions[optionIdx] === undefined && newOption.value !== '') {
           handleSelectItem(e, newOption);
         } else handleSelectItem(e, filteredOptions[optionIdx]);
-        if (property.type === SchemaPropertyType.Select) setEditing(false);
+        if (property.type === SchemaPropertyType.Select) {
+          setInputValue('');
+          setOptionIdx(0);
+          setEditing(false);
+        }
         break;
       }
       case 'Escape': {
@@ -161,6 +172,19 @@ const SelectProperty = ({ property, root, updateProperty }: SelectPropertyProps)
         }
       }
     }
+  };
+
+  const handleSetEditing = () => {
+    const elem = root.getElementById(
+      `TroveProperty__SelectReadOnlyWrapper--${property.propertyId}`,
+    );
+    if (elem) {
+      const height = elem.clientHeight;
+      setEditingHeight(`${height}px`);
+    } else {
+      setEditingHeight('100%');
+    }
+    setEditing(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -216,10 +240,11 @@ const SelectProperty = ({ property, root, updateProperty }: SelectPropertyProps)
         <div className="TroveProperty__PropertyName">{property.name}</div>
       </div>
       {!editing ? (
-        <div className="TroveProperty__ReadOnlyWrapper" onClick={() => setEditing(true)}>
+        <div className="TroveProperty__ReadOnlyWrapper" onClick={handleSetEditing}>
           <div
             className="TroveProperty__SelectReadOnlyWrapper"
             style={selectedValues.length > 0 ? { paddingBottom: '1px' } : {}}
+            id={`TroveProperty__SelectReadOnlyWrapper--${property.propertyId}`}
           >
             {selectedValues.length > 0 ? selectedValues.map((o) => renderPill(o, false)) : 'Empty'}
           </div>
@@ -227,8 +252,8 @@ const SelectProperty = ({ property, root, updateProperty }: SelectPropertyProps)
       ) : (
         <div
           className="TroveProperty__EditorWrapper"
-          style={{ boxShadow: 'none' }}
-          id="TroveEditorWrapper"
+          style={{ boxShadow: 'none', height: editingHeight }}
+          id={`TroveEditorWrapper--${property.propertyId}`}
         >
           <div className="TroveProperty__SelectWrapper">
             <div className="TroveProperty__InputWrapper TroveProperty__InputWrapper--Select">
