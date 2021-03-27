@@ -8,12 +8,12 @@ import {
   AnyPropertyUpdateData,
   MultiSelectOptionPropertyUpdate,
   PropertyUpdate,
-  SelectOptionPropertyUpdate
+  SelectOptionPropertyUpdate,
 } from '../../../app/notionTypes/dbUpdate';
 import {
   MultiSelectProperty,
   SchemaPropertyType,
-  SelectProperty
+  SelectProperty,
 } from '../../../app/notionTypes/schema';
 import { AxiosRes } from '../../../app/server';
 import { ISchemaRes } from '../../../app/server/notion';
@@ -33,7 +33,7 @@ import Highlighter, {
   transformLinkDataToTextList,
   transformUnsavedHighlightDataToCreateHighlightRequestData,
   transformUnsavedHighlightDataToTextList,
-  UnsavedHighlightData
+  UnsavedHighlightData,
 } from './helpers/highlight/Highlighter';
 import { getTextRangeFromRange } from './helpers/highlight/textRange';
 import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
@@ -41,7 +41,7 @@ import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReduc
 import {
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists
+  selectionExists,
 } from './helpers/selection';
 import Highlight from './Highlight';
 import Link from './Link';
@@ -378,6 +378,10 @@ export default function Tooltip(props: TooltipProps) {
       }
       // Add to our own servers
       if (res.success) {
+        setShowTooltip(false);
+        highlighter.reset();
+        setLinkShowing(true);
+
         const postsArgs: CreatePostsReqBody = {
           posts: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights),
         };
@@ -392,9 +396,6 @@ export default function Tooltip(props: TooltipProps) {
               addPosts(new Post(p), HighlightType.Default);
             });
             updateNumTempHighlights();
-            setShowTooltip(false);
-            highlighter.reset();
-            setLinkShowing(true);
           } else {
             // Show that highlighting failed
             console.error('Failed to create post:', res.message);
