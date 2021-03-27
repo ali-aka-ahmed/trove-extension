@@ -35,7 +35,7 @@
 .TroveTooltip__DropdownClosed {
   display: flex;
   flex-direction: column;
-  overflow-y: scroll;
+  overflow-y: auto;
   max-width: inherit;
   max-height: inherit;
   width: inherit;

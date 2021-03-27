@@ -378,6 +378,10 @@ export default function Tooltip(props: TooltipProps) {
       }
       // Add to our own servers
       if (res.success) {
+        setShowTooltip(false);
+        highlighter.reset();
+        setLinkShowing(true);
+
         const postsArgs: CreatePostsReqBody = {
           posts: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights),
         };
@@ -392,9 +396,6 @@ export default function Tooltip(props: TooltipProps) {
               addPosts(new Post(p), HighlightType.Default);
             });
             updateNumTempHighlights();
-            setShowTooltip(false);
-            highlighter.reset();
-            setLinkShowing(true);
           } else {
             // Show that highlighting failed
             console.error('Failed to create post:', res.message);
