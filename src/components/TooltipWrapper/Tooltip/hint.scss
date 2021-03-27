@@ -33,18 +33,19 @@
 .TroveHint__Content {
   display: flex;
   flex-direction: row;
+  max-width: 300px;
 }
 
 .TroveHint__Content__PrimaryText {
   margin: 0;
   padding: 0;
-  @include TbdFont;
+  @include TbdFont--small;
 }
 
 .TroveHint__Content__SecondaryText {
   margin: 0;
   padding: 0;
-  @include TbdFont;
+  @include TbdFont--small;
   letter-spacing: 0.3px;
   color: #969696;
   line-height: 16px;

@@ -68,16 +68,18 @@ type GetPostsReqBody = {
 /**
  * POST /posts/create
  */
+export type PostReqBody = {
+  url: string;
+  highlight: HighlightParam;
+  content?: string;
+  // topics?: Partial<Topic>[];
+};
+
 export interface CreatePostsReqBody {
-  posts: Array<{
-    url: string;
-    highlight: HighlightParam;
-    // content?: string;
-    // topics?: Partial<Topic>[];
-  }>
+  posts: Array<PostReqBody>;
 }
 
-type HighlightParam = {
+export type HighlightParam = {
   textRange: TextRange; // Serialized Range object
   url: string;
 };

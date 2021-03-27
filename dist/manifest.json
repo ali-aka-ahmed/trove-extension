@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Trove",
-  "description": "Send anything to Notion quickly.",
-  "version": "0.0.12",
+  "description": "Send highlights to Notion.",
+  "version": "1.0.0",
   "browser_action": {
     "default_icon": "icons/prod/icon16.png",
     "default_popup": "popup.html"
@@ -45,6 +45,8 @@
     ]
   },
   "web_accessible_resources": [
-    "images/*"
+    "images/*",
+    "images/notion/*",
+    "images/notion/properties/*"
   ]
 }

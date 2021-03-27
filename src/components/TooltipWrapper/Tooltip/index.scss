@@ -4,8 +4,8 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: max-content;
-  height: max-content;
+  width: $tooltip-width;
+  height: fit-content;
   background-color: #fff;
   border-radius: 3px;
   box-shadow: rgba(0, 0, 0, 0.25) 0px 0px 30px;
@@ -15,14 +15,16 @@
   font-size: 14px;
   // margin: 10px 0 0 0;
   padding: 0;
+  z-index: 10;
+  border-radius: 3px;
 }
 
 .TroveTooltip__Content {
   display: flex;
   flex-direction: column;
-  width: fit-content;
-  overflow: visible;
-  height: fit-content;
+  max-width: inherit;
+  max-height: inherit;
+  border-radius: 3px;
 }
 
 .TroveContent:hover {
@@ -32,8 +34,24 @@
 
 .TroveTooltip__DropdownClosed {
   display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-width: inherit;
+  max-height: inherit;
+  width: inherit;
+  height: inherit;
+  border-radius: 3px;
+  overflow-x: hidden;
+}
+
+.TroveTooltip__BottomContent {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  background-color: #fff;
+  position: sticky;
+  bottom: 0;
+  border-top: 1px solid #DDDDDD;
 }
 
 // .TroveContent__Button:hover {
@@ -50,33 +68,43 @@
   height: fit-content;
   margin: 0;
   width: 100%;
-  pointer-events: none;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  flex-direction: column;
   padding: 10px 10px;
+  background-color: #fff;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
 }
 
-.TroveContent__SaveTo {
-  height: 35px;
-  border-radius: 3px;
-  max-width: 350px;
-}
+// .TroveContent__SaveTo {
+//   height: 38px;
+//   border-radius: 3px;
+//   max-width: 165px;
+//   width: 100%;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+// }
 
 .TroveContent__SaveTo__Button {
-  height: 36px;
-  width: 100%;
   outline: 0;
   border: 0;
   background-color: transparent;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0px 10px;
   border-radius: 3px;
+  justify-content: center;
+
+  height: 38px;
+  width: 100%;
+  max-width: 165px;
 }
 
 .TroveContent__SaveTo__Button:hover {
-  background-color: #f3f3f3;
+  background-color: rgba(0,0,0,0.07);
   cursor: pointer;
 }
 
@@ -89,6 +117,7 @@
   display: flex;
   flex-direction: row;
   padding: 5px;
+  width: 135px;
 }
 
 .TroveDropdown__Section {
@@ -107,11 +136,12 @@
 .TroveDropdown__SelectedItem {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   user-select: none;
   transition: background 20ms ease-in 0s;
   cursor: pointer;
-  width: inherit;
+  width: 100%;
+  flex-direction: row;
 }
 
 .TroveDropdown__Item {
@@ -163,7 +193,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   @include TbdFont--medium;
-  margin-left: 4px;
+  margin-left: 8px;
+  width: inherit;
+  max-width: 115px;
+  display: block;
+  text-align: left;
 }
 
 .TroveDropdown__ItemPath {
@@ -196,7 +230,7 @@
   background-size: contain;
   border: 1.5px solid #fff;
   outline: none;
-  z-index: 999999; 
+  z-index: 5; 
   cursor: pointer;
 }
 
@@ -262,4 +296,84 @@
   height: 10px;
   font-size: 18px;
   line-height: 1.1;
+}
+
+[contenteditable]:empty:before {
+  content: attr(placeholder);
+  display: block;
+  -webkit-text-fill-color: rgba(55, 53, 47, 0.15);
+};
+
+// Properties (all above text)
+
+.TroveTooltip__Properties {
+  background-color: #fff;
+  padding: 0 4%;
+};
+
+.TroveTooltip__Divider {
+  min-height: 1px;
+  background-color: #DDDDDD;
+  margin: 0 10px;
+}
+
+.TroveTooltip__LoadingPropertiesWrapper {
+  margin-left: 3%;
+  color: rgba(55, 53, 47, 0.6);
+  margin-top: 10px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.TroveTooltip__LoadingPropertiesText {
+  margin-left: 5px;
+}
+
+.TroveTooltip__LoadingPropertiesSymbol--failure {
+  color: white;
+  background-color: #969696;
+  border-radius: 50px;
+  width: 17px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.TroveDBNotSupported {
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.TroveDBNotSupported__Title {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.TroveDBNotSupported__SubTitle {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  margin-top: 3px;
+  font-weight: 500;
+  color: #969696;
+}
+
+.TroveDBNotSupported__LinkedText {
+  margin-left: 3px;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: 100ms;
+}
+
+.TroveDBNotSupported__LinkedText:hover {
+  color: #0d77e2;
 }

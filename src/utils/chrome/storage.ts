@@ -1,22 +1,110 @@
+import { Bot, User } from '../../app/notionServer/getSpaceUsers';
+import { Record } from '../../app/notionTypes';
+import IUser from '../../models/IUser';
+
 /**
  * Key to type mapping. For the love of god can Typescript implement negated types? Merge CS and
  * TabSettings when they do.
  */
-// export interface CS {
-//   isAuthenticated: boolean;
-//   isExtensionOn: boolean;
-//   token: string;
-//   user: IUser;
-//   notifications: INotification[]
-//   notificationDisplayIcon: boolean
-//   notionRecents: {
-//     [spaceId: string]: Record[]
-//   }
-//   notionDefaults: {
-//     [spaceId: string]: Record
-//   }
-//   spaceId: string
-// }
+export interface CS {
+  // notifications: INotification[]
+  // notificationDisplayIcon: boolean
+  user: IUser;
+  isAuthenticated: boolean;
+  isExtensionOn: boolean;
+  token: string;
+  notionRecents: {
+    [spaceId: string]: Record[];
+  };
+  notionDefaults: {
+    [spaceId: string]: Record;
+  };
+  spaceId: string;
+  spaceUsers: Array<User>;
+  spaceBots: Array<Bot>;
+}
+
+/**
+ * Updates a record in notionDefaults and notionRecents.
+ * @param spaceId
+ * @param item
+ * @param area
+ */
+export const updateItemInNotionStore = async (
+  spaceId: string,
+  updateItem: Record,
+  area: AreaName = 'local',
+): Promise<void> => {
+  return await get(['notionRecents', 'notionDefaults'], area).then((data) => {
+    let newRecentsForSpace: Record[] = data.notionRecents[spaceId];
+    if (!newRecentsForSpace) newRecentsForSpace = [];
+    const existingRecentIds = newRecentsForSpace.map((item) => item.id);
+    if (existingRecentIds.includes(updateItem.id)) {
+      const index = existingRecentIds.indexOf(updateItem.id);
+      newRecentsForSpace.splice(index, 1);
+    }
+    newRecentsForSpace.unshift(updateItem);
+    newRecentsForSpace = newRecentsForSpace.slice(0, 3);
+
+    const newDefaults: Record = data.notionDefaults || {};
+    newDefaults[spaceId] = updateItem;
+
+    data.notionRecents[spaceId] = newRecentsForSpace;
+
+    set({
+      notionRecents: data.notionRecents,
+      notionDefaults: newDefaults,
+    });
+  });
+};
+
+/**
+ * Updates a record in notionDefaults and notionRecents.
+ * @param spaceId
+ * @param item
+ * @param area
+ */
+export const setNotionDefault = async (
+  spaceId: string,
+  item: Record,
+  area: AreaName = 'local',
+): Promise<void> => {
+  const notionDefaults = await get1('notionDefaults');
+  const newDefaults = notionDefaults || {};
+  newDefaults[spaceId] = item;
+  set({ notionDefaults: newDefaults }, area);
+};
+
+/**
+ * Updates a record in notionDefaults and notionRecents.
+ * @param spaceId
+ * @param item
+ * @param area
+ */
+export const addToNotionRecents = async (
+  spaceId: string,
+  item: Record,
+  area: AreaName = 'local',
+): Promise<void> => {
+  const notionRecents = await get1('notionRecents');
+  item.section = 'recent';
+
+  // change recents
+  let newRecentsForSpace = notionRecents[spaceId];
+  if (!newRecentsForSpace) newRecentsForSpace = [];
+
+  const existingRecentIds = newRecentsForSpace.map((item: Record) => item.id);
+  if (existingRecentIds.includes(item.id)) {
+    const index = existingRecentIds.indexOf(item.id);
+    newRecentsForSpace.splice(index, 1);
+  }
+  newRecentsForSpace.unshift(item);
+  newRecentsForSpace = newRecentsForSpace.slice(0, 3);
+
+  notionRecents[spaceId] = newRecentsForSpace;
+
+  set({ notionRecents }, area);
+};
 
 // export interface TabSettings {
 //   [tabId: string]: {

@@ -13,10 +13,13 @@ import {
   sendMessageToExtension,
   SocketMessageType
 } from '../utils/chrome/tabs';
+import getImage from './notionServer/getImage';
+import getSpaceUsers from './notionServer/getSpaceUsers';
 import { forgotPassword, login } from './server/auth';
 import {
+  addEntryToDB,
   addTextToNotion,
-  getNotionImage,
+  getDBSchema,
   getNotionPages,
   searchNotionPages
 } from './server/notion';
@@ -80,24 +83,37 @@ chrome.runtime.onMessage.addListener(
     switch (message.type) {
       case MessageType.Login: {
         if (!message.loginArgs) break;
-        Promise.all([
-          login(message.loginArgs),
-          getNotionPages(),
-        ]).then(([loginRes, notionPagesRes]) => {
-          if (notionPagesRes.success && notionPagesRes.spaces && notionPagesRes.spaces.length > 0 && notionPagesRes.defaults && notionPagesRes.results) {
-            const spaceId = notionPagesRes.spaces[0].id;
-            const recents = {};
-            notionPagesRes.spaces.forEach((s) => {
-              recents[s.id] = notionPagesRes.results![spaceId].recents;
-            });
-            set({
-              notionRecents: recents,
-              notionDefaults: notionPagesRes.defaults,
-              spaceId,
-            });
-          };
-          sendResponse(loginRes)
-        });
+        Promise.all([login(message.loginArgs), getNotionPages()]).then(
+          ([loginRes, notionPagesRes]) => {
+            if (
+              notionPagesRes.success &&
+              notionPagesRes.spaces &&
+              notionPagesRes.spaces.length > 0 &&
+              notionPagesRes.defaults &&
+              notionPagesRes.results
+            ) {
+              const spaceId = notionPagesRes.spaces[0].id;
+              getSpaceUsers(spaceId).then((res) => {
+                if (res.success) {
+                  set({
+                    spaceUsers: res.users,
+                    spacebots: res.bots,
+                  });
+                }
+              });
+              const recents = {};
+              notionPagesRes.spaces.forEach((s) => {
+                recents[s.id] = notionPagesRes.results![spaceId].recents;
+              });
+              set({
+                notionRecents: recents,
+                notionDefaults: notionPagesRes.defaults,
+                spaceId,
+              });
+            }
+            sendResponse(loginRes);
+          },
+        );
         break;
       }
       case MessageType.ForgotPassword: {
@@ -198,8 +214,8 @@ chrome.runtime.onMessage.addListener(
         break;
       }
       case MessageType.GetNotionImage: {
-        if (!message.url || !message.id) break;
-        getNotionImage(message.url, message.id, message.width).then((res) => {
+        if (!message.imageOptions) break;
+        getImage(message.imageOptions).then((res) => {
           sendResponse(res);
         });
         break;
@@ -207,6 +223,27 @@ chrome.runtime.onMessage.addListener(
       case MessageType.AddTextToNotion: {
         if (!message.notionPageId || !message.notionTextChunks) break;
         addTextToNotion(message.notionPageId, message.notionTextChunks).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
+      case MessageType.GetNotionSpaceUsers: {
+        if (!message.spaceId) break;
+        getSpaceUsers(message.spaceId).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
+      case MessageType.GetNotionDBSchema: {
+        if (!message.dbId) break;
+        getDBSchema(message.dbId).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
+      case MessageType.AddNotionRow: {
+        if (!message.dbId || !message.updates || !message.notionTextChunks) break;
+        addEntryToDB(message.dbId, message.updates, message.notionTextChunks).then((res) => {
           sendResponse(res);
         });
         break;
@@ -275,28 +312,42 @@ chrome.runtime.onMessageExternal.addListener(
       case EMessageType.Login: {
         sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: message.user!.id });
         set({
-          user: new User(message.user!),
           token: message.token,
           isExtensionOn: true,
         })
           .then(() => set({ isAuthenticated: true }))
           .then(() => {
             getNotionPages().then((res) => {
-              if (res.success && res.spaces && res.spaces.length > 0 && res.defaults && res.results) {
+              if (
+                res.success &&
+                res.spaces &&
+                res.spaces.length > 0 &&
+                res.defaults &&
+                res.results
+              ) {
                 const spaceId = res.spaces[0].id;
                 const recents = {};
                 res.spaces.forEach((s) => {
                   recents[s.id] = res.results![spaceId].recents;
                 });
                 set({
+                  user: new User(message.user!),
                   notionRecents: recents,
                   notionDefaults: res.defaults,
                   spaceId,
                 });
-              };
+                getSpaceUsers(spaceId).then((res) => {
+                  if (res.success) {
+                    set({
+                      spaceUsers: res.users,
+                      spacebots: res.bots,
+                    });
+                  }
+                });
+              }
             });
           })
-          .then(() => sendResponse(true))
+          .then(() => sendResponse(true));
         break;
       }
       case EMessageType.IsAuthenticated: {
@@ -334,9 +385,9 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 
 // Extension installed or updated
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason == "install") {
+  if (details.reason == 'install') {
     sendMessageToWebsite({ type: EMessageType.Exists });
-    chrome.tabs.update({ url: `${ORIGIN}/signup` })
+    chrome.tabs.update({ url: `${ORIGIN}/signup` });
   }
 });
 

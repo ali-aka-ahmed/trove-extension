@@ -1,24 +1,39 @@
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+import _ from 'lodash';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
+import { Record } from '../../../app/notionTypes';
+import {
+  AnyPropertyUpdateData,
+  MultiSelectOptionPropertyUpdate,
+  PropertyUpdate,
+  SelectOptionPropertyUpdate,
+} from '../../../app/notionTypes/dbUpdate';
+import {
+  MultiSelectProperty,
+  SchemaPropertyType,
+  SelectProperty,
+} from '../../../app/notionTypes/schema';
 import { AxiosRes } from '../../../app/server';
-import { Record } from '../../../app/server/notion';
+import { ISchemaRes } from '../../../app/server/notion';
 import { CreatePostsReqBody, IPostsRes } from '../../../app/server/posts';
+import { MINIMUM_REQUEST_TIME } from '../../../constants';
 import ExtensionError from '../../../entities/ExtensionError';
 import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import IUser from '../../../models/IUser';
 import { toArray } from '../../../utils';
-import { get, get1 } from '../../../utils/chrome/storage';
+import { get, get1, updateItemInNotionStore } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Dropdown from './Dropdown';
 import Highlighter, {
   getIdFromAnyHighlightData,
   HighlightType,
+  transformLinkDataToTextList,
   transformUnsavedHighlightDataToCreateHighlightRequestData,
   transformUnsavedHighlightDataToTextList,
-  UnsavedHighlightData
+  UnsavedHighlightData,
 } from './helpers/highlight/Highlighter';
 import { getTextRangeFromRange } from './helpers/highlight/textRange';
 import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
@@ -26,13 +41,12 @@ import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReduc
 import {
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists
+  selectionExists,
 } from './helpers/selection';
-
-const TOOLTIP_MARGIN = 10;
-const TOOLTIP_HEIGHT = 200;
-const MINI_TOOLTIP_HEIGHT = 32;
-const DELETE_BUTTON_DIAMETER = 20;
+import Highlight from './Highlight';
+import Link from './Link';
+import Property from './Property';
+import Title from './Title';
 
 interface TooltipProps {
   root: ShadowRoot;
@@ -44,10 +58,13 @@ export default function Tooltip(props: TooltipProps) {
   const [isExtensionOn, setIsExtensionOn] = useState(false);
 
   const [saveLoading, setSaveLoading] = useState(false);
+  const [propertiesLoading, setPropertiesLoading] = useState(false);
+  const [showPropertiesLoadError, setShowPropertiesLoadError] = useState(false);
+  const [isDBSupported, setIsDBSupported] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
   const [numTempHighlights, setNumTempHighlights] = useState(0);
-  // Is user currently saving page
-  const [isSavingPage, setIsSavingPage] = useState(false);
+  const [linkShowing, setLinkShowing] = useState(true);
+  // const [tempHighlights, setTempHighlights] = useState([]);
   const [isSelectionVisible, setIsSelectionVisible] = useState(false);
   // const [isSelectionHovered, setIsSelectionHovered] = useState(false);
 
@@ -56,6 +73,7 @@ export default function Tooltip(props: TooltipProps) {
   const deleteButton = useRef<HTMLButtonElement>(null);
 
   const [dropdownClicked, setDropdownClicked] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [defaultPageLoading, setDefaultPageLoading] = useState(true);
   const [dropdownItem, setDropdownItem] = useState<Record | null>(null);
 
@@ -63,10 +81,14 @@ export default function Tooltip(props: TooltipProps) {
   const [user, setUser] = useState<User | null>(null);
 
   const [highlighter, setHighlighter] = useState(new Highlighter());
+  const [propertyUpdates, setPropertyUpdates] = useState<{
+    [propertyId: string]: { type: SchemaPropertyType; data: AnyPropertyUpdateData };
+  }>({});
   const tooltip = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const save = useRef<HTMLButtonElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
+  const info = useRef<HTMLSpanElement>(null);
 
   const updateNumTempHighlights = () => {
     const newVal = highlighter.getAllUnsavedHighlights().length;
@@ -74,10 +96,33 @@ export default function Tooltip(props: TooltipProps) {
     return newVal;
   };
 
+  const removeLink = () => {
+    setLinkShowing(false);
+    highlighter.removeLink();
+  };
+
   useEffect(() => {
-    const newVal = isSavingPage || numTempHighlights > 0;
-    setShowTooltip(newVal);
-  }, [isSavingPage, numTempHighlights]);
+    if (!linkShowing && numTempHighlights === 0) {
+      setShowTooltip(false);
+      highlighter.reset();
+      setLinkShowing(true);
+    }
+  }, [numTempHighlights, linkShowing]);
+
+  useEffect(() => {
+    if (!propertiesLoading) scrollToElement('TroveBottomContent');
+    else if (dropdownItem) scrollToElement('TroveBottomContent');
+  }, [dropdownItem, propertiesLoading]);
+
+  const setPropertyUpdate = (
+    propertyId: string,
+    type: SchemaPropertyType,
+    data: AnyPropertyUpdateData,
+  ) => {
+    const newPropertyUpdates = { ...propertyUpdates };
+    newPropertyUpdates[propertyId] = { type, data };
+    setPropertyUpdates(newPropertyUpdates);
+  };
 
   /**
    * Handler for when mouse cursor enters a Trove mark element. A highlight can be composed of
@@ -155,7 +200,13 @@ export default function Tooltip(props: TooltipProps) {
       updateNumTempHighlights();
       selection.removeAllRanges();
     }
+    scrollToElement('TroveBottomContent');
   }, [user]);
+
+  const scrollToElement = (id: string) => {
+    const elem = props.root.getElementById(id);
+    if (elem) elem.scrollIntoView();
+  };
 
   useEffect(() => {
     ReactTooltip.rebuild();
@@ -294,63 +345,67 @@ export default function Tooltip(props: TooltipProps) {
 
   const onSaveHighlight = useCallback(
     async (e?: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (!dropdownItem) return;
+      if (!dropdownItem) return null;
+      const unsavedHighlights = highlighter.getAllUnsavedHighlights();
+      const link = highlighter.link;
+      if (unsavedHighlights.length === 0 && !link.toSend) return null;
       ReactTooltip.hide();
 
-      const unsavedHighlights = highlighter.getAllUnsavedHighlights();
-      if (unsavedHighlights.length > 0) {
-        // Write highlight text to chosen Notion page
-        const res = (await sendMessageToExtension({
+      let res: AxiosRes;
+      // Write highlight text to chosen Notion page
+      if (dropdownItem.type !== 'database') {
+        res = (await sendMessageToExtension({
           type: MessageType.AddTextToNotion,
           notionPageId: dropdownItem.id,
-          notionTextChunks: transformUnsavedHighlightDataToTextList(unsavedHighlights),
+          notionTextChunks: transformLinkDataToTextList(link).concat(
+            transformUnsavedHighlightDataToTextList(unsavedHighlights),
+          ),
         })) as AxiosRes;
-        if (res.success) {
-          const postsArgs: CreatePostsReqBody = {
-            posts: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights).map(
-              (highlight) => {
-                return {
-                  url: window.location.href,
-                  highlight,
-                };
-              },
-            ),
-          };
-          await sendMessageToExtension({
-            type: MessageType.CreatePosts,
-            posts: postsArgs,
-          }).then((res: IPostsRes) => {
-            if (res.success && res.posts) {
-              // Show actual highlight when we get response from server
-              highlighter.removeAllUnsavedHighlights();
-              res.posts.map((p) => {
-                addPosts(new Post(p), HighlightType.Default);
-              });
-              updateNumTempHighlights();
-            } else {
-              // Show that highlighting failed
-              console.error('Failed to create post:', res.message);
-              throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
-            }
-          });
+      } else {
+        const updates: PropertyUpdate[] = [];
+        for (let key in propertyUpdates) {
+          const pu = { ...propertyUpdates[key], propertyId: key };
+          updates.push(pu);
         }
+        res = (await sendMessageToExtension({
+          type: MessageType.AddNotionRow,
+          dbId: dropdownItem.collectionId || dropdownItem.id,
+          updates,
+          notionTextChunks: transformLinkDataToTextList(link).concat(
+            transformUnsavedHighlightDataToTextList(unsavedHighlights),
+          ),
+        })) as AxiosRes;
       }
-    },
-    [dropdownItem],
-  );
+      // Add to our own servers
+      if (res.success) {
+        setShowTooltip(false);
+        highlighter.reset();
+        setLinkShowing(true);
 
-  const onSavePage = useCallback(async () => {
-    if (!dropdownItem) return;
-    // Write page title hyperlinked with current URL to chosen Notion page
-    const href = window.location.href;
-    const title = document.title;
-    sendMessageToExtension({
-      type: MessageType.AddTextToNotion,
-      notionPageId: dropdownItem.id,
-      // notionTextChunks: [[[title, [['a', href]] ]]],
-      notionTextChunks: [[title, [['a', href]]]],
-    });
-  }, [dropdownItem]);
+        const postsArgs: CreatePostsReqBody = {
+          posts: transformUnsavedHighlightDataToCreateHighlightRequestData(unsavedHighlights),
+        };
+        return await sendMessageToExtension({
+          type: MessageType.CreatePosts,
+          posts: postsArgs,
+        }).then((res: IPostsRes) => {
+          if (res.success && res.posts) {
+            // Show actual highlight when we get response from server
+            highlighter.removeAllUnsavedHighlights();
+            res.posts.map((p) => {
+              addPosts(new Post(p), HighlightType.Default);
+            });
+            updateNumTempHighlights();
+          } else {
+            // Show that highlighting failed
+            console.error('Failed to create post:', res.message);
+            throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
+          }
+        });
+      } else return res;
+    },
+    [dropdownItem, propertyUpdates],
+  );
 
   const renderItem = (item: Record | null) => {
     if (!item) {
@@ -372,7 +427,7 @@ export default function Tooltip(props: TooltipProps) {
     else if (item.icon?.type === 'url')
       icon = (
         <img
-          src={chrome.extension.getURL('images/noIconNotion.png')}
+          src={chrome.extension.getURL('images/notion/no_page_icon.png')}
           className="TroveDropdown__Icon"
         />
       );
@@ -383,7 +438,7 @@ export default function Tooltip(props: TooltipProps) {
             icon
           ) : (
             <img
-              src={chrome.extension.getURL('images/noIconNotion.png')}
+              src={chrome.extension.getURL('images/notion/no_page_icon.png')}
               className="TroveDropdown__Icon"
             />
           )}
@@ -397,6 +452,21 @@ export default function Tooltip(props: TooltipProps) {
         </div>
       </span>
     );
+  };
+
+  const removeHighlight = (highlightId: string) => {
+    const highlight = highlighter.getHighlight(highlightId);
+    if (highlight && !highlight.isTemporary) {
+      // Remove from server
+      sendMessageToExtension({
+        type: MessageType.DeletePost,
+        id: highlight.data.id,
+      });
+    }
+
+    highlighter.removeHighlight(highlightId);
+    setHoveredHighlightRect(null);
+    updateNumTempHighlights();
   };
 
   const renderHighlightDeleteButton = () => {
@@ -416,19 +486,7 @@ export default function Tooltip(props: TooltipProps) {
         <button
           className="TroveMark__DeleteButton"
           style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}
-          onClick={() => {
-            const highlight = highlighter.getHighlight(highlighter.activeHighlightId);
-            if (highlight && !highlight.isTemporary) {
-              // Remove from server
-              sendMessageToExtension({
-                type: MessageType.DeletePost,
-                id: highlight.data.id,
-              });
-            }
-
-            highlighter.removeHighlight(highlighter.activeHighlightId);
-            setHoveredHighlightRect(null);
-          }}
+          onClick={() => removeHighlight(highlighter.activeHighlightId)}
           ref={deleteButton}
         ></button>
       );
@@ -443,16 +501,15 @@ export default function Tooltip(props: TooltipProps) {
     }
   }, [hoveredHighlightRect]);
 
-  const renderButtonList = (type: 'savePage' | 'saveHighlights') => {
-    let onSave = handleSavePage;
-    let onCancel = handleCancelSavePage;
-    if (type === 'saveHighlights') {
-      onSave = handleSaveHighlights;
-      onCancel = handleCancelSaveHighlights;
-    }
+  const renderButtonList = () => {
+    let onSave = () => {
+      setSaveLoading(true);
+      handleSaveHighlights();
+    };
+    let onCancel = handleCancelSaveHighlights;
 
     return (
-      <div className="TroveContent__ButtonList">
+      <div className="TroveContent__ButtonList" style={saveLoading ? { width: '156px' } : {}}>
         <button
           onMouseEnter={() => ReactTooltip.show(save.current!)}
           onMouseLeave={() => ReactTooltip.hide(save.current!)}
@@ -490,21 +547,69 @@ export default function Tooltip(props: TooltipProps) {
     );
   };
 
-  const renderText = (type: 'savePage' | 'saveHighlights') => {
-    switch (type) {
-      case 'saveHighlights': {
-        return (
-          <div className="TroveContent__Text">
-            Send {numTempHighlights > 1 ? `${numTempHighlights} highlights` : 'highlight'} to Notion
-          </div>
-        );
+  const renderText = useCallback(() => {
+    const highlights = highlighter.getAllUnsavedHighlights();
+    const link = highlighter.link;
+    return (
+      <div className="TroveContent__Text">
+        {linkShowing && (
+          <Link
+            link={link}
+            root={props.root}
+            modifyLinkContent={highlighter.modifyContent}
+            removeLink={removeLink}
+            scrollToElement={scrollToElement}
+          />
+        )}
+        {highlights.map((h) => (
+          <Highlight
+            highlight={h}
+            removeHighlight={removeHighlight}
+            modifyHighlightContent={highlighter.modifyContent}
+            scrollToElement={scrollToElement}
+            root={props.root}
+          />
+        ))}
+      </div>
+    );
+  }, [numTempHighlights, linkShowing]);
+
+  useEffect(() => {
+    setIsDBSupported(true);
+    // if the default is a database, re-fetch properties in case they changed
+    if (dropdownItem?.hasSchema) handleGetProperties();
+  }, [dropdownItem]);
+
+  const handleGetProperties = () => {
+    if (!dropdownItem) return;
+    setPropertiesLoading(true);
+    sendMessageToExtension({
+      type: MessageType.GetNotionDBSchema,
+      dbId: dropdownItem.collectionId || dropdownItem.id,
+    }).then((res: ISchemaRes) => {
+      if (res.success) {
+        setShowPropertiesLoadError(false);
+        if (!res.isSupported) {
+          setIsDBSupported(false);
+          setPropertiesLoading(false);
+        } else {
+          // reset item for new properties to render
+          const newSchema = res.schema;
+          if (_.isEqual(newSchema, dropdownItem.schema)) {
+            setPropertiesLoading(false);
+            return;
+          }
+          dropdownItem.schema = newSchema;
+          setDropdownItem(dropdownItem);
+          setPropertiesLoading(false);
+          // save adjusted defaultItem in the notionDefaults and notionRecents
+          get1('spaceId').then((spaceId: string) => updateItemInNotionStore(spaceId, dropdownItem));
+        }
+      } else {
+        setShowPropertiesLoadError(true);
+        setPropertiesLoading(false);
       }
-      case 'savePage': {
-        return <div className="TroveContent__Text">Send page to Notion</div>;
-      }
-      default:
-        return null;
-    }
+    });
   };
 
   const onKeyDownPage = useCallback(
@@ -514,19 +619,21 @@ export default function Tooltip(props: TooltipProps) {
       // Keyboard shortcuts
       if (isOsKeyPressed(e) && e.key === 'd') {
         e.preventDefault();
-        get(['notionDefaults', 'spaceId']).then((data) => {
-          if (data.spaceId && data.notionDefaults && data.notionDefaults[data.spaceId]) {
-            setDropdownItem(data.notionDefaults[data.spaceId]);
-          }
-          setDefaultPageLoading(false);
-        });
         const selection = getSelection()!;
+        if (!showTooltip) {
+          get(['notionDefaults', 'spaceId']).then((data) => {
+            const spaceId = data.spaceId;
+            if (spaceId && data.notionDefaults && data.notionDefaults[spaceId]) {
+              const defaultItem: Record = data.notionDefaults[spaceId];
+              setDropdownItem(defaultItem);
+            }
+            setDefaultPageLoading(false);
+          });
+          setShowTooltip(true);
+        }
         if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
           addTempHighlight();
-        } else if (!selectionExists(selection) && !showTooltip) {
-          // New save for current page
-          setIsSavingPage(true);
         }
       } else if (
         e.key === 'Tab' &&
@@ -538,40 +645,32 @@ export default function Tooltip(props: TooltipProps) {
         // Open dropdown
         e.preventDefault();
         setDropdownClicked(true);
+        ReactTooltip.hide();
+        window.scrollTo(0, document.body.scrollHeight);
       } else if (e.key === 'Escape' && showTooltip) {
         e.preventDefault();
-        highlighter.removeAllUnsavedHighlights();
-        updateNumTempHighlights();
-        setIsSavingPage(false);
-        setSaveLoading(false);
-      } else if (e.key === 'Enter') {
+        handleCancelSaveHighlights();
+      } else if (
+        e.key === 'Enter' &&
+        showTooltip &&
+        !dropdownClicked &&
+        !collapsed &&
+        (highlighter.getAllUnsavedHighlights().length > 0 || highlighter.link.toSend)
+      ) {
         e.preventDefault();
-        const selection = getSelection()!;
-        if (highlighter.getAllUnsavedHighlights().length > 0) {
-          // Save current highlight
-          setSaveLoading(true);
-          onSaveHighlight().then(() => {
-            setSaveLoading(false);
-            setIsSavingPage(false);
-          });
-        } else if (!selectionExists(selection) && showTooltip) {
-          // Save current page
-          setSaveLoading(true);
-          onSavePage().then(() => {
-            setIsSavingPage(false);
-            setSaveLoading(false);
-          });
-        }
+        // Save current highlight
+        setSaveLoading(true);
+        handleSaveHighlights();
       }
     },
     [
+      collapsed,
       dropdownClicked,
       highlighter,
       isAuthenticated,
       isExtensionOn,
       addTempHighlight,
       onSaveHighlight,
-      onSavePage,
       showTooltip,
     ],
   );
@@ -579,33 +678,86 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     document.addEventListener('keydown', onKeyDownPage);
     return () => document.removeEventListener('keydown', onKeyDownPage);
-  }, [onKeyDownPage, dropdownClicked]);
+  }, [onKeyDownPage]);
 
   const handleSaveHighlights = () => {
     setSaveLoading(true);
-    onSaveHighlight().then(() => {
-      setSaveLoading(false);
-      setIsSavingPage(false);
-    });
-  };
-
-  const handleSavePage = () => {
-    setSaveLoading(true);
-    onSavePage().then(() => {
-      setIsSavingPage(false);
-      setSaveLoading(false);
+    onSaveHighlight().then((res) => {
+      if (!res) {
+        setSaveLoading(false);
+        return;
+      }
+      if (res.time < MINIMUM_REQUEST_TIME) {
+        setTimeout(() => {
+          setSaveLoading(false);
+        }, MINIMUM_REQUEST_TIME - res.time);
+      } else {
+        setSaveLoading(false);
+      }
     });
   };
 
   const handleCancelSaveHighlights = () => {
     highlighter.removeAllUnsavedHighlights();
+    highlighter.reset();
     updateNumTempHighlights();
+    setLinkShowing(false);
     setSaveLoading(false);
   };
 
-  const handleCancelSavePage = () => {
-    setIsSavingPage(false);
-    setSaveLoading(false);
+  const renderProperties = (item: Record | null) => {
+    if (!item || !item.schema) return null;
+    return (
+      <div
+        className="TroveTooltip__Properties"
+        key={item.id}
+        style={!dropdownItem?.hasSchema ? { marginTop: '15px' } : {}}
+      >
+        {item.schema.map((p) => (
+          <Property property={p} root={props.root} updateProperty={setPropertyUpdate} />
+        ))}
+      </div>
+    );
+  };
+
+  const collapse = (val: boolean) => {
+    if (val) {
+      setCollapsed(true);
+    } else {
+      // sync property values to dropdownItem schema and load through there
+      const newSchema = dropdownItem?.schema?.map((sv) => {
+        const { propertyId } = sv;
+        if (!propertyUpdates[propertyId]) return sv;
+        const { type, data } = propertyUpdates[propertyId];
+        if (type === SchemaPropertyType.Select) {
+          sv.value = (data as SelectOptionPropertyUpdate).selected;
+          (sv as SelectProperty).options = (sv as SelectProperty).options.concat(
+            (data as SelectOptionPropertyUpdate).newOptions,
+          );
+        } else if (type === SchemaPropertyType.MultiSelect) {
+          sv.value = (data as MultiSelectOptionPropertyUpdate).selected;
+          (sv as MultiSelectProperty).options = (sv as MultiSelectProperty).options.concat(
+            (data as MultiSelectOptionPropertyUpdate).newOptions,
+          );
+        } else {
+          sv.value = data;
+        }
+        return sv;
+      });
+      if (dropdownItem) {
+        dropdownItem.schema = newSchema;
+        setDropdownItem(dropdownItem);
+      }
+      setCollapsed(false);
+    }
+  };
+
+  const goToFeedback = () => {
+    sendMessageToExtension({
+      type: MessageType.OpenTab,
+      url: 'https://www.notion.so/simplata/Trove-Community-Board-c2c9fe006c29404b967497ae2d2f3079',
+      active: true,
+    });
   };
 
   if (!showTooltip && isSelectionVisible) {
@@ -613,8 +765,12 @@ export default function Tooltip(props: TooltipProps) {
       <>
         <div className="TroveTooltip" ref={tooltip} style={{ width: '155px', height: '38px' }}>
           <div className="TroveHint__Wrapper">
-            <p className="TroveHint__Content__PrimaryText">Highlight text</p>
-            <p className="TroveHint__Content__SecondaryText">{`(${getOsKeyChar()}+d)`}</p>
+            <p className="TroveHint__Content__PrimaryText" style={{ fontSize: '14px' }}>
+              Highlight text
+            </p>
+            <p className="TroveHint__Content__SecondaryText" style={{ fontSize: '14px' }}>
+              {`(${getOsKeyChar()}+d)`}
+            </p>
           </div>
         </div>
         {renderHighlightDeleteButton()}
@@ -625,49 +781,112 @@ export default function Tooltip(props: TooltipProps) {
   if (showTooltip) {
     return (
       <>
-        <div className="TroveTooltip" ref={tooltip}>
+        <div
+          className="TroveTooltip"
+          ref={tooltip}
+          style={{
+            maxWidth: `${window.innerWidth - 40}px`,
+            maxHeight: `${window.innerHeight - 40}px`,
+          }}
+        >
           <div className="TroveTooltip__Content">
-            {renderText(isSavingPage ? 'savePage' : 'saveHighlights')}
             {dropdownClicked ? (
-              <Dropdown
-                setItem={setDropdownItem}
-                setDropdownClicked={setDropdownClicked}
-                root={props.root}
-              />
+              <>
+                <Dropdown
+                  setItem={setDropdownItem}
+                  setDropdownClicked={setDropdownClicked}
+                  root={props.root}
+                />
+              </>
             ) : (
-              <div className="TroveTooltip__DropdownClosed">
-                <div
-                  onMouseEnter={() => ReactTooltip.show(button.current!)}
-                  onMouseLeave={() => ReactTooltip.hide(button.current!)}
-                  data-tip={`
-                    <div class="TroveHint__Content">
-                      <p class="TroveHint__Content__PrimaryText">tab</p>
-                    </div>
-                  `}
-                  className="TroveContent__SaveTo"
-                >
-                  <button
-                    className="TroveContent__SaveTo__Button"
-                    onClick={() => {
-                      const selection = getSelection()!;
-                      if (selectionExists(selection) && /\S/.test(selection.toString())) {
-                        addTempHighlight();
-                      }
-                      setDropdownClicked(true);
-                      ReactTooltip.hide();
-                    }}
-                    ref={button}
-                  >
-                    {defaultPageLoading ? (
-                      <div>
-                        <LoadingOutlined />
+              <div className="TroveTooltip__DropdownClosed" id="TroveTooltip__DropdownClosed">
+                {propertiesLoading && (
+                  <div className="TroveTooltip__LoadingPropertiesWrapper">
+                    <span className="TroveTooltip__LoadingPropertiesSymbol">
+                      <LoadingOutlined />
+                    </span>
+                    <span className="TroveTooltip__LoadingPropertiesText">
+                      Syncing properties...
+                    </span>
+                  </div>
+                )}
+                {showPropertiesLoadError && !propertiesLoading && (
+                  <div className="TroveTooltip__LoadingPropertiesWrapper">
+                    <span
+                      className="TroveTooltip__LoadingPropertiesSymbol--failure"
+                      ref={info}
+                      onClick={handleGetProperties}
+                    >
+                      <ReloadOutlined />
+                    </span>
+                    <span className="TroveTooltip__LoadingPropertiesText">
+                      Unable to get latest properties. Click the icon to try again.
+                    </span>
+                  </div>
+                )}
+                {isDBSupported && (
+                  <Title
+                    existingTitle={
+                      dropdownItem?.type !== 'database' ? dropdownItem?.name : undefined
+                    }
+                    updateProperty={setPropertyUpdate}
+                    setCollapsed={collapse}
+                    collapsed={collapsed}
+                  />
+                )}
+                {!collapsed && (
+                  <>
+                    {!isDBSupported ? (
+                      <div className="TroveDBNotSupported">
+                        <div className="TroveDBNotSupported__Title">
+                          Database currently not supported
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          <span>Want this fixed?</span>
+                          <span className="TroveDBNotSupported__LinkedText" onClick={goToFeedback}>
+                            Let us know
+                          </span>
+                        </div>
                       </div>
                     ) : (
-                      renderItem(dropdownItem)
+                      <>
+                        {renderProperties(dropdownItem)}
+                        {(dropdownItem?.type === 'database' || dropdownItem?.hasSchema) && (
+                          <div className="TroveTooltip__Divider" />
+                        )}
+                        {renderText()}
+                      </>
                     )}
-                  </button>
-                </div>
-                {renderButtonList(isSavingPage ? 'savePage' : 'saveHighlights')}
+                    <div className="TroveTooltip__BottomContent" id="TroveBottomContent">
+                      <button
+                        className="TroveContent__SaveTo__Button"
+                        onMouseEnter={() => ReactTooltip.show(button.current!)}
+                        onMouseOver={() => ReactTooltip.show(button.current!)}
+                        onMouseLeave={() => ReactTooltip.hide(button.current!)}
+                        data-tip={`
+                          <div class="TroveHint__Content">
+                            <p class="TroveHint__Content__PrimaryText">tab</p>
+                          </div>
+                        `}
+                        onClick={() => {
+                          setDropdownClicked(true);
+                          ReactTooltip.hide();
+                        }}
+                        ref={button}
+                        style={saveLoading ? { width: '144px' } : {}}
+                      >
+                        {defaultPageLoading ? (
+                          <div>
+                            <LoadingOutlined />
+                          </div>
+                        ) : (
+                          renderItem(dropdownItem)
+                        )}
+                      </button>
+                      {renderButtonList()}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>

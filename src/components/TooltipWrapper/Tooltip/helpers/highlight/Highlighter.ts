@@ -1,9 +1,12 @@
 import Color from 'color';
+import { v4 as uuid } from 'uuid';
+import { PostReqBody } from '../../../../../app/server/posts';
 import Post, { isPost } from '../../../../../entities/Post';
 import { addDOMHighlight, modifyDOMHighlight, removeDOMHighlight } from './domHighlight';
 import { getRangeFromTextRange, TextRange } from './textRange';
 
-type AnyHighlight = SavedHighlight | UnsavedHighlight;
+export type AnyHighlight = SavedHighlight | UnsavedHighlight;
+
 type SavedHighlight = {
   marks: HTMLElement[];
   data: Post;
@@ -11,12 +14,13 @@ type SavedHighlight = {
   handlers: { [event: string]: (e: MouseEvent) => void };
   isTemporary: false; // Is this highlight saved or not
 };
-type UnsavedHighlight = {
+export type UnsavedHighlight = {
   marks: HTMLElement[];
   data: UnsavedHighlightData;
   type: HighlightType;
   handlers: { [event: string]: (e: MouseEvent) => void };
   isTemporary: true;
+  content: string;
 };
 
 export interface UnsavedHighlightData {
@@ -30,14 +34,58 @@ export enum HighlightType {
   Active, // Click, hover, new post
 }
 
+export type Link = {
+  id: string;
+  url: string;
+  title: string;
+  content: string;
+  toSend: boolean;
+};
+
 export default class Highlighter {
+  link: Link;
   highlights: Map<string, AnyHighlight>; // Highlight id -> highlight data
   activeHighlightId: string;
 
   constructor() {
+    this.link = {
+      id: uuid(),
+      url: window.location.href,
+      title: document.title,
+      content: '',
+      toSend: true,
+    };
     this.highlights = new Map<string, AnyHighlight>();
     this.activeHighlightId = '';
   }
+
+  public removeLink = () => (this.link.toSend = false);
+  public reset = () => {
+    this.link.toSend = true;
+    this.link.content = '';
+  };
+
+  public static getColor = (colorStr: string, type: HighlightType): string => {
+    const color = Color(colorStr);
+    const rgba = (c: Color<string>, o: number) => `rgba(${c.red()},${c.green()},${c.blue()},${o})`;
+    if (type === HighlightType.Default) return rgba(color, 0.35);
+    return rgba(color, 0.65);
+  };
+
+  public modifyContent = (id: string, newContent: string): void => {
+    if (this.link.id === id) {
+      this.link.content = newContent;
+    } else {
+      const highlight = this.getHighlight(id);
+      if (!highlight) return;
+      if (highlight.isTemporary) {
+        highlight.content = newContent;
+      } else {
+        highlight.data.content = newContent;
+      }
+      this.highlights.set(id, highlight);
+    }
+  };
 
   public addHighlight = (
     data: Post | UnsavedHighlightData,
@@ -66,7 +114,7 @@ export default class Highlighter {
     this.removeHighlight(id);
 
     // Calculate range
-    const color = this.getColor(userColor, type);
+    const color = Highlighter.getColor(userColor, type);
     let range: Range | null;
     try {
       range = getRangeFromTextRange(textRange);
@@ -124,7 +172,7 @@ export default class Highlighter {
         const userColor = highlight.isTemporary
           ? highlight.data.color
           : highlight.data.creator.color;
-        const color = this.getColor(userColor, type);
+        const color = Highlighter.getColor(userColor, type);
         modifyDOMHighlight(highlight.marks, 'backgroundColor', color);
         this.highlights.set(id, { ...highlight, type });
 
@@ -165,26 +213,46 @@ export default class Highlighter {
   public removeAllUnsavedHighlights = () => {
     this.getAllUnsavedHighlights().forEach((highlight) => this.removeHighlight(highlight.data.id));
   };
-
-  private getColor = (colorStr: string, type: HighlightType): string => {
-    const color = Color(colorStr);
-    const rgba = (c: Color<string>, o: number) => `rgba(${c.red()},${c.green()},${c.blue()},${o})`;
-    if (type === HighlightType.Default) return rgba(color, 0.35);
-    return rgba(color, 0.65);
-  };
 }
 
 export const transformUnsavedHighlightDataToCreateHighlightRequestData = (
   data: UnsavedHighlight[],
-) => {
-  return data.map((uh) => ({
-    textRange: uh.data.textRange,
-    url: window.location.href,
-  }));
+): Array<PostReqBody> => {
+  return data.map((uh) => {
+    const postBody: Partial<PostReqBody> = {
+      url: window.location.href,
+      highlight: {
+        textRange: uh.data.textRange,
+        url: window.location.href,
+      },
+    };
+    if (uh.content) postBody.content = uh.content;
+    return postBody as PostReqBody;
+  });
 };
 
-export const transformUnsavedHighlightDataToTextList = (data: UnsavedHighlight[]) => {
-  return data.map((uh) => [uh.data.textRange.text]);
+/**
+ * Returns text and quote chunks formatted in the way Notion formats write text.
+ * Format of each list item in return value is one of the below
+ * ex. ["This is a quote", [["h", "yellow_background"]]]
+ * ex. ["Comment"]
+ * @param data
+ * @returns any[][]
+ */
+export const transformUnsavedHighlightDataToTextList = (data: UnsavedHighlight[]): any[][] => {
+  const retVals: any[][] = [];
+  data.forEach((uh) => {
+    const highlightText = [uh.data.textRange.text, [['h', 'yellow_background']]];
+    retVals.push(highlightText);
+    if (uh.content) retVals.push([uh.content]);
+  });
+  return retVals;
+};
+
+export const transformLinkDataToTextList = (link: Link): any[][] => {
+  const retVals: any[][] = [[link.title, [['a', link.url]]]];
+  if (link.content) retVals.push([link.content]);
+  return retVals;
 };
 
 export const getIdFromAnyHighlightData = (data: Post | UnsavedHighlightData): string => {

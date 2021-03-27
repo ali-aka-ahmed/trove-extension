@@ -1,0 +1,65 @@
+.TroveTitleWrapper {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.TroveTitle__CollapseButtonWrapper {
+  position: absolute;
+  right: 10px;
+  top: 23px;
+  cursor: pointer;
+  z-index: 20;
+  height: inherit;
+  width: inherit;
+}
+
+.TroveDropdown__CollapseButton {
+  cursor: pointer;
+  transition: background 20ms ease-in 0s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px;
+  height: 20px;
+  outline: none;
+  box-shadow: none;
+  font-size: 20px;
+  color: #969696;
+  transition: 100ms;
+  width: 20px;
+  transform: rotateZ(90deg);
+  transition: 100ms;
+};
+
+.TroveDropdown__CollapseButton:hover {
+  color: inherit;
+};
+
+.TroveDropdown__CollapseButton:active:focus {
+  outline: none;
+  box-shadow: none;
+};
+
+.TroveTooltip__Title {
+  max-width: 100%;
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+  caret-color: #37352f;
+  padding: 18px 21px;
+  background-color: #ffffff;
+  outline: 0;
+  border: 0;
+  font-size: 25px;
+  font-weight: 700;
+  color: #37352f;
+  cursor: text;
+  border-bottom: 1px solid #DDDDDD;
+  resize: none;
+  padding-right: 35px;
+};
+
+.TroveTooltip__Title::placeholder {
+  color: rgb(225, 225, 225);
+};
