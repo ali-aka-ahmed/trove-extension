@@ -1,4 +1,4 @@
-import { InfoCircleFilled, LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
@@ -8,12 +8,12 @@ import {
   AnyPropertyUpdateData,
   MultiSelectOptionPropertyUpdate,
   PropertyUpdate,
-  SelectOptionPropertyUpdate
+  SelectOptionPropertyUpdate,
 } from '../../../app/notionTypes/dbUpdate';
 import {
   MultiSelectProperty,
   SchemaPropertyType,
-  SelectProperty
+  SelectProperty,
 } from '../../../app/notionTypes/schema';
 import { AxiosRes } from '../../../app/server';
 import { ISchemaRes } from '../../../app/server/notion';
@@ -33,7 +33,7 @@ import Highlighter, {
   transformLinkDataToTextList,
   transformUnsavedHighlightDataToCreateHighlightRequestData,
   transformUnsavedHighlightDataToTextList,
-  UnsavedHighlightData
+  UnsavedHighlightData,
 } from './helpers/highlight/Highlighter';
 import { getTextRangeFromRange } from './helpers/highlight/textRange';
 import { getOsKeyChar, isOsKeyPressed } from './helpers/os';
@@ -41,7 +41,7 @@ import ListReducer, { ListReducerActionType } from './helpers/reducers/ListReduc
 import {
   isMouseBetweenRects,
   isSelectionInEditableElement,
-  selectionExists
+  selectionExists,
 } from './helpers/selection';
 import Highlight from './Highlight';
 import Link from './Link';
@@ -576,39 +576,40 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     setIsDBSupported(true);
     // if the default is a database, re-fetch properties in case they changed
-    if (dropdownItem?.hasSchema) {
-      setPropertiesLoading(true);
-      sendMessageToExtension({
-        type: MessageType.GetNotionDBSchema,
-        dbId: dropdownItem.collectionId || dropdownItem.id,
-      }).then((res: ISchemaRes) => {
-        if (res.success) {
-          setShowPropertiesLoadError(false);
-          if (!res.isSupported) {
-            setIsDBSupported(false);
-            setPropertiesLoading(false);
-          } else {
-            // reset item for new properties to render
-            const newSchema = res.schema;
-            if (_.isEqual(newSchema, dropdownItem.schema)) {
-              setPropertiesLoading(false);
-              return;
-            }
-            dropdownItem.schema = newSchema;
-            setDropdownItem(dropdownItem);
-            setPropertiesLoading(false);
-            // save adjusted defaultItem in the notionDefaults and notionRecents
-            get1('spaceId').then((spaceId: string) =>
-              updateItemInNotionStore(spaceId, dropdownItem),
-            );
-          }
-        } else {
-          setShowPropertiesLoadError(true);
-          setPropertiesLoading(false);
-        }
-      });
-    }
+    if (dropdownItem?.hasSchema) handleGetProperties();
   }, [dropdownItem]);
+
+  const handleGetProperties = () => {
+    if (!dropdownItem) return;
+    setPropertiesLoading(true);
+    sendMessageToExtension({
+      type: MessageType.GetNotionDBSchema,
+      dbId: dropdownItem.collectionId || dropdownItem.id,
+    }).then((res: ISchemaRes) => {
+      if (res.success) {
+        setShowPropertiesLoadError(false);
+        if (!res.isSupported) {
+          setIsDBSupported(false);
+          setPropertiesLoading(false);
+        } else {
+          // reset item for new properties to render
+          const newSchema = res.schema;
+          if (_.isEqual(newSchema, dropdownItem.schema)) {
+            setPropertiesLoading(false);
+            return;
+          }
+          dropdownItem.schema = newSchema;
+          setDropdownItem(dropdownItem);
+          setPropertiesLoading(false);
+          // save adjusted defaultItem in the notionDefaults and notionRecents
+          get1('spaceId').then((spaceId: string) => updateItemInNotionStore(spaceId, dropdownItem));
+        }
+      } else {
+        setShowPropertiesLoadError(true);
+        setPropertiesLoading(false);
+      }
+    });
+  };
 
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
@@ -811,20 +812,14 @@ export default function Tooltip(props: TooltipProps) {
                 {showPropertiesLoadError && !propertiesLoading && (
                   <div className="TroveTooltip__LoadingPropertiesWrapper">
                     <span
-                      className="TroveTooltip__LoadingPropertiesSymbol"
-                      onMouseEnter={() => ReactTooltip.show(info.current!)}
-                      onMouseLeave={() => ReactTooltip.hide(info.current!)}
-                      data-tip={`
-                        <div class="TroveHint__Content">
-                          <p class="TroveHint__Content__PrimaryText">We were unable to check Notion for updates to these properties. If a property still exists, changes made here will still be sent to Notion.</p>
-                        </div>
-                      `}
+                      className="TroveTooltip__LoadingPropertiesSymbol--failure"
                       ref={info}
+                      onClick={handleGetProperties}
                     >
-                      <InfoCircleFilled />
+                      <ReloadOutlined />
                     </span>
                     <span className="TroveTooltip__LoadingPropertiesText">
-                      Unable to sync properties
+                      Unable to get latest properties. Click the icon to try again.
                     </span>
                   </div>
                 )}
