@@ -54,8 +54,8 @@ export default function InputProperty({ property, root, updateProperty }: InputP
   );
 
   useEffect(() => {
-    if (editing) root.addEventListener('click', handleClickOutsidePropertyInput);
-    return () => root.removeEventListener('click', handleClickOutsidePropertyInput);
+    if (editing) root.addEventListener('keydown', handleClickOutsidePropertyInput);
+    return () => root.removeEventListener('keydown', handleClickOutsidePropertyInput);
   }, [editing, handleClickOutsidePropertyInput]);
 
   const handleOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

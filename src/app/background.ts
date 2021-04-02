@@ -4,14 +4,14 @@ import { getCookie } from '../utils/chrome/cookies';
 import {
   Message as EMessage,
   MessageType as EMessageType,
-  sendMessageToWebsite
+  sendMessageToWebsite,
 } from '../utils/chrome/external';
 import { get, set } from '../utils/chrome/storage';
 import {
   Message,
   MessageType,
   sendMessageToExtension,
-  SocketMessageType
+  SocketMessageType,
 } from '../utils/chrome/tabs';
 import getImage from './notionServer/getImage';
 import getSpaceUsers from './notionServer/getSpaceUsers';
@@ -21,7 +21,7 @@ import {
   addTextToNotion,
   getDBSchema,
   getNotionPages,
-  searchNotionPages
+  searchNotionPages,
 } from './server/notion';
 import {
   createComment,
@@ -29,7 +29,7 @@ import {
   deletePostAndChildren,
   getPosts,
   likePost,
-  unlikePost
+  unlikePost,
 } from './server/posts';
 import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
@@ -399,4 +399,12 @@ chrome.tabs.onCreated.addListener((tab: chrome.tabs.Tab) => {
   //   [key(tabId, 'isOpen')]: false,
   //   [key(tabId, 'position')]: Point.toJSON(DEFAULT_POSITION)
   // });
+});
+
+// When update is available, immediately fetch that update
+chrome.runtime.onUpdateAvailable.addListener(function (details) {
+  console.log('Updating to version ' + details.version);
+  // reloads the extension
+  chrome.runtime.reload();
+  // reload existing content scripts
 });

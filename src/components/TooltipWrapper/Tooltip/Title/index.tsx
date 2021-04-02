@@ -13,9 +13,16 @@ interface TitleProps {
     type: SchemaPropertyType,
     data: AnyPropertyUpdateData,
   ) => void;
+  editable: boolean;
 }
 
-const Title = ({ existingTitle, updateProperty, setCollapsed, collapsed }: TitleProps) => {
+const Title = ({
+  existingTitle,
+  updateProperty,
+  setCollapsed,
+  collapsed,
+  editable,
+}: TitleProps) => {
   const [title, setTitle] = useState(existingTitle || '');
   const button = useRef<HTMLButtonElement>(null!);
 
@@ -51,7 +58,7 @@ const Title = ({ existingTitle, updateProperty, setCollapsed, collapsed }: Title
         onKeyPress={(e) => e.stopPropagation()}
         value={title}
         placeholder="Untitled"
-        disabled={!!existingTitle}
+        disabled={!editable}
         style={collapsed ? { border: '0' } : {}}
       />
     </div>
