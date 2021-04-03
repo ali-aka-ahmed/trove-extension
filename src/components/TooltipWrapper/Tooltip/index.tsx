@@ -525,8 +525,8 @@ export default function Tooltip(props: TooltipProps) {
           `}
           ref={save}
           className="Trove__Button"
-          // onClick={onSave}
-          onClick={() => sendMessageToExtension({ type: MessageType.Test })}
+          onClick={onSave}
+          // onClick={() => sendMessageToExtension({ type: MessageType.Test })}
         >
           {saveLoading && (
             <div className="Trove__ButtonLoading">
