@@ -87,8 +87,10 @@ export default function Tooltip(props: TooltipProps) {
   const tooltip = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const save = useRef<HTMLButtonElement>(null);
-  const cancel = useRef<HTMLButtonElement>(null);
+  // const cancel = useRef<HTMLButtonElement>(null);
   const info = useRef<HTMLSpanElement>(null);
+
+  console.log('RANDOM SHIT WOOOOOOOOOOOOOO');
 
   const updateNumTempHighlights = () => {
     const newVal = highlighter.getAllUnsavedHighlights().length;
@@ -104,8 +106,10 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (!linkShowing && numTempHighlights === 0) {
       setShowTooltip(false);
+      setPropertyUpdates({});
       highlighter.reset();
       setLinkShowing(true);
+      setSaveLoading(false);
     }
   }, [numTempHighlights, linkShowing]);
 
@@ -379,6 +383,7 @@ export default function Tooltip(props: TooltipProps) {
       // Add to our own servers
       if (res.success) {
         setShowTooltip(false);
+        setPropertyUpdates({});
         highlighter.reset();
         setLinkShowing(true);
 
@@ -515,12 +520,13 @@ export default function Tooltip(props: TooltipProps) {
           onMouseLeave={() => ReactTooltip.hide(save.current!)}
           data-tip={`
             <div class="TroveHint__Content">
-              <p class="TroveHint__Content__PrimaryText">enter</p>
+              <p class="TroveHint__Content__PrimaryText">${getOsKeyChar()}+enter</p>
             </div>
           `}
           ref={save}
           className="Trove__Button"
-          onClick={onSave}
+          // onClick={onSave}
+          onClick={() => sendMessageToExtension({ type: MessageType.Test })}
         >
           {saveLoading && (
             <div className="Trove__ButtonLoading">
@@ -530,14 +536,14 @@ export default function Tooltip(props: TooltipProps) {
           Save
         </button>
         <button
-          onMouseEnter={() => ReactTooltip.show(cancel.current!)}
-          onMouseLeave={() => ReactTooltip.hide(cancel.current!)}
-          data-tip={`
-            <div class="TroveHint__Content">
-              <p class="TroveHint__Content__PrimaryText">esc</p>
-            </div>
-          `}
-          ref={cancel}
+          // onMouseEnter={() => ReactTooltip.show(cancel.current!)}
+          // onMouseLeave={() => ReactTooltip.hide(cancel.current!)}
+          // data-tip={`
+          //   <div class="TroveHint__Content">
+          //     <p class="TroveHint__Content__PrimaryText">esc</p>
+          //   </div>
+          // `}
+          // ref={cancel}
           className="Trove__Button--secondary"
           onClick={onCancel}
         >
@@ -644,13 +650,16 @@ export default function Tooltip(props: TooltipProps) {
       ) {
         // Open dropdown
         e.preventDefault();
+        e.stopPropagation();
+        storePropertyValuesOnDropdownItem();
         setDropdownClicked(true);
         ReactTooltip.hide();
-        window.scrollTo(0, document.body.scrollHeight);
-      } else if (e.key === 'Escape' && showTooltip) {
-        e.preventDefault();
-        handleCancelSaveHighlights();
+        // else if (e.key === 'Escape' && showTooltip) {
+        //   e.preventDefault();
+        //   handleCancelSaveHighlights();
+        // }
       } else if (
+        isOsKeyPressed(e) &&
         e.key === 'Enter' &&
         showTooltip &&
         !dropdownClicked &&
@@ -699,10 +708,8 @@ export default function Tooltip(props: TooltipProps) {
 
   const handleCancelSaveHighlights = () => {
     highlighter.removeAllUnsavedHighlights();
-    highlighter.reset();
     updateNumTempHighlights();
     setLinkShowing(false);
-    setSaveLoading(false);
   };
 
   const renderProperties = (item: Record | null) => {
@@ -724,31 +731,44 @@ export default function Tooltip(props: TooltipProps) {
     if (val) {
       setCollapsed(true);
     } else {
-      // sync property values to dropdownItem schema and load through there
-      const newSchema = dropdownItem?.schema?.map((sv) => {
-        const { propertyId } = sv;
-        if (!propertyUpdates[propertyId]) return sv;
-        const { type, data } = propertyUpdates[propertyId];
-        if (type === SchemaPropertyType.Select) {
-          sv.value = (data as SelectOptionPropertyUpdate).selected;
-          (sv as SelectProperty).options = (sv as SelectProperty).options.concat(
-            (data as SelectOptionPropertyUpdate).newOptions,
-          );
-        } else if (type === SchemaPropertyType.MultiSelect) {
-          sv.value = (data as MultiSelectOptionPropertyUpdate).selected;
-          (sv as MultiSelectProperty).options = (sv as MultiSelectProperty).options.concat(
-            (data as MultiSelectOptionPropertyUpdate).newOptions,
-          );
-        } else {
-          sv.value = data;
-        }
-        return sv;
-      });
-      if (dropdownItem) {
-        dropdownItem.schema = newSchema;
-        setDropdownItem(dropdownItem);
-      }
+      storePropertyValuesOnDropdownItem();
       setCollapsed(false);
+    }
+  };
+
+  const storePropertyValuesOnDropdownItem = () => {
+    // take propertyUpdates and put then on dropdownItem.
+    const newSchema = dropdownItem?.schema?.map((sv) => {
+      const { propertyId } = sv;
+      if (!propertyUpdates[propertyId]) return sv;
+      const { type, data } = propertyUpdates[propertyId];
+      if (type === SchemaPropertyType.Select) {
+        sv.value = (data as SelectOptionPropertyUpdate).selected;
+        (sv as SelectProperty).options = (sv as SelectProperty).options.concat(
+          (data as SelectOptionPropertyUpdate).newOptions,
+        );
+      } else if (type === SchemaPropertyType.MultiSelect) {
+        sv.value = (data as MultiSelectOptionPropertyUpdate).selected;
+        (sv as MultiSelectProperty).options = (sv as MultiSelectProperty).options.concat(
+          (data as MultiSelectOptionPropertyUpdate).newOptions,
+        );
+      } else {
+        sv.value = data;
+      }
+      return sv;
+    });
+    // save title in dropdownItem
+    if (propertyUpdates['title']) {
+      newSchema?.push({
+        name: 'Title',
+        propertyId: 'title',
+        type: SchemaPropertyType.Title,
+        value: propertyUpdates['title'].data as string,
+      });
+    }
+    if (dropdownItem) {
+      dropdownItem.schema = newSchema;
+      setDropdownItem(dropdownItem);
     }
   };
 
@@ -778,6 +798,30 @@ export default function Tooltip(props: TooltipProps) {
     );
   }
 
+  const changeItem = (item: Record) => {
+    if (item.id === dropdownItem?.id) return;
+    else {
+      setPropertyUpdates({});
+      setDropdownItem(item);
+    }
+  };
+
+  const getTitle = (item: Record | null) => {
+    if (!item) return undefined;
+    if (item.type !== 'database') return dropdownItem?.name;
+    else if (item.schema?.find((sv) => sv.propertyId === 'title')) {
+      return item.schema?.find((sv) => sv.propertyId === 'title')?.value as string;
+    } else return undefined;
+  };
+
+  const getTitleEditable = (item: Record | null) => {
+    if (!item) return false;
+    if (item.type !== 'database') return false;
+    else if (item.schema?.find((sv) => sv.propertyId === 'title')) {
+      return true;
+    } else return true;
+  };
+
   if (showTooltip) {
     return (
       <>
@@ -793,7 +837,7 @@ export default function Tooltip(props: TooltipProps) {
             {dropdownClicked ? (
               <>
                 <Dropdown
-                  setItem={setDropdownItem}
+                  setItem={changeItem}
                   setDropdownClicked={setDropdownClicked}
                   root={props.root}
                 />
@@ -826,12 +870,11 @@ export default function Tooltip(props: TooltipProps) {
                 )}
                 {isDBSupported && (
                   <Title
-                    existingTitle={
-                      dropdownItem?.type !== 'database' ? dropdownItem?.name : undefined
-                    }
+                    existingTitle={getTitle(dropdownItem)}
                     updateProperty={setPropertyUpdate}
                     setCollapsed={collapse}
                     collapsed={collapsed}
+                    editable={getTitleEditable(dropdownItem)}
                   />
                 )}
                 {!collapsed && (
@@ -869,6 +912,7 @@ export default function Tooltip(props: TooltipProps) {
                           </div>
                         `}
                         onClick={() => {
+                          storePropertyValuesOnDropdownItem();
                           setDropdownClicked(true);
                           ReactTooltip.hide();
                         }}

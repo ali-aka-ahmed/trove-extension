@@ -4,14 +4,14 @@ import { getCookie } from '../utils/chrome/cookies';
 import {
   Message as EMessage,
   MessageType as EMessageType,
-  sendMessageToWebsite
+  sendMessageToWebsite,
 } from '../utils/chrome/external';
 import { get, set } from '../utils/chrome/storage';
 import {
   Message,
   MessageType,
   sendMessageToExtension,
-  SocketMessageType
+  SocketMessageType,
 } from '../utils/chrome/tabs';
 import getImage from './notionServer/getImage';
 import getSpaceUsers from './notionServer/getSpaceUsers';
@@ -21,7 +21,7 @@ import {
   addTextToNotion,
   getDBSchema,
   getNotionPages,
-  searchNotionPages
+  searchNotionPages,
 } from './server/notion';
 import {
   createComment,
@@ -29,7 +29,7 @@ import {
   deletePostAndChildren,
   getPosts,
   likePost,
-  unlikePost
+  unlikePost,
 } from './server/posts';
 import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
@@ -289,8 +289,18 @@ chrome.runtime.onMessage.addListener(
         );
         break;
       }
-      case MessageType.Sync:
+      case MessageType.Sync: {
         break;
+      }
+      case MessageType.Test: {
+        chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
+          tabs.forEach((tab) => {
+            if (!tab.id) return;
+            chrome.tabs.sendMessage(tab.id, { type: MessageType.InjectLatestContentScript });
+          });
+        });
+        break;
+      }
     }
 
     return true;
@@ -385,18 +395,48 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 
 // Extension installed or updated
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason == 'install') {
+  if (details.reason === 'install') {
+    console.log('Running install scripts');
     sendMessageToWebsite({ type: EMessageType.Exists });
     chrome.tabs.update({ url: `${ORIGIN}/signup` });
+    // inject content script in all tabs (if not aleady there)
+    chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
+      tabs.forEach((tab) => {
+        if (!tab.id) return;
+        chrome.tabs.sendMessage(
+          tab.id,
+          { type: MessageType.InjectLatestContentScript },
+          (response) => {
+            if (!tab.id) return;
+            if (response === undefined) {
+              chrome.tabs.executeScript(tab.id, { file: 'js/content.js' });
+            }
+          },
+        );
+      });
+    });
   }
 });
 
-// On tab create
-chrome.tabs.onCreated.addListener((tab: chrome.tabs.Tab) => {
-  // if (tab.id === undefined) return;
-  // const tabId = tab.id.toString();
-  // set({
-  //   [key(tabId, 'isOpen')]: false,
-  //   [key(tabId, 'position')]: Point.toJSON(DEFAULT_POSITION)
-  // });
+// When update is available, immediately fetch that update
+chrome.runtime.onUpdateAvailable.addListener(function (details) {
+  console.log('Updating to version ' + details.version);
+  // reloads the extension
+  chrome.runtime.reload();
+  // update content script in all tabs (if not aleady there)
+  chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
+    tabs.forEach((tab) => {
+      if (!tab.id) return;
+      chrome.tabs.sendMessage(
+        tab.id,
+        { type: MessageType.InjectLatestContentScript },
+        (response) => {
+          if (!tab.id) return;
+          if (response === undefined) {
+            chrome.tabs.executeScript(tab.id, { file: 'js/content.js' });
+          }
+        },
+      );
+    });
+  });
 });

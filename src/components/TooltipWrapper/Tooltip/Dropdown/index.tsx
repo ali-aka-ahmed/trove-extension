@@ -17,7 +17,7 @@ import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/ta
 
 interface DropdownProps {
   setDropdownClicked: React.Dispatch<React.SetStateAction<boolean>>;
-  setItem: React.Dispatch<React.SetStateAction<Record>>;
+  setItem: (item: Record) => void;
   root: ShadowRoot;
 }
 
