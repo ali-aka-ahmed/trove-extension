@@ -33,12 +33,8 @@
     "tabs",
     "activeTab",
     "cookies",
-    "https://www.notion.so/*",
-    "http://localhost:3000/*",
-    "https://development.trove.so/*",
-    "https://demo.trove.so/*",
-    "http://localhost:5000/*",
-    "https://dev.trove.so/*"
+    "http://*/*",
+    "https://*/*"
   ],
   "externally_connectable": {
     "matches": [

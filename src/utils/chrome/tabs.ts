@@ -66,6 +66,8 @@ export enum MessageType {
   GetNotionSpaceUsers,
   GetNotionDBSchema,
   AddNotionRow,
+  InjectLatestContentScript,
+  Test,
 }
 
 /**

@@ -90,6 +90,8 @@ export default function Tooltip(props: TooltipProps) {
   // const cancel = useRef<HTMLButtonElement>(null);
   const info = useRef<HTMLSpanElement>(null);
 
+  console.log('RANDOM SHIT WOOOOOOOOOOOOOO');
+
   const updateNumTempHighlights = () => {
     const newVal = highlighter.getAllUnsavedHighlights().length;
     setNumTempHighlights(newVal);
@@ -523,7 +525,8 @@ export default function Tooltip(props: TooltipProps) {
           `}
           ref={save}
           className="Trove__Button"
-          onClick={onSave}
+          // onClick={onSave}
+          onClick={() => sendMessageToExtension({ type: MessageType.Test })}
         >
           {saveLoading && (
             <div className="Trove__ButtonLoading">
