@@ -90,8 +90,6 @@ export default function Tooltip(props: TooltipProps) {
   // const cancel = useRef<HTMLButtonElement>(null);
   const info = useRef<HTMLSpanElement>(null);
 
-  console.log('RANDOM SHIT WOOOOOOOOOOOOOO');
-
   const updateNumTempHighlights = () => {
     const newVal = highlighter.getAllUnsavedHighlights().length;
     setNumTempHighlights(newVal);

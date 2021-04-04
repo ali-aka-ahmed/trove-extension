@@ -44,18 +44,22 @@ export default function InputProperty({ property, root, updateProperty }: InputP
 
   const handleClickOutsidePropertyInput = useCallback(
     (e: MouseEvent) => {
-      if (propertyInput.current !== e.target) {
+      const input = propertyInput.current;
+      // if you click outside of the input and nothing is selected
+      const somethingIsSelected =
+        input.selectionStart !== input.selectionEnd && root.activeElement === input;
+      if (input !== e.target && !somethingIsSelected) {
         e.preventDefault();
         setInputValue(cleanInput(property.type, inputValue));
         setEditing(false);
       }
     },
-    [inputValue],
+    [inputValue, propertyInput],
   );
 
   useEffect(() => {
-    if (editing) root.addEventListener('keydown', handleClickOutsidePropertyInput);
-    return () => root.removeEventListener('keydown', handleClickOutsidePropertyInput);
+    if (editing) root.addEventListener('click', handleClickOutsidePropertyInput);
+    return () => root.removeEventListener('click', handleClickOutsidePropertyInput);
   }, [editing, handleClickOutsidePropertyInput]);
 
   const handleOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
