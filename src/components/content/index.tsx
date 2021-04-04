@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { ORIGIN } from '../../config/config.dev';
+import { ORIGIN } from '../../config/config.prod';
 import User from '../../models/IUser';
 import { MessageType, sendMessageToExtension } from '../../utils/chrome/tabs';
 import './index.scss';
