@@ -1,10 +1,16 @@
-@import '../style.scss';
-@import '../../../styles/general.scss';
+@import '../../styles/general.scss';
 
 .TbdAuth {
   height: fit-content;
   width: 100%;
   padding: 20px 15px;
+  line-height: $line-height;
+}
+
+.TroveAuth--tooltip {
+  height: fit-content;
+  width: 100%;
+  padding: 15px;
   line-height: $line-height;
 }
 
@@ -121,4 +127,85 @@
 
 .TbdLogin__SignupHere:hover {
   text-decoration: underline;
+}
+
+.Trove__Button {
+  font-size: 13px;
+  font-weight: 400;
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  height: 28px;
+  border-radius: 3px;
+  box-shadow: rgba(15, 15, 15, 0.1) 0px 0px 0px 1px inset, rgba(15, 15, 15, 0.1) 0px 1px 2px;
+  background: #0d77e2;
+  color: white;
+  fill: white;
+  line-height: 1.2;
+  padding-left: 12px;
+  padding-right: 12px;
+  border: 0;
+  outline: none;
+}
+
+.Trove__Button:hover {
+  background-color: rgba(13, 119, 226, 0.8);
+}
+
+.Trove__Button--secondary:hover {
+  background-color: rgba(55, 53, 47, 0.08);
+}
+
+.Trove__Button--secondary {
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  margin-right: 5px;
+  user-select: none;
+  transition: background 20ms ease-in 0s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: 3px;
+  height: 28px;
+  padding: 0px 12px;
+  line-height: 1.2;
+  border: 1px solid rgba(55, 53, 47, 0.16);
+  background-color: transparent;
+  outline: none;
+}
+
+.TroveLoginTooltip__Title {
+  width: 100%;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.TroveAuth__LogoWrapper {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  margin-bottom: 15px;
+  margin-top: 5px;
+}
+
+.TroveAuth__LogoText {
+  font-size: 32px;
+  font-weight: 400;
+  height: fit-content;
+  width: fit-content;
+}
+
+.TroveAuth__LogoUnderscore {
+  width: 125px;
+  height: 10px;
+  background-color: #0d77e2;
+  margin-top: 10px;
 }

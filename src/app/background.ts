@@ -1,13 +1,10 @@
 import { ORIGIN } from '../config';
 import User from '../entities/User';
 import { getCookie } from '../utils/chrome/cookies';
-import {
-  Message as EMessage,
-  MessageType as EMessageType,
-  sendMessageToWebsite,
-} from '../utils/chrome/external';
+import { sendMessageToWebsite } from '../utils/chrome/external';
 import { get, set } from '../utils/chrome/storage';
 import {
+  ExternalMessageType,
   Message,
   MessageType,
   sendMessageToExtension,
@@ -301,6 +298,22 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+      case ExternalMessageType.Login: {
+        if (!message.token || !message.user) break;
+        sendMessageToWebsite(message);
+        break;
+      }
+      case ExternalMessageType.UpdateProfile: {
+        if (!message.user) break;
+        sendMessageToWebsite(message);
+        break;
+      }
+      case ExternalMessageType.IsAuthenticated ||
+        ExternalMessageType.Exists ||
+        ExternalMessageType.Logout: {
+        sendMessageToWebsite(message);
+        break;
+      }
     }
 
     return true;
@@ -310,16 +323,16 @@ chrome.runtime.onMessage.addListener(
 // Messages received from outside the extension (messages from frontend website)
 chrome.runtime.onMessageExternal.addListener(
   (
-    message: EMessage,
+    message: Message,
     sender: chrome.runtime.MessageSender,
     sendResponse: (response: any) => void,
   ) => {
     switch (message.type) {
-      case EMessageType.Exists: {
+      case ExternalMessageType.Exists: {
         sendResponse({ success: true });
         break;
       }
-      case EMessageType.Login: {
+      case ExternalMessageType.Login: {
         sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: message.user!.id });
         set({
           token: message.token,
@@ -360,7 +373,7 @@ chrome.runtime.onMessageExternal.addListener(
           .then(() => sendResponse(true));
         break;
       }
-      case EMessageType.IsAuthenticated: {
+      case ExternalMessageType.IsAuthenticated: {
         get({
           isAuthenticated: false,
           token: '',
@@ -397,7 +410,7 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     console.log('Running install scripts');
-    sendMessageToWebsite({ type: EMessageType.Exists });
+    sendMessageToWebsite({ type: ExternalMessageType.Exists });
     chrome.tabs.update({ url: `${ORIGIN}/signup` });
     // inject content script in all tabs (if not aleady there)
     chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {

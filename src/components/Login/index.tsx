@@ -1,45 +1,51 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import React, { useState } from 'react';
-import { IAuthRes } from '../../../app/server/auth';
-import { ORIGIN } from '../../../config';
-import User from '../../../entities/User';
-import { MessageType as EMessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
-import { set } from '../../../utils/chrome/storage';
-import { MessageType, sendMessageToExtension, SocketMessageType } from '../../../utils/chrome/tabs';
-import { createLoginArgs } from '../helpers/auth';
-import '../style.scss';
+import { IAuthRes } from '../../app/server/auth';
+import { ORIGIN } from '../../config';
+import User from '../../entities/User';
+import { set } from '../../utils/chrome/storage';
+import {
+  ExternalMessageType,
+  MessageType,
+  sendMessageToExtension,
+  SocketMessageType,
+} from '../../utils/chrome/tabs';
+import { createLoginArgs } from '../Popup/helpers/auth';
 import ForgotPassword from './ForgotPassword';
 import './style.scss';
 
-interface LoginProps {}
+interface LoginProps {
+  type: 'tooltip' | 'popup';
+  onCancel?: () => void;
+  onLogin?: () => void;
+}
 
-export default function Login({}: LoginProps) {
-  const [username, setUsername] = useState('');
+export default function Login({ type, onCancel, onLogin }: LoginProps) {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const handleUsernameInput = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setUsername(e.target.value);
+  const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
   const handlePasswordInput = (e: React.ChangeEvent<HTMLInputElement>) =>
     setPassword(e.target.value);
 
   const handleLogin = () => {
-    if (username === '') return setErrorMessage('Enter your phone number, email or username');
+    if (email === '') return setErrorMessage('Enter your email');
     if (password === '') return setErrorMessage('Enter your password');
     setLoading(true);
-    const args = createLoginArgs(username, password);
+    const args = createLoginArgs(email, password);
     sendMessageToExtension({ type: MessageType.Login, loginArgs: args }).then((res: IAuthRes) => {
       if (!res.success) {
         setLoading(false);
         return setErrorMessage(res.message);
       }
       sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: res.user?.id });
-      sendMessageToWebsite({ type: EMessageType.Login, user: res.user, token: res.token });
-      setUsername('');
+      sendMessageToExtension({ type: ExternalMessageType.Login, user: res.user, token: res.token });
+      setEmail('');
       setPassword('');
       setLoading(false);
       set({
@@ -47,7 +53,11 @@ export default function Login({}: LoginProps) {
         token: res.token,
         isExtensionOn: true,
         notificationDisplayIcon: 0,
-      }).then(() => set({ isAuthenticated: true }));
+      })
+        .then(() => set({ isAuthenticated: true }))
+        .then(() => {
+          if (onLogin) onLogin();
+        });
     });
   };
 
@@ -57,7 +67,11 @@ export default function Login({}: LoginProps) {
     return <ForgotPassword goToLogin={() => setShowForgotPassword(false)} />;
   } else
     return (
-      <div className="TbdAuth">
+      <div className={type === 'tooltip' ? 'TroveAuth--tooltip' : 'TbdAuth'}>
+        <div className="TroveAuth__LogoWrapper">
+          <div className="TroveAuth__LogoText">Trove</div>
+          <div className="TroveAuth__LogoUnderscore" />
+        </div>
         <div className="TbdAuth__FieldWrapper">
           <div className="TbdAuth__Label">Email</div>
           <div className="TbdAuth__InputWrapper">
@@ -65,8 +79,8 @@ export default function Login({}: LoginProps) {
               className="TbdAuth__Input"
               type="text"
               autoFocus={true}
-              value={username}
-              onChange={handleUsernameInput}
+              value={email}
+              onChange={handleEmailInput}
             />
           </div>
         </div>
@@ -87,24 +101,31 @@ export default function Login({}: LoginProps) {
             Forgot password?
           </div>
         </div>
-        <div className='TbdAuth__ButtonWrapper--login'>
-          <button
-            className='Trove__Button'
-            onClick={handleLogin}
-          >
-            {loading && <div className='TbdAuth__Loading'><LoadingOutlined /></div>}
+        <div className="TbdAuth__ButtonWrapper--login">
+          {type === 'tooltip' && (
+            <button className="Trove__Button--secondary" onClick={onCancel}>
+              Cancel
+            </button>
+          )}
+          <button className="Trove__Button" onClick={handleLogin}>
+            {loading && (
+              <div className="TbdAuth__Loading">
+                <LoadingOutlined />
+              </div>
+            )}
             Login
           </button>
-          <div className='TbdLogin__SignupHere' onClick={goToSignup}>
+          <div className="TbdLogin__SignupHere" onClick={goToSignup}>
             or signup here
           </div>
         </div>
-        <div className={`TbdAuth__Error ${errorMessage 
-            ? 'TbdAuth__Error--show' 
-            : 'TbdAuth__Error--hide'}`}
+        <div
+          className={`TbdAuth__Error ${
+            errorMessage ? 'TbdAuth__Error--show' : 'TbdAuth__Error--hide'
+          }`}
         >
-          <Alert showIcon message={errorMessage} type='error' className='TbdAuth__Alert' />
+          <Alert showIcon message={errorMessage} type="error" className="TbdAuth__Alert" />
         </div>
       </div>
-  );
-};
+    );
+}

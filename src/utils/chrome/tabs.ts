@@ -5,9 +5,10 @@ import { ForgotReqBody, LoginReqBody } from '../../app/server/auth';
 import { ErrorReqBody } from '../../app/server/misc';
 import { CreateCommentReqBody, CreatePostsReqBody } from '../../app/server/posts';
 import { UpdateUserReqBody } from '../../app/server/users';
+import IUser from '../../models/IUser';
 
 export interface Message {
-  type: MessageType | SocketMessageType;
+  type: MessageType | SocketMessageType | ExternalMessageType;
   data?: any;
   error?: ErrorReqBody;
   forgotPasswordArgs?: ForgotReqBody;
@@ -38,6 +39,8 @@ export interface Message {
   imageOptions?: GetImageReqBody;
   dbId?: string;
   updates?: Array<PropertyUpdate>;
+  token?: string;
+  user?: IUser;
 }
 
 export enum MessageType {
@@ -80,6 +83,17 @@ export enum SocketMessageType {
   ReadNotification = 'Read Notification',
   Notifications = 'Notifications',
   Notification = 'Notification',
+}
+
+/**
+ * Make sure this stays in sync with website.
+ */
+export enum ExternalMessageType {
+  IsAuthenticated = 'IS_AUTHENTICATED',
+  Exists = 'EXISTS',
+  Login = 'LOGIN',
+  Logout = 'LOGOUT',
+  UpdateProfile = 'UPDATE_PROFILE',
 }
 
 export const sendMessageToExtension = (message: Message) => {

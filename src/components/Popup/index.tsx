@@ -9,8 +9,8 @@ import INotification from '../../models/INotification';
 import { get, set } from '../../utils/chrome/storage';
 import { sendMessageToExtension, SocketMessageType } from '../../utils/chrome/tabs';
 import ErrorBoundary from '../errorBoundary/index';
+import Login from '../Login';
 import BottomBar from './BottomBar';
-import Login from './Login';
 import Profile from './Profile';
 import './style.scss';
 
@@ -26,7 +26,7 @@ export default function Popup() {
   const [spaceId, setSpaceId] = useState('');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [user, setUser] = useState<User | null>(null);
-  
+
   useEffect(() => {
     get({
       isAuthenticated: false,
@@ -67,8 +67,7 @@ export default function Popup() {
         else setIsAuthenticated(false);
       }
       if (change.spaceId !== undefined) {
-        if (change.spaceId.newValue !== undefined)
-          setSpaceId(change.spaceId.newValue);
+        if (change.spaceId.newValue !== undefined) setSpaceId(change.spaceId.newValue);
         else setSpaceId('');
       }
     });
@@ -89,7 +88,7 @@ export default function Popup() {
       <div className="TbdPopupContainer TbdPopupContainer--loading">
         <LoadingOutlined />
       </div>
-    )
+    );
   }
   return (
     <ErrorBoundary origin={ErrorOrigin.Popup}>
@@ -103,15 +102,13 @@ export default function Popup() {
                 </div>
               </Tabs.TabPane>
               <Tabs.TabPane tab="Profile" key="2"> */}
-                <div className="TbdPopupContainer__TabWrapper">
-                  {user && <Profile user={user} />}
-                </div>
-              {/* </Tabs.TabPane>
+            <div className="TbdPopupContainer__TabWrapper">{user && <Profile user={user} />}</div>
+            {/* </Tabs.TabPane>
             </Tabs> */}
             <BottomBar isExtensionOn={isExtensionOn} />
           </>
         ) : (
-          <Login />
+          <Login type="popup" />
         )}
       </div>
     </ErrorBoundary>

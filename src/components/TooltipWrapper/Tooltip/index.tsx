@@ -26,6 +26,7 @@ import IUser from '../../../models/IUser';
 import { toArray } from '../../../utils';
 import { get, get1, updateItemInNotionStore } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import Login from '../../Login';
 import Dropdown from './Dropdown';
 import Highlighter, {
   getIdFromAnyHighlightData,
@@ -79,6 +80,7 @@ export default function Tooltip(props: TooltipProps) {
 
   const [posts, dispatchPosts] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
 
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [propertyUpdates, setPropertyUpdates] = useState<{
@@ -87,7 +89,7 @@ export default function Tooltip(props: TooltipProps) {
   const tooltip = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const save = useRef<HTMLButtonElement>(null);
-  // const cancel = useRef<HTMLButtonElement>(null);
+  const cancel = useRef<HTMLButtonElement>(null);
   const info = useRef<HTMLSpanElement>(null);
 
   const updateNumTempHighlights = () => {
@@ -224,8 +226,13 @@ export default function Tooltip(props: TooltipProps) {
     });
 
     chrome.storage.onChanged.addListener((change) => {
+      console.log('change', change);
       if (change.isExtensionOn !== undefined) {
         setIsExtensionOn(change.isExtensionOn.newValue || false);
+        if (change.isExtensionOn.newValue === false) {
+          highlighter.removeAllUnsavedHighlights();
+          updateNumTempHighlights();
+        }
       }
 
       if (change.isAuthenticated !== undefined) {
@@ -235,6 +242,11 @@ export default function Tooltip(props: TooltipProps) {
           get1('user').then((user: IUser) => {
             setUser(new User(user));
           });
+        } else {
+          highlighter.removeAllUnsavedHighlights();
+          updateNumTempHighlights();
+          setIsExtensionOn(false);
+          setShowLogin(false);
         }
       }
 
@@ -243,6 +255,12 @@ export default function Tooltip(props: TooltipProps) {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!isExtensionOn) {
+      setShowTooltip(false);
+    }
+  }, [isExtensionOn]);
 
   useEffect(() => {
     if (isAuthenticated && isExtensionOn && !didInitialGetPosts) {
@@ -275,7 +293,7 @@ export default function Tooltip(props: TooltipProps) {
         })
         .catch((e) => console.error('Errored while getting posts:', e));
     }
-  }, [user]);
+  }, [user, isAuthenticated, isExtensionOn, didInitialGetPosts]);
 
   // const onResize = useCallback(() => {
   //   positionTooltip();
@@ -514,6 +532,20 @@ export default function Tooltip(props: TooltipProps) {
     return (
       <div className="TroveContent__ButtonList" style={saveLoading ? { width: '156px' } : {}}>
         <button
+          onMouseEnter={() => ReactTooltip.show(cancel.current!)}
+          onMouseLeave={() => ReactTooltip.hide(cancel.current!)}
+          data-tip={`
+            <div class="TroveHint__Content">
+              <p class="TroveHint__Content__PrimaryText">${getOsKeyChar()}+esc</p>
+            </div>
+          `}
+          ref={cancel}
+          className="Trove__Button--secondary"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
           onMouseEnter={() => ReactTooltip.show(save.current!)}
           onMouseLeave={() => ReactTooltip.hide(save.current!)}
           data-tip={`
@@ -532,20 +564,6 @@ export default function Tooltip(props: TooltipProps) {
             </div>
           )}
           Save
-        </button>
-        <button
-          // onMouseEnter={() => ReactTooltip.show(cancel.current!)}
-          // onMouseLeave={() => ReactTooltip.hide(cancel.current!)}
-          // data-tip={`
-          //   <div class="TroveHint__Content">
-          //     <p class="TroveHint__Content__PrimaryText">esc</p>
-          //   </div>
-          // `}
-          // ref={cancel}
-          className="Trove__Button--secondary"
-          onClick={onCancel}
-        >
-          Cancel
         </button>
       </div>
     );
@@ -618,10 +636,22 @@ export default function Tooltip(props: TooltipProps) {
 
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
-      // Handle case where user logs out or turns ext off, but page isn't refreshed
-      if (!isAuthenticated || !isExtensionOn || dropdownClicked) return;
+      if (!isAuthenticated) {
+        if (isOsKeyPressed(e) && e.key === 'd') {
+          e.preventDefault();
+          setShowLogin(true);
+        }
+        return;
+      } else if (dropdownClicked) return;
+      else if (!isExtensionOn) {
+        // When extension is off and they are authenticated -- point them toward turning on Trove.
+        if (isOsKeyPressed(e) && e.key === 'd') {
+          e.preventDefault();
+          // SOMETHING HERE!!!
+        }
+      }
       // Keyboard shortcuts
-      if (isOsKeyPressed(e) && e.key === 'd') {
+      else if (isOsKeyPressed(e) && e.key === 'd') {
         e.preventDefault();
         const selection = getSelection()!;
         if (!showTooltip) {
@@ -652,10 +682,6 @@ export default function Tooltip(props: TooltipProps) {
         storePropertyValuesOnDropdownItem();
         setDropdownClicked(true);
         ReactTooltip.hide();
-        // else if (e.key === 'Escape' && showTooltip) {
-        //   e.preventDefault();
-        //   handleCancelSaveHighlights();
-        // }
       } else if (
         isOsKeyPressed(e) &&
         e.key === 'Enter' &&
@@ -668,6 +694,9 @@ export default function Tooltip(props: TooltipProps) {
         // Save current highlight
         setSaveLoading(true);
         handleSaveHighlights();
+      } else if (isOsKeyPressed(e) && e.key === 'Escape' && showTooltip) {
+        e.preventDefault();
+        handleCancelSaveHighlights();
       }
     },
     [
@@ -778,24 +807,6 @@ export default function Tooltip(props: TooltipProps) {
     });
   };
 
-  if (!showTooltip && isSelectionVisible) {
-    return (
-      <>
-        <div className="TroveTooltip" ref={tooltip} style={{ width: '155px', height: '38px' }}>
-          <div className="TroveHint__Wrapper">
-            <p className="TroveHint__Content__PrimaryText" style={{ fontSize: '14px' }}>
-              Highlight text
-            </p>
-            <p className="TroveHint__Content__SecondaryText" style={{ fontSize: '14px' }}>
-              {`(${getOsKeyChar()}+d)`}
-            </p>
-          </div>
-        </div>
-        {renderHighlightDeleteButton()}
-      </>
-    );
-  }
-
   const changeItem = (item: Record) => {
     if (item.id === dropdownItem?.id) return;
     else {
@@ -820,7 +831,42 @@ export default function Tooltip(props: TooltipProps) {
     } else return true;
   };
 
-  if (showTooltip) {
+  if (showLogin && !isAuthenticated) {
+    return (
+      <>
+        <div className="TroveTooltip" ref={tooltip}>
+          <div className="TroveTooltip__Content">
+            <Login
+              type="tooltip"
+              onCancel={() => setShowLogin(false)}
+              onLogin={() => setShowLogin(false)}
+            />
+          </div>
+        </div>
+        {renderHighlightDeleteButton()}
+      </>
+    );
+  }
+
+  if (!showTooltip && isSelectionVisible && isExtensionOn && isAuthenticated) {
+    return (
+      <>
+        <div className="TroveTooltip" ref={tooltip} style={{ width: '155px', height: '38px' }}>
+          <div className="TroveHint__Wrapper">
+            <p className="TroveHint__Content__PrimaryText" style={{ fontSize: '14px' }}>
+              Highlight text
+            </p>
+            <p className="TroveHint__Content__SecondaryText" style={{ fontSize: '14px' }}>
+              {`(${getOsKeyChar()}+d)`}
+            </p>
+          </div>
+        </div>
+        {renderHighlightDeleteButton()}
+      </>
+    );
+  }
+
+  if (showTooltip && isAuthenticated && isExtensionOn) {
     return (
       <>
         <div

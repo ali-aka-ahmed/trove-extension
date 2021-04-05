@@ -4,6 +4,8 @@ import { ErrorOrigin } from '../../app/server/misc';
 import { EXCLUDED_HOSTNAMES } from '../../constants/index';
 import contentStyles from '../content/index.scss?inject';
 import ErrorBoundary from '../errorBoundary/index';
+import forgotPasswordStyles from '../Login/ForgotPassword/style.scss?inject';
+import loginStyles from '../Login/style.scss?inject';
 import './index.scss';
 import Tooltip from './Tooltip';
 import dropdownStyles from './Tooltip/Dropdown/index.scss?inject';
@@ -53,6 +55,8 @@ export default function TooltipWrapper(props: TooltipWrapperProps) {
         <style type="text/css">{linkStyles}</style>
         <style type="text/css">{highlightStyles}</style>
         <style type="text/css">{titleStyles}</style>
+        <style type="text/css">{loginStyles}</style>
+        <style type="text/css">{forgotPasswordStyles}</style>
       </>
     );
   }
