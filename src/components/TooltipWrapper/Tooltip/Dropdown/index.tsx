@@ -18,6 +18,7 @@ import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/ta
 interface DropdownProps {
   setDropdownClicked: React.Dispatch<React.SetStateAction<boolean>>;
   setItem: (item: Record) => void;
+  currentItem: Record | null;
   root: ShadowRoot;
 }
 
@@ -110,7 +111,7 @@ export default function Dropdown(props: DropdownProps) {
     );
   };
 
-  const onKeyDownTextarea = (e: KeyboardEvent) => {
+  const onKeyDownTextarea = (e: KeyboardEvent | React.KeyboardEvent<HTMLInputElement>) => {
     e.stopPropagation();
     if (!(e.key === 'Escape') && (!items || items.length === 0)) return;
     switch (e.key) {
@@ -168,9 +169,18 @@ export default function Dropdown(props: DropdownProps) {
   // };
 
   const handleSelectItem = async (item: Record) => {
-    await Promise.all([addToNotionRecents(spaceId, item), setNotionDefault(spaceId, item)]);
-    props.setItem(item);
-    props.setDropdownClicked(false);
+    if (item.id === props.currentItem?.id) {
+      await Promise.all([
+        addToNotionRecents(spaceId, props.currentItem),
+        setNotionDefault(spaceId, props.currentItem),
+      ]);
+      props.setItem(props.currentItem);
+      props.setDropdownClicked(false);
+    } else {
+      await Promise.all([addToNotionRecents(spaceId, item), setNotionDefault(spaceId, item)]);
+      props.setItem(item);
+      props.setDropdownClicked(false);
+    }
   };
 
   // const renderItem = (item: Record, idx: number) => {
@@ -335,9 +345,7 @@ export default function Dropdown(props: DropdownProps) {
         placeholder="Search for databases or pages..."
         autoFocus={true}
         ref={input}
-        onClick={(e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-          e.stopPropagation();
-        }}
+        onKeyDown={(e) => onKeyDownTextarea(e)}
         onChange={(e) => onChange(e.target.value)}
       />
       <div className="TroveDropdown__ItemsWrapper">

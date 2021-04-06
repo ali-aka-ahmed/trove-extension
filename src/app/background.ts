@@ -420,7 +420,7 @@ chrome.runtime.onInstalled.addListener((details) => {
           tab.id,
           { type: MessageType.InjectLatestContentScript },
           (response) => {
-            if (!tab.id) return;
+            if (!tab.id || tab.url?.slice(0, 9) === 'chrome://') return;
             if (response === undefined) {
               chrome.tabs.executeScript(tab.id, { file: 'js/content.js' });
             }

@@ -67,7 +67,9 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
             autoFocus={true}
             value={forgotPasswordInput}
             onChange={handleForgotPasswordInput}
+            onKeyUp={(e) => e.stopPropagation()}
             onKeyDown={(e) => {
+              e.stopPropagation();
               if (e.key === 'Enter') handleForgotPasswordSubmit();
             }}
           />

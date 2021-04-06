@@ -29,9 +29,17 @@ export default function Login({ type, onCancel, onLogin }: LoginProps) {
 
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
-  const handlePasswordInput = (e: React.ChangeEvent<HTMLInputElement>) =>
+  const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     setPassword(e.target.value);
+  };
 
   const handleLogin = () => {
     if (email === '') return setErrorMessage('Enter your email');
@@ -80,6 +88,8 @@ export default function Login({ type, onCancel, onLogin }: LoginProps) {
               type="text"
               autoFocus={true}
               value={email}
+              onKeyDown={(e) => e.stopPropagation()}
+              onKeyUp={(e) => e.stopPropagation()}
               onChange={handleEmailInput}
             />
           </div>

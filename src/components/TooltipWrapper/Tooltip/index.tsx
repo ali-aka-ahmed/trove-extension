@@ -1,5 +1,5 @@
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
-import _ from 'lodash';
+import isEqual from 'lodash/isEqual';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
@@ -226,7 +226,6 @@ export default function Tooltip(props: TooltipProps) {
     });
 
     chrome.storage.onChanged.addListener((change) => {
-      console.log('change', change);
       if (change.isExtensionOn !== undefined) {
         setIsExtensionOn(change.isExtensionOn.newValue || false);
         if (change.isExtensionOn.newValue === false) {
@@ -597,13 +596,13 @@ export default function Tooltip(props: TooltipProps) {
   }, [numTempHighlights, linkShowing]);
 
   useEffect(() => {
-    setIsDBSupported(true);
     // if the default is a database, re-fetch properties in case they changed
     if (dropdownItem?.hasSchema) handleGetProperties();
   }, [dropdownItem]);
 
   const handleGetProperties = () => {
     if (!dropdownItem) return;
+    setIsDBSupported(true);
     setPropertiesLoading(true);
     sendMessageToExtension({
       type: MessageType.GetNotionDBSchema,
@@ -612,22 +611,27 @@ export default function Tooltip(props: TooltipProps) {
       if (res.success) {
         setShowPropertiesLoadError(false);
         if (!res.isSupported) {
+          setPropertyUpdates({});
           setIsDBSupported(false);
           setPropertiesLoading(false);
         } else {
           // reset item for new properties to render
-          const newSchema = res.schema;
-          if (_.isEqual(newSchema, dropdownItem.schema)) {
+          if (isEqual(res.schema, dropdownItem.schema)) {
             setPropertiesLoading(false);
-            return;
+          } else {
+            const newDropdownItem = { ...dropdownItem };
+            newDropdownItem.schema = res.schema;
+            setPropertyUpdates({});
+            setDropdownItem(newDropdownItem);
+            setPropertiesLoading(false);
+            // save adjusted defaultItem in the notionDefaults and notionRecents
+            get1('spaceId').then((spaceId: string) =>
+              updateItemInNotionStore(spaceId, newDropdownItem),
+            );
           }
-          dropdownItem.schema = newSchema;
-          setDropdownItem(dropdownItem);
-          setPropertiesLoading(false);
-          // save adjusted defaultItem in the notionDefaults and notionRecents
-          get1('spaceId').then((spaceId: string) => updateItemInNotionStore(spaceId, dropdownItem));
         }
       } else {
+        setPropertyUpdates({});
         setShowPropertiesLoadError(true);
         setPropertiesLoading(false);
       }
@@ -771,14 +775,15 @@ export default function Tooltip(props: TooltipProps) {
       const { type, data } = propertyUpdates[propertyId];
       if (type === SchemaPropertyType.Select) {
         sv.value = (data as SelectOptionPropertyUpdate).selected;
-        (sv as SelectProperty).options = (sv as SelectProperty).options.concat(
-          (data as SelectOptionPropertyUpdate).newOptions,
-        );
+        (sv as SelectProperty).options =
+          (sv as SelectProperty).options?.concat((data as SelectOptionPropertyUpdate).newOptions) ||
+          [];
       } else if (type === SchemaPropertyType.MultiSelect) {
         sv.value = (data as MultiSelectOptionPropertyUpdate).selected;
-        (sv as MultiSelectProperty).options = (sv as MultiSelectProperty).options.concat(
-          (data as MultiSelectOptionPropertyUpdate).newOptions,
-        );
+        (sv as MultiSelectProperty).options =
+          (sv as MultiSelectProperty).options?.concat(
+            (data as MultiSelectOptionPropertyUpdate).newOptions,
+          ) || [];
       } else {
         sv.value = data;
       }
@@ -807,13 +812,22 @@ export default function Tooltip(props: TooltipProps) {
     });
   };
 
-  const changeItem = (item: Record) => {
-    if (item.id === dropdownItem?.id) return;
-    else {
-      setPropertyUpdates({});
-      setDropdownItem(item);
-    }
+  const goToTableViewExplanation = () => {
+    sendMessageToExtension({
+      type: MessageType.OpenTab,
+      url:
+        'https://www.notion.so/Tables-66a1cce8fb6f4f64b9996f4146c51fad#17742cc341b84b7f8457740ecd6f2fb6',
+      active: true,
+    });
   };
+
+  // const changeItem = (item: Record) => {
+  //   if (item.id === dropdownItem?.id) return;
+  //   else {
+  //     setPropertyUpdates({});
+  //     setDropdownItem(item);
+  //   }
+  // };
 
   const getTitle = (item: Record | null) => {
     if (!item) return undefined;
@@ -881,8 +895,9 @@ export default function Tooltip(props: TooltipProps) {
             {dropdownClicked ? (
               <>
                 <Dropdown
-                  setItem={changeItem}
+                  setItem={(item) => setDropdownItem(item)}
                   setDropdownClicked={setDropdownClicked}
+                  currentItem={dropdownItem}
                   root={props.root}
                 />
               </>
@@ -925,13 +940,43 @@ export default function Tooltip(props: TooltipProps) {
                   <>
                     {!isDBSupported ? (
                       <div className="TroveDBNotSupported">
-                        <div className="TroveDBNotSupported__Title">
-                          Database currently not supported
+                        <div className="TroveDBNotSupported__Title">Database not supported</div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          To support, do the following steps:
+                        </div>
+                        <div
+                          className="TroveDBNotSupported__SubTitle"
+                          style={{ marginTop: '10px' }}
+                        >
+                          <span>1. Create a</span>
+                          <span
+                            className="TroveDBNotSupported__LinkedText"
+                            onClick={goToTableViewExplanation}
+                          >
+                            table view
+                          </span>
+                          <span>.</span>
                         </div>
                         <div className="TroveDBNotSupported__SubTitle">
-                          <span>Want this fixed?</span>
+                          <span>2. Create a new row.</span>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          <span>
+                            3. Click
+                            <span
+                              className="TroveDBNotSupported__LinkedText"
+                              style={{ marginRight: '3px' }}
+                              onClick={handleGetProperties}
+                            >
+                              here
+                            </span>
+                            to re-fetch database.
+                          </span>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle--again">
+                          <span>Still not working?</span>
                           <span className="TroveDBNotSupported__LinkedText" onClick={goToFeedback}>
-                            Let us know
+                            Let us know!
                           </span>
                         </div>
                       </div>
