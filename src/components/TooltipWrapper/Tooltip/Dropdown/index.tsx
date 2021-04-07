@@ -252,23 +252,26 @@ export default function Dropdown(props: DropdownProps) {
     );
   };
 
-  const changeSpace = async (space: Record) => {
+  const changeSpace = (space: Record) => {
     if (input.current) input.current.value = '';
     setSpaceLoadingId(space.id);
-    await set({ spaceId: space.id }).then(async () => {
-      const getSpaceUsersRes = (await sendMessageToExtension({
-        type: MessageType.GetNotionSpaceUsers,
-        spaceId,
-      })) as GetSpaceUsersRes;
-      if (getSpaceUsersRes.success) {
-        set({
-          spaceUsers: getSpaceUsersRes.users,
-          spaceBots: getSpaceUsersRes.bots,
-        });
-      }
+    // set space
+    set({ spaceId: space.id }).then(async () => {
       setShowSpaces(false);
       setSpaceLoadingId('');
       await seedInitialPages();
+    });
+    // set people in space
+    sendMessageToExtension({
+      type: MessageType.GetNotionSpaceUsers,
+      spaceId,
+    }).then(async (res: GetSpaceUsersRes) => {
+      if (res.success) {
+        set({
+          spaceUsers: res.users,
+          spaceBots: res.bots,
+        });
+      }
     });
   };
 
