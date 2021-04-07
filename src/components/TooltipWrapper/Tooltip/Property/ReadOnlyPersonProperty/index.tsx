@@ -87,7 +87,7 @@ export default function ReadOnlyPersonProperty({ property }: ReadOnlyPersonPrope
 
   if (errorGettingUser) return null;
   return (
-    <div className="TroveProperty__Property">
+    <div className="TroveProperty__Property" key={property.propertyId}>
       <div className="TroveProperty__PropertyNameWrapper">
         <div className="TroveProperty__PropertyImgWrapper">
           <img

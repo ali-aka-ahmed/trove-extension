@@ -37,7 +37,6 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
       get1('spaceId').then((spaceId: string) => {
         sendMessageToExtension({ type: MessageType.GetNotionSpaceUsers, spaceId })
           .then((res: GetSpaceUsersRes) => {
-            console.log('res', res);
             if (res.success === false) {
               get(['spaceUsers', 'spaceBots']).then((data) => {
                 const spaceUsers: User[] = data.spaceUsers;
@@ -79,7 +78,6 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
           })
           .catch((error: Error) => {
             setLoading(false);
-            console.log('err', error);
             setErrorMessage(error.message);
             setShowError(true);
           });
@@ -231,7 +229,7 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
   };
 
   return (
-    <div className="TroveProperty__Property">
+    <div className="TroveProperty__Property" key={property.propertyId}>
       <div className="TroveProperty__PropertyNameWrapper">
         <div className="TroveProperty__PropertyImgWrapper">
           <img

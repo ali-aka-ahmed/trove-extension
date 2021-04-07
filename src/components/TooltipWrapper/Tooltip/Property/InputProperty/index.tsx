@@ -82,7 +82,7 @@ export default function InputProperty({ property, root, updateProperty }: InputP
   };
 
   return (
-    <div className="TroveProperty__Property">
+    <div className="TroveProperty__Property" key={property.propertyId}>
       <div className="TroveProperty__PropertyNameWrapper">
         <div className="TroveProperty__PropertyImgWrapper">
           <img

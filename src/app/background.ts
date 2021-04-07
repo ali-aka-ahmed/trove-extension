@@ -70,6 +70,11 @@ import { handleUserSearch, updateUser } from './server/users';
 //   });
 // });
 
+// // Listener to detect disconnect
+// chrome.runtime.onConnect.addListener((port) => {
+//   console.log('connected to port', port);
+// });
+
 // Messages sent from extension
 chrome.runtime.onMessage.addListener(
   (

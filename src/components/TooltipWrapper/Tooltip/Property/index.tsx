@@ -43,7 +43,7 @@ export default function Property({ property, root, updateProperty }: PropertyPro
       return null;
     default:
       return (
-        <div className="TroveProperty__Property">
+        <div className="TroveProperty__Property" key={property.propertyId}>
           <div className="TroveProperty__PropertyNameWrapper">
             <div className="TroveProperty__PropertyImgWrapper">
               <img
