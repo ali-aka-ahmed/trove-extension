@@ -65,7 +65,6 @@ export enum MessageType {
   GetNotionPages,
   SearchNotionPages,
   GetNotionImage,
-  GetNotionUserId,
   GetNotionUserIds,
   GetNotionSpaceUsers,
   GetNotionDBSchema,

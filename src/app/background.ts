@@ -1,7 +1,6 @@
 import { Record } from '../app/notionTypes';
 import { ORIGIN } from '../config';
 import User from '../entities/User';
-import { getCookie } from '../utils/chrome/cookies';
 import { sendMessageToWebsite } from '../utils/chrome/external';
 import { get, get1, set } from '../utils/chrome/storage';
 import {
@@ -212,12 +211,6 @@ chrome.runtime.onMessage.addListener(
       case MessageType.DeletePost: {
         if (!message.id) break;
         deletePostAndChildren(message.id).then((res) => {
-          sendResponse(res);
-        });
-        break;
-      }
-      case MessageType.GetNotionUserId: {
-        getCookie('https://www.notion.so', 'notion_user_id').then((res) => {
           sendResponse(res);
         });
         break;

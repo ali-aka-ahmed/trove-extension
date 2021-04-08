@@ -2,7 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
 import { Bot, GetSpaceUsersRes, User } from '../../../../../app/notionServer/getSpaceUsers';
 import { CreatedByProperty, LastEditedByProperty } from '../../../../../app/notionTypes/schema';
-import { get, set } from '../../../../../utils/chrome/storage';
+import { get, get1, set } from '../../../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../../../utils/chrome/tabs';
 
 interface ReadOnlyPersonPropertyProps {
@@ -49,8 +49,9 @@ export default function ReadOnlyPersonProperty({ property }: ReadOnlyPersonPrope
   };
 
   useEffect(() => {
-    sendMessageToExtension({ type: MessageType.GetNotionUserId }).then((userId: string) => {
-      loadUserDetails(property.value || userId);
+    setLoading(true);
+    get1('notionUserId').then((notionUserId: string) => {
+      loadUserDetails(property.value || notionUserId);
       setLoading(false);
     });
   }, []);

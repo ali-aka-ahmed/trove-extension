@@ -1,8 +1,8 @@
 import notionImageApi from '.';
-import { getCookie } from '../../utils/chrome/cookies';
+import { get1 } from '../../utils/chrome/storage';
 
 const getImage = async ({ url, width, id, table }: GetImageReqBody): Promise<void> => {
-  const userId = await getCookie('https://www.notion.so', 'notion_user_id');
+  const userId = await get1('notionUserId');
   const config = {
     params: {
       ...(width ? { width } : {}),

@@ -43,14 +43,11 @@ export const addTextToNotion = async (
   pageId: string,
   textChunks: string[] | any[],
 ): Promise<AxiosRes> => {
-  const [userId, notionToken] = await Promise.all([
-    getCookie('https://www.notion.so', 'notion_user_id'),
-    getCookie('https://www.notion.so', 'token_v2'),
-  ]);
+  const notionToken = await getCookie('https://www.notion.so', 'token_v2');
   const notionUserId = await get1('notionUserId');
   const config = { headers: { 'notion-token': notionToken } };
   if (notionUserId) config.headers['x-notion-active-user-header'] = notionUserId;
-  const data: WriteTextReqBody = { userId: userId!, pageId, textChunks };
+  const data: WriteTextReqBody = { userId: notionUserId, pageId, textChunks };
   return await api.post('/notion/writeText', data, config);
 };
 
@@ -68,14 +65,11 @@ export const addEntryToDB = async (
   updates: PropertyUpdate[],
   textChunks: string[] | unknown[],
 ): Promise<AxiosRes> => {
-  const [userId, notionToken] = await Promise.all([
-    getCookie('https://www.notion.so', 'notion_user_id'),
-    getCookie('https://www.notion.so', 'token_v2'),
-  ]);
+  const notionToken = await getCookie('https://www.notion.so', 'token_v2');
   const notionUserId = await get1('notionUserId');
   const config = { headers: { 'notion-token': notionToken } };
   if (notionUserId) config.headers['x-notion-active-user-header'] = notionUserId;
-  const data: AddRowReqBody = { pageId: dbId, userId: userId!, updates, textChunks };
+  const data: AddRowReqBody = { pageId: dbId, userId: notionUserId, updates, textChunks };
   return await api.post('/notion/addRow', data, config);
 };
 
