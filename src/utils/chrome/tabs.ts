@@ -66,9 +66,11 @@ export enum MessageType {
   SearchNotionPages,
   GetNotionImage,
   GetNotionUserId,
+  GetNotionUserIds,
   GetNotionSpaceUsers,
   GetNotionDBSchema,
   AddNotionRow,
+  GetUserIds,
   InjectLatestContentScript,
   Test,
 }

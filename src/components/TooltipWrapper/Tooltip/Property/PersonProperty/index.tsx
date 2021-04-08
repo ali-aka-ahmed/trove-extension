@@ -58,7 +58,7 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
             } else {
               set({
                 spaceUsers: res.users,
-                spacebots: res.bots,
+                spaceBots: res.bots,
               });
               setUserOptions(res.users);
               setBotOptions(res.bots);

@@ -5,7 +5,6 @@ const getSpaceUsers = async (spaceId: string): Promise<GetSpaceUsersRes> => {
   // getSubscriptionData
   const data = { spaceId, version: 'v2' };
   const res: IGetSubscriptionDataRes = await notionApi.post('/getSubscriptionData', data);
-  console.log('res', res);
   if (res.success === false) return res;
   let resUsers: NotionUser[] = [];
   if (res.members && res.members.length > 0) {

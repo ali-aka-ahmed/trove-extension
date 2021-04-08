@@ -17,9 +17,6 @@ const getImage = async ({ url, width, id, table }: GetImageReqBody): Promise<voi
 
 export default getImage;
 
-/**
- * POST /notion/getImage
- */
 export interface GetImageReqBody {
   url: string;
   width?: string;

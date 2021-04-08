@@ -19,6 +19,7 @@ export interface CS {
   notionDefaults: {
     [spaceId: string]: Record;
   };
+  notionUserId: string;
   spaceId: string;
   spaceUsers: Array<User>;
   spaceBots: Array<Bot>;

@@ -29,7 +29,7 @@ export default function ReadOnlyPersonProperty({ property }: ReadOnlyPersonPrope
             if (res.success) {
               set({
                 spaceUsers: res.users,
-                spacebots: res.bots,
+                spaceBots: res.bots,
               });
               const newPerson = (res.users as Array<User | Bot>)
                 .concat(res.bots)

@@ -431,7 +431,7 @@ export default function Tooltip(props: TooltipProps) {
     if (!item) {
       return (
         <span className="TroveDropdown__SelectedItem">
-          <span>Click to select a page</span>
+          <span style={{ fontSize: '12px', width: '100%' }}>Click to select a page</span>
           <div className="TroveContent__SaveTo__IconRight">
             <img
               src={chrome.extension.getURL('images/chevronDown.png')}
@@ -821,6 +821,15 @@ export default function Tooltip(props: TooltipProps) {
     });
   };
 
+  const goToRearrangeColumnExplanation = () => {
+    sendMessageToExtension({
+      type: MessageType.OpenTab,
+      url:
+        'https://www.notion.so/Tables-66a1cce8fb6f4f64b9996f4146c51fad#c636cabe42a14053981fe518a6bf7ee0',
+      active: true,
+    });
+  };
+
   // const changeItem = (item: Record) => {
   //   if (item.id === dropdownItem?.id) return;
   //   else {
@@ -975,6 +984,38 @@ export default function Tooltip(props: TooltipProps) {
                         </div>
                         <div className="TroveDBNotSupported__SubTitle--again">
                           <span>Still not working?</span>
+                          <div className="TroveDBNotSupported__SubTitle">
+                            <span>1.</span>
+                            <span
+                              className="TroveDBNotSupported__LinkedText"
+                              onClick={goToRearrangeColumnExplanation}
+                            >
+                              Rearrange a column
+                            </span>
+                            <span>.</span>
+                          </div>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          <span>
+                            Once you've moved it, feel free to move the column back to its original
+                            place.
+                          </span>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          <span>
+                            2. Click
+                            <span
+                              className="TroveDBNotSupported__LinkedText"
+                              style={{ marginRight: '3px' }}
+                              onClick={handleGetProperties}
+                            >
+                              here
+                            </span>
+                            to re-fetch database.
+                          </span>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle--again">
+                          <span>Did that not work?</span>
                           <span className="TroveDBNotSupported__LinkedText" onClick={goToFeedback}>
                             Let us know!
                           </span>

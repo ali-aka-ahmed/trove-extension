@@ -1,8 +1,9 @@
+import { Record } from '../app/notionTypes';
 import { ORIGIN } from '../config';
 import User from '../entities/User';
 import { getCookie } from '../utils/chrome/cookies';
 import { sendMessageToWebsite } from '../utils/chrome/external';
-import { get, set } from '../utils/chrome/storage';
+import { get, get1, set } from '../utils/chrome/storage';
 import {
   ExternalMessageType,
   Message,
@@ -11,6 +12,7 @@ import {
   SocketMessageType,
 } from '../utils/chrome/tabs';
 import getImage from './notionServer/getImage';
+import getSpaces, { GetSpacesRes } from './notionServer/getSpaces';
 import getSpaceUsers from './notionServer/getSpaceUsers';
 import { forgotPassword, login } from './server/auth';
 import {
@@ -85,37 +87,55 @@ chrome.runtime.onMessage.addListener(
     switch (message.type) {
       case MessageType.Login: {
         if (!message.loginArgs) break;
-        Promise.all([login(message.loginArgs), getNotionPages()]).then(
-          ([loginRes, notionPagesRes]) => {
-            if (
-              notionPagesRes.success &&
-              notionPagesRes.spaces &&
-              notionPagesRes.spaces.length > 0 &&
-              notionPagesRes.defaults &&
-              notionPagesRes.results
-            ) {
-              const spaceId = notionPagesRes.spaces[0].id;
-              getSpaceUsers(spaceId).then((res) => {
-                if (res.success) {
-                  set({
-                    spaceUsers: res.users,
-                    spacebots: res.bots,
-                  });
-                }
-              });
-              const recents = {};
-              notionPagesRes.spaces.forEach((s) => {
-                recents[s.id] = notionPagesRes.results![spaceId].recents;
-              });
-              set({
-                notionRecents: recents,
-                notionDefaults: notionPagesRes.defaults,
-                spaceId,
+        Promise.all([login(message.loginArgs), getSpaces()])
+          .then(([loginRes, getSpacesRes]) => {
+            if (getSpacesRes.success) {
+              getSpacesRes.notionUserIds.forEach((notionUserId) => {
+                // set recents and defaults
+                getNotionPages(null, null, notionUserId).then((res) => {
+                  if (res.success) {
+                    // set defaults
+                    if (res.defaults) {
+                      set({ notionDefaults: res.defaults });
+                    }
+                    // set recents
+                    get1('notionRecents').then(
+                      (notionRecents: { [spaceId: string]: Record[] } | undefined) => {
+                        if (res.spaces && res.spaces.length > 0 && res.results) {
+                          const recents = notionRecents || {};
+                          res.spaces.forEach((s: Record) => {
+                            recents[s.id] = res.results![s.id].recents || [];
+                          });
+                          set({ notionRecents: recents });
+                        }
+                      },
+                    );
+                  }
+                });
+
+                // set spaceId, notionUserId, spaceUsers and spaceBots
+                getNotionPages().then((res) => {
+                  if (res.success && res.spaces) {
+                    const spaceId = res.spaces[0].id;
+                    const userId = res.spaces[0]?.userId;
+                    set({ spaceId, notionUserId: userId });
+                    getSpaceUsers(spaceId).then((res) => {
+                      if (res.success) {
+                        set({
+                          spaceUsers: res.users,
+                          spaceBots: res.bots,
+                        });
+                      }
+                    });
+                  }
+                });
               });
             }
+            return loginRes;
+          })
+          .then((loginRes) => {
             sendResponse(loginRes);
-          },
-        );
+          });
         break;
       }
       case MessageType.ForgotPassword: {
@@ -202,8 +222,14 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+      case MessageType.GetNotionUserIds: {
+        getSpaces().then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
       case MessageType.GetNotionPages: {
-        getNotionPages(message.spaceId, message.recentIds).then((res) => {
+        getNotionPages(message.spaceId, message.recentIds, message.notionUserId).then((res) => {
           sendResponse(res);
         });
         break;
@@ -218,6 +244,12 @@ chrome.runtime.onMessage.addListener(
       case MessageType.GetNotionImage: {
         if (!message.imageOptions) break;
         getImage(message.imageOptions).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
+      case MessageType.GetUserIds: {
+        getSpaces().then((res: GetSpacesRes) => {
           sendResponse(res);
         });
         break;
@@ -338,44 +370,62 @@ chrome.runtime.onMessageExternal.addListener(
         break;
       }
       case ExternalMessageType.Login: {
-        sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: message.user!.id });
+        if (!message.user || !message.token) return;
+        sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: message.user.id });
         set({
           token: message.token,
           isExtensionOn: true,
+          user: new User(message.user),
         })
           .then(() => set({ isAuthenticated: true }))
           .then(() => {
-            getNotionPages().then((res) => {
-              if (
-                res.success &&
-                res.spaces &&
-                res.spaces.length > 0 &&
-                res.defaults &&
-                res.results
-              ) {
-                const spaceId = res.spaces[0].id;
-                const recents = {};
-                res.spaces.forEach((s) => {
-                  recents[s.id] = res.results![spaceId].recents;
-                });
-                set({
-                  user: new User(message.user!),
-                  notionRecents: recents,
-                  notionDefaults: res.defaults,
-                  spaceId,
-                });
-                getSpaceUsers(spaceId).then((res) => {
-                  if (res.success) {
-                    set({
-                      spaceUsers: res.users,
-                      spacebots: res.bots,
-                    });
-                  }
+            getSpaces().then((res: GetSpacesRes) => {
+              if (res.success) {
+                res.notionUserIds.forEach((notionUserId) => {
+                  // set recents and defaults
+                  getNotionPages(null, null, notionUserId).then((res) => {
+                    if (res.success) {
+                      // set defaults
+                      if (res.defaults) {
+                        set({ notionDefaults: res.defaults });
+                      }
+                      // set recents
+                      get1('notionRecents').then(
+                        (notionRecents: { [spaceId: string]: Record[] } | undefined) => {
+                          if (res.spaces && res.spaces.length > 0 && res.results) {
+                            const recents = notionRecents || {};
+                            res.spaces.forEach((s: Record) => {
+                              recents[s.id] = res.results![s.id].recents || [];
+                            });
+                            set({ notionRecents: recents });
+                          }
+                        },
+                      );
+                    }
+                  });
+                  // set spaceId, spaceUsers and spaceBots
+                  getNotionPages().then((res) => {
+                    if (res.success && res.spaces) {
+                      const spaceId = res.spaces[0].id;
+                      const userId = res.spaces[0].userId;
+                      set({ spaceId, notionUserId: userId });
+                      getSpaceUsers(spaceId).then((res) => {
+                        if (res.success) {
+                          set({
+                            spaceUsers: res.users,
+                            spaceBots: res.bots,
+                          });
+                        }
+                      });
+                    }
+                  });
                 });
               }
             });
           })
-          .then(() => sendResponse(true));
+          .then(() => {
+            sendResponse(true);
+          });
         break;
       }
       case ExternalMessageType.IsAuthenticated: {
