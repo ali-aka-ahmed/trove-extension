@@ -2,6 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import React, { useState } from 'react';
 import { AxiosRes } from '../../../app/server';
+import { analytics } from '../../../utils/analytics';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import { createForgotPasswordArgs } from '../../Popup/helpers/auth';
 import '../style.scss';
@@ -38,6 +39,7 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
         setLoading(false);
       },
     );
+    analytics('Forgot password');
   };
 
   if (successScreenMessage) {

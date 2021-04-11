@@ -188,7 +188,7 @@
   text-align: left;
 }
 
-.TroveAuth__LogoWrapper {
+.TroveTooltip__LogoWrapper {
   display: flex;
   flex-direction: column;
   width: fit-content;
@@ -196,14 +196,14 @@
   margin-top: 5px;
 }
 
-.TroveAuth__LogoText {
+.TroveTooltip__LogoText {
   font-size: 32px;
   font-weight: 400;
   height: fit-content;
   width: fit-content;
 }
 
-.TroveAuth__LogoUnderscore {
+.TroveTooltip__LogoUnderscore {
   width: 125px;
   height: 10px;
   background-color: #0d77e2;

@@ -18,7 +18,7 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
    * Logout. Clear chrome storage. Leave socket room.
    */
   const handleLogout = async () => {
-    await analytics('Logged out', null, {});
+    analytics('Logged out', null, {});
 
     setLogoutLoading(true);
     const items = await get(null);

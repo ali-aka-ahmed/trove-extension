@@ -79,9 +79,9 @@ export default function Login({ type, onCancel, onLogin }: LoginProps) {
   } else
     return (
       <div className={type === 'tooltip' ? 'TroveAuth--tooltip' : 'TbdAuth'}>
-        <div className="TroveAuth__LogoWrapper">
-          <div className="TroveAuth__LogoText">Trove</div>
-          <div className="TroveAuth__LogoUnderscore" />
+        <div className="TroveTooltip__LogoWrapper">
+          <div className="TroveTooltip__LogoText">Trove</div>
+          <div className="TroveTooltip__LogoUnderscore" />
         </div>
         <div className="TbdAuth__FieldWrapper">
           <div className="TbdAuth__Label">Email</div>

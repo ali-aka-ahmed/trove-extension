@@ -102,6 +102,10 @@ export default function Tooltip(props: TooltipProps) {
   const removeLink = () => {
     setLinkShowing(false);
     highlighter.removeLink();
+    analytics('Removed Link', user, {
+      url: window.location.href,
+      numTempHighlights,
+    });
   };
 
   useEffect(() => {
@@ -496,8 +500,20 @@ export default function Tooltip(props: TooltipProps) {
         type: MessageType.DeletePost,
         id: highlight.data.id,
       });
+    }
 
-      analytics('Deleted Highlight', user, {});
+    // Analytics
+    if (highlight) {
+      if (!highlight.isTemporary) {
+        analytics(`Deleted Highlight`, user, {
+          url: window.location.href,
+        });
+      } else {
+        analytics('Removed Temporary Highlight', user, {
+          url: window.location.href,
+          numTempHighlights: numTempHighlights - 1,
+        });
+      }
     }
 
     highlighter.removeHighlight(highlightId);
@@ -631,8 +647,8 @@ export default function Tooltip(props: TooltipProps) {
           setIsDBSupported(false);
           setPropertiesLoading(false);
 
-          analytics('Unsupported Notion Page', user, {
-            schema: res.schema,
+          analytics('Unsupported Notion Database', user, {
+            notionDatabaseId: dropdownItem?.collectionId,
           });
         } else {
           // reset item for new properties to render
@@ -699,11 +715,17 @@ export default function Tooltip(props: TooltipProps) {
           });
           setShowTooltip(true);
 
-          analytics('Opened Tooltip', user, {});
+          analytics('Opened Tooltip', user, {
+            url: window.location.href,
+          });
         }
         if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
           addTempHighlight();
+          analytics('Created Temporary Highlight', user, {
+            url: window.location.href,
+            numTempHighlights,
+          });
         }
       } else if (
         e.key === 'Tab' &&
@@ -716,6 +738,9 @@ export default function Tooltip(props: TooltipProps) {
         e.preventDefault();
         e.stopPropagation();
         storePropertyValuesOnDropdownItem();
+        analytics('Notion Page Search Opened', user, {
+          url: window.location.href,
+        });
         setDropdownClicked(true);
         ReactTooltip.hide();
       } else if (
@@ -793,9 +818,17 @@ export default function Tooltip(props: TooltipProps) {
   const collapse = (val: boolean) => {
     if (val) {
       setCollapsed(true);
+      analytics('Collapsed Tooltip', user, {
+        url: window.location.href,
+        numTempHighlights,
+      });
     } else {
       storePropertyValuesOnDropdownItem();
       setCollapsed(false);
+      analytics('Un-collapsed Tooltip', user, {
+        url: window.location.href,
+        numTempHighlights,
+      });
     }
   };
 
@@ -1007,7 +1040,12 @@ export default function Tooltip(props: TooltipProps) {
                             <span
                               className="TroveDBNotSupported__LinkedText"
                               style={{ marginRight: '3px' }}
-                              onClick={handleGetProperties}
+                              onClick={() => {
+                                analytics('Re-fetching Notion Database Properties', user, {
+                                  notionDatabaseId: dropdownItem?.collectionId,
+                                });
+                                handleGetProperties();
+                              }}
                             >
                               here
                             </span>
@@ -1039,7 +1077,12 @@ export default function Tooltip(props: TooltipProps) {
                             <span
                               className="TroveDBNotSupported__LinkedText"
                               style={{ marginRight: '3px' }}
-                              onClick={handleGetProperties}
+                              onClick={() => {
+                                analytics('Re-fetching Notion Database Properties', user, {
+                                  notionDatabaseId: dropdownItem?.collectionId,
+                                });
+                                handleGetProperties();
+                              }}
                             >
                               here
                             </span>
@@ -1048,7 +1091,19 @@ export default function Tooltip(props: TooltipProps) {
                         </div>
                         <div className="TroveDBNotSupported__SubTitle--again">
                           <span>Did that not work?</span>
-                          <span className="TroveDBNotSupported__LinkedText" onClick={goToFeedback}>
+                          <span
+                            className="TroveDBNotSupported__LinkedText"
+                            onClick={() => {
+                              analytics(
+                                'Going to Feedback page after Notion Database Unsupported',
+                                user,
+                                {
+                                  notionDatabaseId: dropdownItem?.collectionId,
+                                },
+                              );
+                              goToFeedback();
+                            }}
+                          >
                             Let us know!
                           </span>
                         </div>
@@ -1075,6 +1130,9 @@ export default function Tooltip(props: TooltipProps) {
                         `}
                         onClick={() => {
                           storePropertyValuesOnDropdownItem();
+                          analytics('Notion Page Search Opened', user, {
+                            url: window.location.href,
+                          });
                           setDropdownClicked(true);
                           ReactTooltip.hide();
                         }}

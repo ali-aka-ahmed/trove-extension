@@ -1,7 +1,9 @@
 import Analytics from 'analytics-node';
+import { v4 as uuid } from 'uuid';
 import { Record } from '../app/notionTypes';
 import { ORIGIN } from '../config';
 import User from '../entities/User';
+import { analytics as analyticsWrapper } from '../utils/analytics';
 import { sendMessageToWebsite } from '../utils/chrome/external';
 import { get, get1, set } from '../utils/chrome/storage';
 import {
@@ -88,12 +90,16 @@ chrome.runtime.onMessage.addListener(
   ) => {
     switch (message.type) {
       case MessageType.Analytics: {
-        if (!message.data || !message.data.userId || !message.data.eventName) {
-          break;
-        }
-
-        analytics.identify(message.data.userId, message.data.userTraits);
-        analytics.track(message.data.eventName, message.data.eventProperties);
+        if (!message.data || !message.data.userId || !message.data.eventName) break;
+        analytics.identify({
+          userId: message.data.userId as string,
+          ...(message.data.userTraits ? { traits: message.data.userTraits } : {}),
+        });
+        analytics.track({
+          event: message.data.eventName as string,
+          ...(message.data.userId ? { userId: message.data.userId } : { anonymousId: uuid() }),
+          ...(message.data.eventProperties ? { properties: message.data.eventProperties } : {}),
+        });
       }
       case MessageType.Login: {
         if (!message.loginArgs) break;
@@ -126,9 +132,15 @@ chrome.runtime.onMessage.addListener(
                 // set spaceId, notionUserId, spaceUsers and spaceBots
                 getNotionPages().then((res) => {
                   if (res.success && res.spaces) {
-                    const spaceId = res.spaces[0].id;
-                    const userId = res.spaces[0]?.userId;
+                    const space = res.spaces[0];
+                    const spaceId = space?.id;
+                    const userId = space?.userId;
                     set({ spaceId, notionUserId: userId });
+                    analyticsWrapper('Set Workspace', null, {
+                      spaceId: space?.id,
+                      spaceName: space?.name,
+                      spaceEmail: space?.email,
+                    });
                     getSpaceUsers(spaceId).then((res) => {
                       if (res.success) {
                         set({
@@ -382,6 +394,7 @@ chrome.runtime.onMessageExternal.addListener(
           user: new User(message.user),
         })
           .then(() => set({ isAuthenticated: true }))
+          .then(() => analyticsWrapper('Logged In', message.user, {}))
           .then(() => {
             getSpaces().then((res: GetSpacesRes) => {
               if (res.success) {
@@ -410,9 +423,15 @@ chrome.runtime.onMessageExternal.addListener(
                   // set spaceId, spaceUsers and spaceBots
                   getNotionPages().then((res) => {
                     if (res.success && res.spaces) {
-                      const spaceId = res.spaces[0].id;
-                      const userId = res.spaces[0].userId;
+                      const space = res.spaces[0];
+                      const spaceId = space?.id;
+                      const userId = space?.userId;
                       set({ spaceId, notionUserId: userId });
+                      analyticsWrapper('Set Workspace', null, {
+                        spaceId: space?.id,
+                        spaceName: space?.name,
+                        spaceEmail: space?.email,
+                      });
                       getSpaceUsers(spaceId).then((res) => {
                         if (res.success) {
                           set({

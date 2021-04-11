@@ -7,6 +7,7 @@ export const analytics = async (
   eventName: string,
   user?: IUser | User | null,
   eventProperties?: object,
+  userTraits?: object,
 ) => {
   const u = user || ((await get1('user')) as IUser);
 
@@ -14,9 +15,7 @@ export const analytics = async (
     type: MessageType.Analytics,
     data: {
       userId: u.id,
-      traits: {
-        username: u.username,
-      },
+      ...(userTraits ? { userTraits } : {}),
       eventName,
       eventProperties,
     },

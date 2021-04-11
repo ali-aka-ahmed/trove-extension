@@ -7,6 +7,7 @@ import { GetSpacesRes } from '../../../../app/notionServer/getSpaces';
 import { GetSpaceUsersRes } from '../../../../app/notionServer/getSpaceUsers';
 import { Record } from '../../../../app/notionTypes';
 import { IGetPageNamesRes, ISearchPagesRes } from '../../../../app/server/notion';
+import { analytics } from '../../../../utils/analytics';
 import {
   addToNotionRecents,
   get,
@@ -167,6 +168,9 @@ export default function Dropdown(props: DropdownProps) {
         setItems([]);
         setItemIdx(0);
         props.setDropdownClicked(false);
+        analytics('Notion Page Search Closed', null, {
+          url: window.location.href,
+        });
         break;
       }
     }
@@ -205,10 +209,16 @@ export default function Dropdown(props: DropdownProps) {
       ]);
       props.setItem(props.currentItem);
       props.setDropdownClicked(false);
+      analytics('Notion Page Search Closed', null, {
+        url: window.location.href,
+      });
     } else {
       await Promise.all([addToNotionRecents(spaceId, item), setNotionDefault(spaceId, item)]);
       props.setItem(item);
       props.setDropdownClicked(false);
+      analytics('Notion Page Search Closed', null, {
+        url: window.location.href,
+      });
     }
   };
 
@@ -301,6 +311,12 @@ export default function Dropdown(props: DropdownProps) {
             spaceBots: res.bots,
           });
         }
+      }),
+      analytics('Changed Workspace', null, {
+        spaceId: space.id,
+        spaceName: space.name,
+        spaceEmail: space.email,
+        href: window.location.href,
       }),
     ]);
   };
@@ -449,7 +465,12 @@ export default function Dropdown(props: DropdownProps) {
         >
           <button
             className="TroveDropdown__BackButton"
-            onClick={() => props.setDropdownClicked(false)}
+            onClick={() => {
+              props.setDropdownClicked(false);
+              analytics('Notion Page Search Closed', null, {
+                url: window.location.href,
+              });
+            }}
           >
             Back
           </button>
