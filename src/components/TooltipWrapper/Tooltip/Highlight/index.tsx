@@ -47,6 +47,9 @@ const Highlight = ({
     if (e.key === 'Backspace' && commentValue === '') {
       e.preventDefault();
       setHasContent(false);
+      analytics('Remove Comment to Highlight', null, {
+        url: window.location.href,
+      });
     }
   };
 

@@ -111,6 +111,9 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (!linkShowing && numTempHighlights === 0) {
       setShowTooltip(false);
+      analytics('Closed Tooltip', user, {
+        url: window.location.href,
+      });
       setPropertyUpdates({});
       highlighter.reset();
       setLinkShowing(true);
@@ -263,6 +266,9 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (!isExtensionOn) {
       setShowTooltip(false);
+      analytics('Closed Tooltip', user, {
+        url: window.location.href,
+      });
     }
   }, [isExtensionOn]);
 
@@ -409,6 +415,9 @@ export default function Tooltip(props: TooltipProps) {
         });
 
         setShowTooltip(false);
+        analytics('Closed Tooltip', user, {
+          url: window.location.href,
+        });
         setPropertyUpdates({});
         highlighter.reset();
         setLinkShowing(true);
@@ -505,7 +514,7 @@ export default function Tooltip(props: TooltipProps) {
     // Analytics
     if (highlight) {
       if (!highlight.isTemporary) {
-        analytics(`Deleted Highlight`, user, {
+        analytics('Deleted Highlight', user, {
           url: window.location.href,
         });
       } else {
@@ -714,7 +723,6 @@ export default function Tooltip(props: TooltipProps) {
             setDefaultPageLoading(false);
           });
           setShowTooltip(true);
-
           analytics('Opened Tooltip', user, {
             url: window.location.href,
           });
@@ -795,6 +803,11 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   const handleCancelSaveHighlights = () => {
+    if (numTempHighlights > 0) {
+      analytics('Removing All Temporary Highlights', user, {
+        url: window.location.href,
+      });
+    }
     highlighter.removeAllUnsavedHighlights();
     updateNumTempHighlights();
     setLinkShowing(false);

@@ -40,6 +40,9 @@ const Link = ({ link, removeLink, modifyLinkContent, scrollToElement, root }: Hi
     if (e.key === 'Backspace' && commentValue === '') {
       e.preventDefault();
       setHasContent(false);
+      analytics('Remove Comment to Link', null, {
+        url: window.location.href,
+      });
     }
   };
 
