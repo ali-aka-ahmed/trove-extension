@@ -1,3 +1,4 @@
+import { ENVIRONMENT } from '../config';
 import User from '../entities/User';
 import IUser from '../models/IUser';
 import { get1 } from './chrome/storage';
@@ -11,13 +12,15 @@ export const analytics = async (
 ) => {
   const u = user || ((await get1('user')) as IUser);
 
-  sendMessageToExtension({
-    type: MessageType.Analytics,
-    data: {
-      userId: u.id,
-      ...(userTraits ? { userTraits } : {}),
-      eventName,
-      eventProperties,
-    },
-  });
+  if (ENVIRONMENT === 'Production') {
+    sendMessageToExtension({
+      type: MessageType.Analytics,
+      data: {
+        userId: u.id,
+        ...(userTraits ? { userTraits } : {}),
+        eventName,
+        eventProperties,
+      },
+    });
+  }
 };

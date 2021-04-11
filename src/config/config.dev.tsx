@@ -5,8 +5,9 @@
  * you are working across the extension and backend at the same time.
  */
 export enum Environments {
-  DEVELOPMENT,
-  LOCAL,
+  PRODUCTION = 'Production',
+  DEVELOPMENT = 'Development',
+  LOCAL = 'Local',
 }
 
 export enum BackendURLs {
@@ -23,6 +24,7 @@ export enum WebsiteOrigins {
 /**
  * SET THESE 👇
  */
+export const ENVIRONMENT: Environments = Environments.LOCAL;
 export const FRONTEND: Environments = Environments.LOCAL;
 export const BACKEND: Environments = Environments.LOCAL;
 export const LOGGING: boolean = true;
