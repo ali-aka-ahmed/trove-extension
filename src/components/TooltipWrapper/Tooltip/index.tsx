@@ -1,5 +1,5 @@
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
-import _ from 'lodash';
+import isEqual from 'lodash/isEqual';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
 import { v4 as uuid } from 'uuid';
@@ -24,8 +24,10 @@ import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import IUser from '../../../models/IUser';
 import { toArray } from '../../../utils';
+import { analytics } from '../../../utils/analytics';
 import { get, get1, updateItemInNotionStore } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import Login from '../../Login';
 import Dropdown from './Dropdown';
 import Highlighter, {
   getIdFromAnyHighlightData,
@@ -79,6 +81,7 @@ export default function Tooltip(props: TooltipProps) {
 
   const [posts, dispatchPosts] = useReducer(ListReducer<Post>('id'), []);
   const [user, setUser] = useState<User | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
 
   const [highlighter, setHighlighter] = useState(new Highlighter());
   const [propertyUpdates, setPropertyUpdates] = useState<{
@@ -87,10 +90,8 @@ export default function Tooltip(props: TooltipProps) {
   const tooltip = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const save = useRef<HTMLButtonElement>(null);
-  // const cancel = useRef<HTMLButtonElement>(null);
+  const cancel = useRef<HTMLButtonElement>(null);
   const info = useRef<HTMLSpanElement>(null);
-
-  console.log('RANDOM SHIT WOOOOOOOOOOOOOO');
 
   const updateNumTempHighlights = () => {
     const newVal = highlighter.getAllUnsavedHighlights().length;
@@ -101,11 +102,18 @@ export default function Tooltip(props: TooltipProps) {
   const removeLink = () => {
     setLinkShowing(false);
     highlighter.removeLink();
+    analytics('Removed Link', user, {
+      url: window.location.href,
+      numTempHighlights,
+    });
   };
 
   useEffect(() => {
     if (!linkShowing && numTempHighlights === 0) {
       setShowTooltip(false);
+      analytics('Closed Tooltip', user, {
+        url: window.location.href,
+      });
       setPropertyUpdates({});
       highlighter.reset();
       setLinkShowing(true);
@@ -228,6 +236,10 @@ export default function Tooltip(props: TooltipProps) {
     chrome.storage.onChanged.addListener((change) => {
       if (change.isExtensionOn !== undefined) {
         setIsExtensionOn(change.isExtensionOn.newValue || false);
+        if (change.isExtensionOn.newValue === false) {
+          highlighter.removeAllUnsavedHighlights();
+          updateNumTempHighlights();
+        }
       }
 
       if (change.isAuthenticated !== undefined) {
@@ -237,6 +249,11 @@ export default function Tooltip(props: TooltipProps) {
           get1('user').then((user: IUser) => {
             setUser(new User(user));
           });
+        } else {
+          highlighter.removeAllUnsavedHighlights();
+          updateNumTempHighlights();
+          setIsExtensionOn(false);
+          setShowLogin(false);
         }
       }
 
@@ -245,6 +262,15 @@ export default function Tooltip(props: TooltipProps) {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!isExtensionOn) {
+      setShowTooltip(false);
+      analytics('Closed Tooltip', user, {
+        url: window.location.href,
+      });
+    }
+  }, [isExtensionOn]);
 
   useEffect(() => {
     if (isAuthenticated && isExtensionOn && !didInitialGetPosts) {
@@ -277,7 +303,7 @@ export default function Tooltip(props: TooltipProps) {
         })
         .catch((e) => console.error('Errored while getting posts:', e));
     }
-  }, [user]);
+  }, [user, isAuthenticated, isExtensionOn, didInitialGetPosts]);
 
   // const onResize = useCallback(() => {
   //   positionTooltip();
@@ -380,9 +406,18 @@ export default function Tooltip(props: TooltipProps) {
           ),
         })) as AxiosRes;
       }
+
       // Add to our own servers
       if (res.success) {
+        analytics('Save Highlights To Notion Succeeded', user, {
+          url: window.location.href,
+          numHighlights: unsavedHighlights.length,
+        });
+
         setShowTooltip(false);
+        analytics('Closed Tooltip', user, {
+          url: window.location.href,
+        });
         setPropertyUpdates({});
         highlighter.reset();
         setLinkShowing(true);
@@ -407,7 +442,14 @@ export default function Tooltip(props: TooltipProps) {
             throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
           }
         });
-      } else return res;
+      } else {
+        analytics('Save Highlights To Notion Failed', user, {
+          url: window.location.href,
+          numHighlights: unsavedHighlights.length,
+        });
+
+        return res;
+      }
     },
     [dropdownItem, propertyUpdates],
   );
@@ -416,7 +458,7 @@ export default function Tooltip(props: TooltipProps) {
     if (!item) {
       return (
         <span className="TroveDropdown__SelectedItem">
-          <span>Click to select a page</span>
+          <span style={{ fontSize: '12px', width: '100%' }}>Click to select a page</span>
           <div className="TroveContent__SaveTo__IconRight">
             <img
               src={chrome.extension.getURL('images/chevronDown.png')}
@@ -469,6 +511,20 @@ export default function Tooltip(props: TooltipProps) {
       });
     }
 
+    // Analytics
+    if (highlight) {
+      if (!highlight.isTemporary) {
+        analytics('Deleted Highlight', user, {
+          url: window.location.href,
+        });
+      } else {
+        analytics('Removed Temporary Highlight', user, {
+          url: window.location.href,
+          numTempHighlights: numTempHighlights - 1,
+        });
+      }
+    }
+
     highlighter.removeHighlight(highlightId);
     setHoveredHighlightRect(null);
     updateNumTempHighlights();
@@ -516,6 +572,20 @@ export default function Tooltip(props: TooltipProps) {
     return (
       <div className="TroveContent__ButtonList" style={saveLoading ? { width: '156px' } : {}}>
         <button
+          onMouseEnter={() => ReactTooltip.show(cancel.current!)}
+          onMouseLeave={() => ReactTooltip.hide(cancel.current!)}
+          data-tip={`
+            <div class="TroveHint__Content">
+              <p class="TroveHint__Content__PrimaryText">${getOsKeyChar()}+esc</p>
+            </div>
+          `}
+          ref={cancel}
+          className="Trove__Button--secondary"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
           onMouseEnter={() => ReactTooltip.show(save.current!)}
           onMouseLeave={() => ReactTooltip.hide(save.current!)}
           data-tip={`
@@ -525,8 +595,8 @@ export default function Tooltip(props: TooltipProps) {
           `}
           ref={save}
           className="Trove__Button"
-          // onClick={onSave}
-          onClick={() => sendMessageToExtension({ type: MessageType.Test })}
+          onClick={onSave}
+          // onClick={() => sendMessageToExtension({ type: MessageType.Test })}
         >
           {saveLoading && (
             <div className="Trove__ButtonLoading">
@@ -534,20 +604,6 @@ export default function Tooltip(props: TooltipProps) {
             </div>
           )}
           Save
-        </button>
-        <button
-          // onMouseEnter={() => ReactTooltip.show(cancel.current!)}
-          // onMouseLeave={() => ReactTooltip.hide(cancel.current!)}
-          // data-tip={`
-          //   <div class="TroveHint__Content">
-          //     <p class="TroveHint__Content__PrimaryText">esc</p>
-          //   </div>
-          // `}
-          // ref={cancel}
-          className="Trove__Button--secondary"
-          onClick={onCancel}
-        >
-          Cancel
         </button>
       </div>
     );
@@ -581,13 +637,13 @@ export default function Tooltip(props: TooltipProps) {
   }, [numTempHighlights, linkShowing]);
 
   useEffect(() => {
-    setIsDBSupported(true);
     // if the default is a database, re-fetch properties in case they changed
     if (dropdownItem?.hasSchema) handleGetProperties();
   }, [dropdownItem]);
 
   const handleGetProperties = () => {
     if (!dropdownItem) return;
+    setIsDBSupported(true);
     setPropertiesLoading(true);
     sendMessageToExtension({
       type: MessageType.GetNotionDBSchema,
@@ -596,22 +652,31 @@ export default function Tooltip(props: TooltipProps) {
       if (res.success) {
         setShowPropertiesLoadError(false);
         if (!res.isSupported) {
+          setPropertyUpdates({});
           setIsDBSupported(false);
           setPropertiesLoading(false);
+
+          analytics('Unsupported Notion Database', user, {
+            notionDatabaseId: dropdownItem?.collectionId,
+          });
         } else {
           // reset item for new properties to render
-          const newSchema = res.schema;
-          if (_.isEqual(newSchema, dropdownItem.schema)) {
+          if (isEqual(res.schema, dropdownItem.schema)) {
             setPropertiesLoading(false);
-            return;
+          } else {
+            const newDropdownItem = { ...dropdownItem };
+            newDropdownItem.schema = res.schema;
+            setPropertyUpdates({});
+            setDropdownItem(newDropdownItem);
+            setPropertiesLoading(false);
+            // save adjusted defaultItem in the notionDefaults and notionRecents
+            get1('spaceId').then((spaceId: string) =>
+              updateItemInNotionStore(spaceId, newDropdownItem),
+            );
           }
-          dropdownItem.schema = newSchema;
-          setDropdownItem(dropdownItem);
-          setPropertiesLoading(false);
-          // save adjusted defaultItem in the notionDefaults and notionRecents
-          get1('spaceId').then((spaceId: string) => updateItemInNotionStore(spaceId, dropdownItem));
         }
       } else {
+        setPropertyUpdates({});
         setShowPropertiesLoadError(true);
         setPropertiesLoading(false);
       }
@@ -620,10 +685,32 @@ export default function Tooltip(props: TooltipProps) {
 
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
-      // Handle case where user logs out or turns ext off, but page isn't refreshed
-      if (!isAuthenticated || !isExtensionOn || dropdownClicked) return;
+      // Analytics
+      if ((!isAuthenticated || !isExtensionOn) && isOsKeyPressed(e) && e.key == 'd') {
+        analytics('Attempted To Highlight While Unallowed', user, {
+          isAuthenticated,
+          isExtensionOn,
+        });
+      }
+
+      // Cases in which normal tooltip doesn't pop up
+      if (!isAuthenticated) {
+        if (isOsKeyPressed(e) && e.key === 'd') {
+          e.preventDefault();
+          setShowLogin(true);
+        }
+        return;
+      } else if (dropdownClicked) return;
+      else if (!isExtensionOn) {
+        // When extension is off and they are authenticated -- point them toward turning on Trove.
+        if (isOsKeyPressed(e) && e.key === 'd') {
+          e.preventDefault();
+          // SOMETHING HERE!!!
+        }
+      }
+
       // Keyboard shortcuts
-      if (isOsKeyPressed(e) && e.key === 'd') {
+      else if (isOsKeyPressed(e) && e.key === 'd') {
         e.preventDefault();
         const selection = getSelection()!;
         if (!showTooltip) {
@@ -636,10 +723,17 @@ export default function Tooltip(props: TooltipProps) {
             setDefaultPageLoading(false);
           });
           setShowTooltip(true);
+          analytics('Opened Tooltip', user, {
+            url: window.location.href,
+          });
         }
         if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
           addTempHighlight();
+          analytics('Created Temporary Highlight', user, {
+            url: window.location.href,
+            numTempHighlights,
+          });
         }
       } else if (
         e.key === 'Tab' &&
@@ -652,12 +746,11 @@ export default function Tooltip(props: TooltipProps) {
         e.preventDefault();
         e.stopPropagation();
         storePropertyValuesOnDropdownItem();
+        analytics('Notion Page Search Opened', user, {
+          url: window.location.href,
+        });
         setDropdownClicked(true);
         ReactTooltip.hide();
-        // else if (e.key === 'Escape' && showTooltip) {
-        //   e.preventDefault();
-        //   handleCancelSaveHighlights();
-        // }
       } else if (
         isOsKeyPressed(e) &&
         e.key === 'Enter' &&
@@ -670,6 +763,9 @@ export default function Tooltip(props: TooltipProps) {
         // Save current highlight
         setSaveLoading(true);
         handleSaveHighlights();
+      } else if (isOsKeyPressed(e) && e.key === 'Escape' && showTooltip) {
+        e.preventDefault();
+        handleCancelSaveHighlights();
       }
     },
     [
@@ -707,6 +803,11 @@ export default function Tooltip(props: TooltipProps) {
   };
 
   const handleCancelSaveHighlights = () => {
+    if (numTempHighlights > 0) {
+      analytics('Removing All Temporary Highlights', user, {
+        url: window.location.href,
+      });
+    }
     highlighter.removeAllUnsavedHighlights();
     updateNumTempHighlights();
     setLinkShowing(false);
@@ -730,9 +831,17 @@ export default function Tooltip(props: TooltipProps) {
   const collapse = (val: boolean) => {
     if (val) {
       setCollapsed(true);
+      analytics('Collapsed Tooltip', user, {
+        url: window.location.href,
+        numTempHighlights,
+      });
     } else {
       storePropertyValuesOnDropdownItem();
       setCollapsed(false);
+      analytics('Un-collapsed Tooltip', user, {
+        url: window.location.href,
+        numTempHighlights,
+      });
     }
   };
 
@@ -744,14 +853,15 @@ export default function Tooltip(props: TooltipProps) {
       const { type, data } = propertyUpdates[propertyId];
       if (type === SchemaPropertyType.Select) {
         sv.value = (data as SelectOptionPropertyUpdate).selected;
-        (sv as SelectProperty).options = (sv as SelectProperty).options.concat(
-          (data as SelectOptionPropertyUpdate).newOptions,
-        );
+        (sv as SelectProperty).options =
+          (sv as SelectProperty).options?.concat((data as SelectOptionPropertyUpdate).newOptions) ||
+          [];
       } else if (type === SchemaPropertyType.MultiSelect) {
         sv.value = (data as MultiSelectOptionPropertyUpdate).selected;
-        (sv as MultiSelectProperty).options = (sv as MultiSelectProperty).options.concat(
-          (data as MultiSelectOptionPropertyUpdate).newOptions,
-        );
+        (sv as MultiSelectProperty).options =
+          (sv as MultiSelectProperty).options?.concat(
+            (data as MultiSelectOptionPropertyUpdate).newOptions,
+          ) || [];
       } else {
         sv.value = data;
       }
@@ -780,31 +890,31 @@ export default function Tooltip(props: TooltipProps) {
     });
   };
 
-  if (!showTooltip && isSelectionVisible) {
-    return (
-      <>
-        <div className="TroveTooltip" ref={tooltip} style={{ width: '155px', height: '38px' }}>
-          <div className="TroveHint__Wrapper">
-            <p className="TroveHint__Content__PrimaryText" style={{ fontSize: '14px' }}>
-              Highlight text
-            </p>
-            <p className="TroveHint__Content__SecondaryText" style={{ fontSize: '14px' }}>
-              {`(${getOsKeyChar()}+d)`}
-            </p>
-          </div>
-        </div>
-        {renderHighlightDeleteButton()}
-      </>
-    );
-  }
-
-  const changeItem = (item: Record) => {
-    if (item.id === dropdownItem?.id) return;
-    else {
-      setPropertyUpdates({});
-      setDropdownItem(item);
-    }
+  const goToTableViewExplanation = () => {
+    sendMessageToExtension({
+      type: MessageType.OpenTab,
+      url:
+        'https://www.notion.so/Tables-66a1cce8fb6f4f64b9996f4146c51fad#17742cc341b84b7f8457740ecd6f2fb6',
+      active: true,
+    });
   };
+
+  const goToRearrangeColumnExplanation = () => {
+    sendMessageToExtension({
+      type: MessageType.OpenTab,
+      url:
+        'https://www.notion.so/Tables-66a1cce8fb6f4f64b9996f4146c51fad#c636cabe42a14053981fe518a6bf7ee0',
+      active: true,
+    });
+  };
+
+  // const changeItem = (item: Record) => {
+  //   if (item.id === dropdownItem?.id) return;
+  //   else {
+  //     setPropertyUpdates({});
+  //     setDropdownItem(item);
+  //   }
+  // };
 
   const getTitle = (item: Record | null) => {
     if (!item) return undefined;
@@ -822,7 +932,42 @@ export default function Tooltip(props: TooltipProps) {
     } else return true;
   };
 
-  if (showTooltip) {
+  if (showLogin && !isAuthenticated) {
+    return (
+      <>
+        <div className="TroveTooltip" ref={tooltip}>
+          <div className="TroveTooltip__Content">
+            <Login
+              type="tooltip"
+              onCancel={() => setShowLogin(false)}
+              onLogin={() => setShowLogin(false)}
+            />
+          </div>
+        </div>
+        {renderHighlightDeleteButton()}
+      </>
+    );
+  }
+
+  if (!showTooltip && isSelectionVisible && isExtensionOn && isAuthenticated) {
+    return (
+      <>
+        <div className="TroveTooltip" ref={tooltip} style={{ width: '155px', height: '38px' }}>
+          <div className="TroveHint__Wrapper">
+            <p className="TroveHint__Content__PrimaryText" style={{ fontSize: '14px' }}>
+              Highlight text
+            </p>
+            <p className="TroveHint__Content__SecondaryText" style={{ fontSize: '14px' }}>
+              {`(${getOsKeyChar()}+d)`}
+            </p>
+          </div>
+        </div>
+        {renderHighlightDeleteButton()}
+      </>
+    );
+  }
+
+  if (showTooltip && isAuthenticated && isExtensionOn) {
     return (
       <>
         <div
@@ -837,8 +982,9 @@ export default function Tooltip(props: TooltipProps) {
             {dropdownClicked ? (
               <>
                 <Dropdown
-                  setItem={changeItem}
+                  setItem={(item) => setDropdownItem(item)}
                   setDropdownClicked={setDropdownClicked}
+                  currentItem={dropdownItem}
                   root={props.root}
                 />
               </>
@@ -881,13 +1027,97 @@ export default function Tooltip(props: TooltipProps) {
                   <>
                     {!isDBSupported ? (
                       <div className="TroveDBNotSupported">
-                        <div className="TroveDBNotSupported__Title">
-                          Database currently not supported
+                        <div className="TroveDBNotSupported__Title">Database not supported</div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          To support, do the following steps:
+                        </div>
+                        <div
+                          className="TroveDBNotSupported__SubTitle"
+                          style={{ marginTop: '10px' }}
+                        >
+                          <span>1. Create a</span>
+                          <span
+                            className="TroveDBNotSupported__LinkedText"
+                            onClick={goToTableViewExplanation}
+                          >
+                            table view
+                          </span>
+                          <span>.</span>
                         </div>
                         <div className="TroveDBNotSupported__SubTitle">
-                          <span>Want this fixed?</span>
-                          <span className="TroveDBNotSupported__LinkedText" onClick={goToFeedback}>
-                            Let us know
+                          <span>2. Create a new row.</span>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          <span>
+                            3. Click
+                            <span
+                              className="TroveDBNotSupported__LinkedText"
+                              style={{ marginRight: '3px' }}
+                              onClick={() => {
+                                analytics('Re-fetching Notion Database Properties', user, {
+                                  notionDatabaseId: dropdownItem?.collectionId,
+                                });
+                                handleGetProperties();
+                              }}
+                            >
+                              here
+                            </span>
+                            to re-fetch database.
+                          </span>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle--again">
+                          <span>Still not working?</span>
+                          <div className="TroveDBNotSupported__SubTitle">
+                            <span>1.</span>
+                            <span
+                              className="TroveDBNotSupported__LinkedText"
+                              onClick={goToRearrangeColumnExplanation}
+                            >
+                              Rearrange a column
+                            </span>
+                            <span>.</span>
+                          </div>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          <span>
+                            Once you've moved it, feel free to move the column back to its original
+                            place.
+                          </span>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle">
+                          <span>
+                            2. Click
+                            <span
+                              className="TroveDBNotSupported__LinkedText"
+                              style={{ marginRight: '3px' }}
+                              onClick={() => {
+                                analytics('Re-fetching Notion Database Properties', user, {
+                                  notionDatabaseId: dropdownItem?.collectionId,
+                                });
+                                handleGetProperties();
+                              }}
+                            >
+                              here
+                            </span>
+                            to re-fetch database.
+                          </span>
+                        </div>
+                        <div className="TroveDBNotSupported__SubTitle--again">
+                          <span>Did that not work?</span>
+                          <span
+                            className="TroveDBNotSupported__LinkedText"
+                            onClick={() => {
+                              analytics(
+                                'Going to Feedback page after Notion Database Unsupported',
+                                user,
+                                {
+                                  notionDatabaseId: dropdownItem?.collectionId,
+                                },
+                              );
+                              goToFeedback();
+                            }}
+                          >
+                            Let us know!
                           </span>
                         </div>
                       </div>
@@ -913,6 +1143,9 @@ export default function Tooltip(props: TooltipProps) {
                         `}
                         onClick={() => {
                           storePropertyValuesOnDropdownItem();
+                          analytics('Notion Page Search Opened', user, {
+                            url: window.location.href,
+                          });
                           setDropdownClicked(true);
                           ReactTooltip.hide();
                         }}

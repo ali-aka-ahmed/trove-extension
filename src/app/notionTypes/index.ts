@@ -9,10 +9,12 @@ export type Record = {
   id: string;
   name: string;
   type: 'database' | 'page' | 'space';
-  hasSchema?: boolean;
+  hasSchema?: boolean; // database or page
   icon?: Icon;
   section?: 'database' | 'page' | 'recent';
   path?: string;
-  collectionId?: string;
-  schema?: Array<SchemaValue>;
+  collectionId?: string; // database
+  schema?: Array<SchemaValue>; // database
+  userId?: string; // space
+  email?: string; // space
 };

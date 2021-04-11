@@ -1,10 +1,10 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import React, { useState } from 'react';
-import { AxiosRes } from '../../../../app/server';
-import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/tabs';
-import { createForgotPasswordArgs } from '../../helpers/auth';
-import '../../style.scss';
+import { AxiosRes } from '../../../app/server';
+import { analytics } from '../../../utils/analytics';
+import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import { createForgotPasswordArgs } from '../../Popup/helpers/auth';
 import '../style.scss';
 import './style.scss';
 
@@ -39,6 +39,7 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
         setLoading(false);
       },
     );
+    analytics('Forgot password');
   };
 
   if (successScreenMessage) {
@@ -68,13 +69,18 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
             autoFocus={true}
             value={forgotPasswordInput}
             onChange={handleForgotPasswordInput}
+            onKeyUp={(e) => e.stopPropagation()}
             onKeyDown={(e) => {
+              e.stopPropagation();
               if (e.key === 'Enter') handleForgotPasswordSubmit();
             }}
           />
         </div>
       </div>
       <div className="TbdAuth__ButtonWrapper">
+        <button className="Trove__Button--secondary" onClick={goToLogin}>
+          Cancel
+        </button>
         <button className="Trove__Button" onClick={handleForgotPasswordSubmit}>
           {loading && (
             <div className="TbdAuth__Loading">
@@ -82,9 +88,6 @@ export default function ForgotPassword({ goToLogin }: ForgotPassword) {
             </div>
           )}
           Submit
-        </button>
-        <button className="Trove__Button--secondary" onClick={goToLogin}>
-          Cancel
         </button>
       </div>
       <div

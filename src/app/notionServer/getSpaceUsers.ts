@@ -6,8 +6,14 @@ const getSpaceUsers = async (spaceId: string): Promise<GetSpaceUsersRes> => {
   const data = { spaceId, version: 'v2' };
   const res: IGetSubscriptionDataRes = await notionApi.post('/getSubscriptionData', data);
   if (res.success === false) return res;
-  const userIds = res.users.map((u) => u.userId);
-  const botIds = res.bots.map((b) => b.botId);
+  let resUsers: NotionUser[] = [];
+  if (res.members && res.members.length > 0) {
+    resUsers = res.members;
+  } else if (res.visibleMembers && res.visibleMembers.length > 0) {
+    resUsers = res.visibleMembers;
+  }
+  const userIds = resUsers.map((u) => u.userId);
+  const botIds = (res.bots || []).map((b) => b.botId);
   // syncRecordValues
   const userReqObjects = userIds.map((id) => ({
     id,
@@ -29,6 +35,7 @@ const getSpaceUsers = async (spaceId: string): Promise<GetSpaceUsersRes> => {
     type: 'user' as 'user',
     firstName: value.given_name,
     lastName: value.family_name,
+    email: value.email,
     profilePhoto: value.profile_photo,
   }));
   const bots = notionBots.map(({ value }) => ({
@@ -58,6 +65,7 @@ export type User = {
   firstName: string;
   lastName: string;
   profilePhoto: string;
+  email: string;
 };
 
 export type Bot = {
@@ -72,10 +80,12 @@ export type Bot = {
 type IGetSubscriptionDataRes =
   | ({
       version: 'v2';
-      type: string;
-      users: Array<NotionUser>; // using this
-      members: Array<NotionUser>; // same as above
-      spaceUsers: Array<NotionUser>; // always empty
+      type: string | 'unsubscribed_guest';
+      users?: Array<NotionUser>; // same as below
+      members?: Array<NotionUser>; // using this
+      spaceUsers?: Array<NotionUser>; // always empty
+      visibleMembers?: Array<NotionUser>; // same as users, but appears if you are type unsubscribed_guest
+      visibleUsers?: Array<NotionUser>; // same as above
       bots: Array<BotUser>;
       joinedMemberIds: string[];
       credits: Array<Credit>;

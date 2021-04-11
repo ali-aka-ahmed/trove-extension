@@ -9,6 +9,7 @@
   },
   "author": "Akshath Sivaprasad",
   "devDependencies": {
+    "@types/analytics-node": "^3.1.4",
     "@types/chrome": "^0.0.60",
     "@types/color": "^3.0.1",
     "@types/javascript-time-ago": "^2.0.1",
@@ -38,6 +39,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.2.2",
+    "analytics-node": "^4.0.1",
     "antd": "^4.6.2",
     "axios": "^0.21.1",
     "classnames": "^2.2.6",

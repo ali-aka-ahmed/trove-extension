@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { analytics } from '../../../../utils/analytics';
 import { MARK_CLASS_NAME } from '../helpers/highlight/domHighlight';
 import Highlighter, { HighlightType, UnsavedHighlight } from '../helpers/highlight/Highlighter';
 
@@ -46,6 +47,9 @@ const Highlight = ({
     if (e.key === 'Backspace' && commentValue === '') {
       e.preventDefault();
       setHasContent(false);
+      analytics('Remove Comment to Highlight', null, {
+        url: window.location.href,
+      });
     }
   };
 
@@ -79,6 +83,9 @@ const Highlight = ({
                 onClick={() => {
                   setHasContent(true);
                   setIsHovered(false);
+                  analytics('Add Comment to Highlight', null, {
+                    url: window.location.href,
+                  });
                 }}
               >
                 Add comment

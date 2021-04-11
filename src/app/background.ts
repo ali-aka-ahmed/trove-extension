@@ -1,19 +1,20 @@
+import Analytics from 'analytics-node';
+import { v4 as uuid } from 'uuid';
+import { Record } from '../app/notionTypes';
 import { ORIGIN } from '../config';
 import User from '../entities/User';
-import { getCookie } from '../utils/chrome/cookies';
+import { analytics as analyticsWrapper } from '../utils/analytics';
+import { sendMessageToWebsite } from '../utils/chrome/external';
+import { get, get1, set } from '../utils/chrome/storage';
 import {
-  Message as EMessage,
-  MessageType as EMessageType,
-  sendMessageToWebsite,
-} from '../utils/chrome/external';
-import { get, set } from '../utils/chrome/storage';
-import {
+  ExternalMessageType,
   Message,
   MessageType,
   sendMessageToExtension,
   SocketMessageType,
 } from '../utils/chrome/tabs';
 import getImage from './notionServer/getImage';
+import getSpaces, { GetSpacesRes } from './notionServer/getSpaces';
 import getSpaceUsers from './notionServer/getSpaceUsers';
 import { forgotPassword, login } from './server/auth';
 import {
@@ -33,6 +34,8 @@ import {
 } from './server/posts';
 import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
+
+const analytics = new Analytics('S1C1XFBTbCgk2owAf6HqNM09C8YdFM6j');
 
 // export const socket = io.connect(BACKEND_URL);
 
@@ -73,6 +76,11 @@ import { handleUserSearch, updateUser } from './server/users';
 //   });
 // });
 
+// // Listener to detect disconnect
+// chrome.runtime.onConnect.addListener((port) => {
+//   console.log('connected to port', port);
+// });
+
 // Messages sent from extension
 chrome.runtime.onMessage.addListener(
   (
@@ -81,39 +89,75 @@ chrome.runtime.onMessage.addListener(
     sendResponse: (response: any) => void,
   ) => {
     switch (message.type) {
+      case MessageType.Analytics: {
+        if (!message.data || !message.data.userId || !message.data.eventName) break;
+        analytics.identify({
+          userId: message.data.userId as string,
+          ...(message.data.userTraits ? { traits: message.data.userTraits } : {}),
+        });
+        analytics.track({
+          event: message.data.eventName as string,
+          ...(message.data.userId ? { userId: message.data.userId } : { anonymousId: uuid() }),
+          ...(message.data.eventProperties ? { properties: message.data.eventProperties } : {}),
+        });
+      }
       case MessageType.Login: {
         if (!message.loginArgs) break;
-        Promise.all([login(message.loginArgs), getNotionPages()]).then(
-          ([loginRes, notionPagesRes]) => {
-            if (
-              notionPagesRes.success &&
-              notionPagesRes.spaces &&
-              notionPagesRes.spaces.length > 0 &&
-              notionPagesRes.defaults &&
-              notionPagesRes.results
-            ) {
-              const spaceId = notionPagesRes.spaces[0].id;
-              getSpaceUsers(spaceId).then((res) => {
-                if (res.success) {
-                  set({
-                    spaceUsers: res.users,
-                    spacebots: res.bots,
-                  });
-                }
-              });
-              const recents = {};
-              notionPagesRes.spaces.forEach((s) => {
-                recents[s.id] = notionPagesRes.results![spaceId].recents;
-              });
-              set({
-                notionRecents: recents,
-                notionDefaults: notionPagesRes.defaults,
-                spaceId,
+        Promise.all([login(message.loginArgs), getSpaces()])
+          .then(([loginRes, getSpacesRes]) => {
+            if (getSpacesRes.success) {
+              getSpacesRes.notionUserIds.forEach((notionUserId) => {
+                // set recents and defaults
+                getNotionPages(null, null, notionUserId).then((res) => {
+                  if (res.success) {
+                    // set defaults
+                    if (res.defaults) {
+                      set({ notionDefaults: res.defaults });
+                    }
+                    // set recents
+                    get1('notionRecents').then(
+                      (notionRecents: { [spaceId: string]: Record[] } | undefined) => {
+                        if (res.spaces && res.spaces.length > 0 && res.results) {
+                          const recents = notionRecents || {};
+                          res.spaces.forEach((s: Record) => {
+                            recents[s.id] = res.results![s.id].recents || [];
+                          });
+                          set({ notionRecents: recents });
+                        }
+                      },
+                    );
+                  }
+                });
+
+                // set spaceId, notionUserId, spaceUsers and spaceBots
+                getNotionPages().then((res) => {
+                  if (res.success && res.spaces) {
+                    const space = res.spaces[0];
+                    const spaceId = space?.id;
+                    const userId = space?.userId;
+                    set({ spaceId, notionUserId: userId });
+                    analyticsWrapper('Set Workspace', null, {
+                      spaceId: space?.id,
+                      spaceName: space?.name,
+                      spaceEmail: space?.email,
+                    });
+                    getSpaceUsers(spaceId).then((res) => {
+                      if (res.success) {
+                        set({
+                          spaceUsers: res.users,
+                          spaceBots: res.bots,
+                        });
+                      }
+                    });
+                  }
+                });
               });
             }
+            return loginRes;
+          })
+          .then((loginRes) => {
             sendResponse(loginRes);
-          },
-        );
+          });
         break;
       }
       case MessageType.ForgotPassword: {
@@ -194,14 +238,14 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
-      case MessageType.GetNotionUserId: {
-        getCookie('https://www.notion.so', 'notion_user_id').then((res) => {
+      case MessageType.GetNotionUserIds: {
+        getSpaces().then((res) => {
           sendResponse(res);
         });
         break;
       }
       case MessageType.GetNotionPages: {
-        getNotionPages(message.spaceId, message.recentIds).then((res) => {
+        getNotionPages(message.spaceId, message.recentIds, message.notionUserId).then((res) => {
           sendResponse(res);
         });
         break;
@@ -216,6 +260,12 @@ chrome.runtime.onMessage.addListener(
       case MessageType.GetNotionImage: {
         if (!message.imageOptions) break;
         getImage(message.imageOptions).then((res) => {
+          sendResponse(res);
+        });
+        break;
+      }
+      case MessageType.GetUserIds: {
+        getSpaces().then((res: GetSpacesRes) => {
           sendResponse(res);
         });
         break;
@@ -301,6 +351,22 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+      case ExternalMessageType.Login: {
+        if (!message.token || !message.user) break;
+        sendMessageToWebsite(message);
+        break;
+      }
+      case ExternalMessageType.UpdateProfile: {
+        if (!message.user) break;
+        sendMessageToWebsite(message);
+        break;
+      }
+      case ExternalMessageType.IsAuthenticated ||
+        ExternalMessageType.Exists ||
+        ExternalMessageType.Logout: {
+        sendMessageToWebsite(message);
+        break;
+      }
     }
 
     return true;
@@ -310,57 +376,82 @@ chrome.runtime.onMessage.addListener(
 // Messages received from outside the extension (messages from frontend website)
 chrome.runtime.onMessageExternal.addListener(
   (
-    message: EMessage,
+    message: Message,
     sender: chrome.runtime.MessageSender,
     sendResponse: (response: any) => void,
   ) => {
     switch (message.type) {
-      case EMessageType.Exists: {
+      case ExternalMessageType.Exists: {
         sendResponse({ success: true });
         break;
       }
-      case EMessageType.Login: {
-        sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: message.user!.id });
+      case ExternalMessageType.Login: {
+        if (!message.user || !message.token) return;
+        sendMessageToExtension({ type: SocketMessageType.JoinRoom, userId: message.user.id });
         set({
           token: message.token,
           isExtensionOn: true,
+          user: new User(message.user),
         })
           .then(() => set({ isAuthenticated: true }))
+          .then(() => analyticsWrapper('Logged In', message.user, {}))
           .then(() => {
-            getNotionPages().then((res) => {
-              if (
-                res.success &&
-                res.spaces &&
-                res.spaces.length > 0 &&
-                res.defaults &&
-                res.results
-              ) {
-                const spaceId = res.spaces[0].id;
-                const recents = {};
-                res.spaces.forEach((s) => {
-                  recents[s.id] = res.results![spaceId].recents;
-                });
-                set({
-                  user: new User(message.user!),
-                  notionRecents: recents,
-                  notionDefaults: res.defaults,
-                  spaceId,
-                });
-                getSpaceUsers(spaceId).then((res) => {
-                  if (res.success) {
-                    set({
-                      spaceUsers: res.users,
-                      spacebots: res.bots,
-                    });
-                  }
+            getSpaces().then((res: GetSpacesRes) => {
+              if (res.success) {
+                res.notionUserIds.forEach((notionUserId) => {
+                  // set recents and defaults
+                  getNotionPages(null, null, notionUserId).then((res) => {
+                    if (res.success) {
+                      // set defaults
+                      if (res.defaults) {
+                        set({ notionDefaults: res.defaults });
+                      }
+                      // set recents
+                      get1('notionRecents').then(
+                        (notionRecents: { [spaceId: string]: Record[] } | undefined) => {
+                          if (res.spaces && res.spaces.length > 0 && res.results) {
+                            const recents = notionRecents || {};
+                            res.spaces.forEach((s: Record) => {
+                              recents[s.id] = res.results![s.id].recents || [];
+                            });
+                            set({ notionRecents: recents });
+                          }
+                        },
+                      );
+                    }
+                  });
+                  // set spaceId, spaceUsers and spaceBots
+                  getNotionPages().then((res) => {
+                    if (res.success && res.spaces) {
+                      const space = res.spaces[0];
+                      const spaceId = space?.id;
+                      const userId = space?.userId;
+                      set({ spaceId, notionUserId: userId });
+                      analyticsWrapper('Set Workspace', null, {
+                        spaceId: space?.id,
+                        spaceName: space?.name,
+                        spaceEmail: space?.email,
+                      });
+                      getSpaceUsers(spaceId).then((res) => {
+                        if (res.success) {
+                          set({
+                            spaceUsers: res.users,
+                            spaceBots: res.bots,
+                          });
+                        }
+                      });
+                    }
+                  });
                 });
               }
             });
           })
-          .then(() => sendResponse(true));
+          .then(() => {
+            sendResponse(true);
+          });
         break;
       }
-      case EMessageType.IsAuthenticated: {
+      case ExternalMessageType.IsAuthenticated: {
         get({
           isAuthenticated: false,
           token: '',
@@ -397,7 +488,7 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     console.log('Running install scripts');
-    sendMessageToWebsite({ type: EMessageType.Exists });
+    sendMessageToWebsite({ type: ExternalMessageType.Exists });
     chrome.tabs.update({ url: `${ORIGIN}/signup` });
     // inject content script in all tabs (if not aleady there)
     chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
@@ -407,7 +498,7 @@ chrome.runtime.onInstalled.addListener((details) => {
           tab.id,
           { type: MessageType.InjectLatestContentScript },
           (response) => {
-            if (!tab.id) return;
+            if (!tab.id || tab.url?.slice(0, 9) === 'chrome://') return;
             if (response === undefined) {
               chrome.tabs.executeScript(tab.id, { file: 'js/content.js' });
             }

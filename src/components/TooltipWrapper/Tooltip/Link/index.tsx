@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { analytics } from '../../../../utils/analytics';
 import { Link } from '../helpers/highlight/Highlighter';
 
 interface HighlightProps {
@@ -39,6 +40,9 @@ const Link = ({ link, removeLink, modifyLinkContent, scrollToElement, root }: Hi
     if (e.key === 'Backspace' && commentValue === '') {
       e.preventDefault();
       setHasContent(false);
+      analytics('Remove Comment to Link', null, {
+        url: window.location.href,
+      });
     }
   };
 
@@ -64,6 +68,9 @@ const Link = ({ link, removeLink, modifyLinkContent, scrollToElement, root }: Hi
                 onClick={() => {
                   setHasContent(true);
                   setIsHovered(false);
+                  analytics('Add Comment to Link', null, {
+                    url: window.location.href,
+                  });
                 }}
               >
                 Add comment

@@ -3,9 +3,11 @@ import { Alert } from 'antd';
 import debounce from 'lodash/debounce';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
+import { GetSpacesRes } from '../../../../app/notionServer/getSpaces';
 import { GetSpaceUsersRes } from '../../../../app/notionServer/getSpaceUsers';
 import { Record } from '../../../../app/notionTypes';
 import { IGetPageNamesRes, ISearchPagesRes } from '../../../../app/server/notion';
+import { analytics } from '../../../../utils/analytics';
 import {
   addToNotionRecents,
   get,
@@ -18,6 +20,7 @@ import { MessageType, sendMessageToExtension } from '../../../../utils/chrome/ta
 interface DropdownProps {
   setDropdownClicked: React.Dispatch<React.SetStateAction<boolean>>;
   setItem: (item: Record) => void;
+  currentItem: Record | null;
   root: ShadowRoot;
 }
 
@@ -41,7 +44,7 @@ export default function Dropdown(props: DropdownProps) {
 
   const seedInitialPages = async () => {
     setLoading(true);
-    const data = await get(['notionRecents', 'spaceId']);
+    const data = await get(['notionRecents', 'spaceId', 'notionUserId']);
     const recents = data.notionRecents || {};
     let spaceRecentIds = [];
     if (data.spaceId) {
@@ -51,19 +54,20 @@ export default function Dropdown(props: DropdownProps) {
       type: MessageType.GetNotionPages,
       recentIds: spaceRecentIds,
       spaceId: data.spaceId,
+      notionUserId: data.notionUserId,
     }).then((res: IGetPageNamesRes) => {
       setShowAlert(false);
       setLoading(false);
       if (res.success) {
         const spaceId = data.spaceId || res.spaces![0].id;
+        const notionUserId = data.notionUserId || res.spaces![0].userId!;
         const results = res.results![spaceId] || {};
         setItems(
           (results.recents || []).concat(results.databases || []).concat(results.pages || []),
         );
-        setSpaces(res.spaces!);
         setSpaceId(spaceId);
-        recents[spaceId] = res.results![spaceId].recents;
-        set({ notionRecents: recents, spaceId });
+        recents[spaceId] = res.results![spaceId]?.recents || [];
+        set({ notionRecents: recents, spaceId, notionUserId });
       } else {
         setAlertType('error');
         if (res.status === 401) {
@@ -91,8 +95,35 @@ export default function Dropdown(props: DropdownProps) {
     });
   };
 
+  const getSpaces = async () => {
+    sendMessageToExtension({ type: MessageType.GetNotionUserIds }).then((res: GetSpacesRes) => {
+      if (res.success) {
+        const promises: Array<Promise<Record[]>> = [];
+        res.notionUserIds.forEach((notionUserId) => {
+          promises.push(
+            sendMessageToExtension({
+              type: MessageType.GetNotionPages,
+              notionUserId,
+            }).then((res: IGetPageNamesRes) => {
+              if (res.success) return res.spaces || [];
+              return [];
+            }),
+          );
+        });
+        Promise.all(promises).then((spacesPerEmail) => {
+          let spaces: Array<Record> = [];
+          spacesPerEmail.forEach((ss) => {
+            spaces = spaces.concat(ss);
+          });
+          setSpaces(spaces);
+        });
+      }
+    });
+  };
+
   useEffect(() => {
     seedInitialPages();
+    getSpaces();
   }, []);
 
   const handleLoginCase = () => {
@@ -110,7 +141,7 @@ export default function Dropdown(props: DropdownProps) {
     );
   };
 
-  const onKeyDownTextarea = (e: KeyboardEvent) => {
+  const onKeyDownTextarea = (e: KeyboardEvent | React.KeyboardEvent<HTMLInputElement>) => {
     e.stopPropagation();
     if (!(e.key === 'Escape') && (!items || items.length === 0)) return;
     switch (e.key) {
@@ -137,6 +168,9 @@ export default function Dropdown(props: DropdownProps) {
         setItems([]);
         setItemIdx(0);
         props.setDropdownClicked(false);
+        analytics('Notion Page Search Closed', null, {
+          url: window.location.href,
+        });
         break;
       }
     }
@@ -168,9 +202,24 @@ export default function Dropdown(props: DropdownProps) {
   // };
 
   const handleSelectItem = async (item: Record) => {
-    await Promise.all([addToNotionRecents(spaceId, item), setNotionDefault(spaceId, item)]);
-    props.setItem(item);
-    props.setDropdownClicked(false);
+    if (item.id === props.currentItem?.id) {
+      await Promise.all([
+        addToNotionRecents(spaceId, props.currentItem),
+        setNotionDefault(spaceId, props.currentItem),
+      ]);
+      props.setItem(props.currentItem);
+      props.setDropdownClicked(false);
+      analytics('Notion Page Search Closed', null, {
+        url: window.location.href,
+      });
+    } else {
+      await Promise.all([addToNotionRecents(spaceId, item), setNotionDefault(spaceId, item)]);
+      props.setItem(item);
+      props.setDropdownClicked(false);
+      analytics('Notion Page Search Closed', null, {
+        url: window.location.href,
+      });
+    }
   };
 
   // const renderItem = (item: Record, idx: number) => {
@@ -245,24 +294,34 @@ export default function Dropdown(props: DropdownProps) {
   const changeSpace = async (space: Record) => {
     if (input.current) input.current.value = '';
     setSpaceLoadingId(space.id);
-    await set({ spaceId: space.id }).then(async () => {
-      const getSpaceUsersRes = (await sendMessageToExtension({
+    // set space
+    await set({ spaceId: space.id, notionUserId: space.userId! });
+    setShowSpaces(false);
+    setSpaceLoadingId('');
+
+    await Promise.all([
+      seedInitialPages(),
+      sendMessageToExtension({
         type: MessageType.GetNotionSpaceUsers,
         spaceId,
-      })) as GetSpaceUsersRes;
-      if (getSpaceUsersRes.success) {
-        set({
-          spaceUsers: getSpaceUsersRes.users,
-          spaceBots: getSpaceUsersRes.bots,
-        });
-      }
-      setShowSpaces(false);
-      setSpaceLoadingId('');
-      await seedInitialPages();
-    });
+      }).then(async (res: GetSpaceUsersRes) => {
+        if (res.success) {
+          set({
+            spaceUsers: res.users,
+            spaceBots: res.bots,
+          });
+        }
+      }),
+      analytics('Changed Workspace', null, {
+        spaceId: space.id,
+        spaceName: space.name,
+        spaceEmail: space.email,
+        href: window.location.href,
+      }),
+    ]);
   };
 
-  const renderSpace = (s: Record) => {
+  const renderSpaces = (spaces: Record[]) => {
     // let icon: any;
     // if (s.icon?.type === 'url') {
     //   icon = <img
@@ -272,6 +331,31 @@ export default function Dropdown(props: DropdownProps) {
     //   // icon = <img src={ item.icon?.value.concat('?table=block&id=7dacd67f-5ffc-4ff5-bc76-df2f866a5770&width=40&userId=35dd49dd-0fe7-44a1-886d-3f6ebfbe5429&cache=v2') } className="TroveDropdown__Icon" />
     // }
 
+    // get unique property values
+    let flags: { [key: string]: boolean } = {},
+      emails: string[] = [],
+      l = spaces.length,
+      i: number;
+    for (i = 0; i < l; i++) {
+      const email = spaces[i]?.email;
+      if (!email || flags[email]) continue;
+      flags[email] = true;
+      emails.push(email);
+    }
+
+    // for each email, render a different section
+    return emails.map((email) => {
+      const filteredSpaces = spaces.filter((space) => space?.email === email);
+      return (
+        <div className="TroveDropdown__Section" key={email}>
+          <div className="TroveDropdown__SectionName">{email}</div>
+          {filteredSpaces.map((s) => renderSpaceSection(s))}
+        </div>
+      );
+    });
+  };
+
+  const renderSpaceSection = (s: Record) => {
     return (
       <div className="TroveDropdown__Space" onClick={() => changeSpace(s)} key={s.id}>
         {/* <span className="TroveDropdown__ItemIconWrapper">
@@ -335,9 +419,7 @@ export default function Dropdown(props: DropdownProps) {
         placeholder="Search for databases or pages..."
         autoFocus={true}
         ref={input}
-        onClick={(e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-          e.stopPropagation();
-        }}
+        onKeyDown={(e) => onKeyDownTextarea(e)}
         onChange={(e) => onChange(e.target.value)}
       />
       <div className="TroveDropdown__ItemsWrapper">
@@ -383,18 +465,18 @@ export default function Dropdown(props: DropdownProps) {
         >
           <button
             className="TroveDropdown__BackButton"
-            onClick={() => props.setDropdownClicked(false)}
+            onClick={() => {
+              props.setDropdownClicked(false);
+              analytics('Notion Page Search Closed', null, {
+                url: window.location.href,
+              });
+            }}
           >
             Back
           </button>
         </div>
       </div>
-      {showSpaces && (
-        <div className="TroveDropdown__Spaces">
-          <div className="TroveDropdown__SectionName">Workspaces</div>
-          {spaces.map((s) => renderSpace(s))}
-        </div>
-      )}
+      {showSpaces && <div className="TroveDropdown__Spaces">{renderSpaces(spaces)}</div>}
       <ReactTooltip
         place="top"
         className="TroveTooltip__Hint"

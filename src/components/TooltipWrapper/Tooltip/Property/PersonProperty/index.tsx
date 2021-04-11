@@ -19,6 +19,8 @@ interface PersonPropertyProps {
 const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps) => {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [selectedValues, setSelectedValues] = useState<(User | Bot)[]>([]);
   const [userOptions, setUserOptions] = useState<User[]>([]);
@@ -33,8 +35,8 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
   useEffect(() => {
     const loadOptions = async () => {
       get1('spaceId').then((spaceId: string) => {
-        sendMessageToExtension({ type: MessageType.GetNotionSpaceUsers, spaceId }).then(
-          (res: GetSpaceUsersRes) => {
+        sendMessageToExtension({ type: MessageType.GetNotionSpaceUsers, spaceId })
+          .then((res: GetSpaceUsersRes) => {
             if (res.success === false) {
               get(['spaceUsers', 'spaceBots']).then((data) => {
                 const spaceUsers: User[] = data.spaceUsers;
@@ -56,7 +58,7 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
             } else {
               set({
                 spaceUsers: res.users,
-                spacebots: res.bots,
+                spaceBots: res.bots,
               });
               setUserOptions(res.users);
               setBotOptions(res.bots);
@@ -73,11 +75,16 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
               setSelectedValues(selectedValues);
             }
             setLoading(false);
-          },
-        );
+          })
+          .catch((error: Error) => {
+            setLoading(false);
+            setErrorMessage(error.message);
+            setShowError(true);
+          });
       });
     };
     setLoading(true);
+    setShowError(false);
     loadOptions();
   }, []);
 
@@ -188,6 +195,17 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
   };
 
   const renderPerson = (o: User | Bot, showClose: boolean, extraClass?: string) => {
+    const renderName = (o: User | Bot) => {
+      if (o.type === 'bot') {
+        return o.name;
+      } else if (o.type === 'user') {
+        if (o.firstName && o.lastName) {
+          return `${o.firstName} ${o.lastName}`;
+        } else {
+          return o.email;
+        }
+      }
+    };
     return (
       <div
         key={o.id}
@@ -197,9 +215,7 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
         }}
       >
         <span className="TroveProperty__PersonIconWrapper">{renderImage(o)}</span>
-        <span className="TroveProperty__ReadOnlyPersonName">
-          {o.type === 'user' ? `${o.firstName} ${o.lastName}` : o.name}
-        </span>
+        <span className="TroveProperty__ReadOnlyPersonName">{renderName(o)}</span>
         {showClose && (
           <div className="TrovePill__CloseButton" onClick={() => removePerson(o.id)}>
             <img
@@ -213,7 +229,7 @@ const PersonProperty = ({ property, root, updateProperty }: PersonPropertyProps)
   };
 
   return (
-    <div className="TroveProperty__Property">
+    <div className="TroveProperty__Property" key={property.propertyId}>
       <div className="TroveProperty__PropertyNameWrapper">
         <div className="TroveProperty__PropertyImgWrapper">
           <img

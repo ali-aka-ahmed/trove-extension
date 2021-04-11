@@ -3,9 +3,12 @@ import { Alert } from 'antd';
 import React, { useState } from 'react';
 import { IUserRes } from '../../../app/server/users';
 import IUser from '../../../models/IUser';
-import { MessageType as EMessageType, sendMessageToWebsite } from '../../../utils/chrome/external';
 import { set } from '../../../utils/chrome/storage';
-import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
+import {
+  ExternalMessageType,
+  MessageType,
+  sendMessageToExtension,
+} from '../../../utils/chrome/tabs';
 import ColorPicker from '../../colorPicker';
 import { validateDisplayName, validateUsername } from '../helpers/auth';
 import '../style.scss';
@@ -21,7 +24,7 @@ interface ProfileProps {
 
 export default function Profile({ user }: ProfileProps) {
   const [showEditIcon, setShowEditIcon] = useState<'displayName' | 'username' | 'color' | null>(
-    null
+    null,
   );
   const [editable, setEditable] = useState<'displayName' | 'username' | 'color' | null>(null);
   const [loading, setLoading] = useState<'displayName' | 'username' | 'color' | null>(null);
@@ -78,7 +81,7 @@ export default function Profile({ user }: ProfileProps) {
           setEditable(null);
           setShowError(null);
         });
-        sendMessageToWebsite({ type: EMessageType.UpdateProfile, user: res.user });
+        sendMessageToExtension({ type: ExternalMessageType.UpdateProfile, user: res.user });
       } else {
         setShowError(argString);
         setErrorMessage(res.message);
@@ -92,8 +95,12 @@ export default function Profile({ user }: ProfileProps) {
   };
 
   const goToFeedback = () => {
-    sendMessageToExtension({ type: MessageType.OpenTab, url: 'https://www.notion.so/simplata/Trove-Community-Board-c2c9fe006c29404b967497ae2d2f3079', active: true })
-  }
+    sendMessageToExtension({
+      type: MessageType.OpenTab,
+      url: 'https://www.notion.so/simplata/Trove-Community-Board-c2c9fe006c29404b967497ae2d2f3079',
+      active: true,
+    });
+  };
 
   return (
     <div className="TbdProfile__Wrapper">
