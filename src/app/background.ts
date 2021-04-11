@@ -1,3 +1,4 @@
+import Analytics from 'analytics-node';
 import { Record } from '../app/notionTypes';
 import { ORIGIN } from '../config';
 import User from '../entities/User';
@@ -31,6 +32,8 @@ import {
 } from './server/posts';
 import { searchTopics } from './server/search';
 import { handleUserSearch, updateUser } from './server/users';
+
+const analytics = new Analytics('S1C1XFBTbCgk2owAf6HqNM09C8YdFM6j');
 
 // export const socket = io.connect(BACKEND_URL);
 
@@ -84,6 +87,14 @@ chrome.runtime.onMessage.addListener(
     sendResponse: (response: any) => void,
   ) => {
     switch (message.type) {
+      case MessageType.Analytics: {
+        if (!message.data || !message.data.userId || !message.data.eventName) {
+          break;
+        }
+
+        analytics.identify(message.data.userId, message.data.userTraits);
+        analytics.track(message.data.eventName, message.data.eventProperties);
+      }
       case MessageType.Login: {
         if (!message.loginArgs) break;
         Promise.all([login(message.loginArgs), getSpaces()])

@@ -45,6 +45,7 @@ export interface Message {
 
 export enum MessageType {
   AddTextToNotion,
+  Analytics,
   CreateComment,
   CreatePosts,
   Error,

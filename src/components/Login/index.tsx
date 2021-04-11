@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { IAuthRes } from '../../app/server/auth';
 import { ORIGIN } from '../../config';
 import User from '../../entities/User';
+import { analytics } from '../../utils/analytics';
 import { set } from '../../utils/chrome/storage';
 import {
   ExternalMessageType,
@@ -66,6 +67,8 @@ export default function Login({ type, onCancel, onLogin }: LoginProps) {
         .then(() => {
           if (onLogin) onLogin();
         });
+
+      analytics('Logged In', res.user, {});
     });
   };
 

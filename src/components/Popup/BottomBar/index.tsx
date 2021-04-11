@@ -1,6 +1,7 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Switch } from 'antd';
 import React, { useState } from 'react';
+import { analytics } from '../../../utils/analytics';
 import { get, remove, set } from '../../../utils/chrome/storage';
 import { ExternalMessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import '../style.scss';
@@ -17,6 +18,8 @@ export default function BottomBar({ isExtensionOn }: BottomBarProps) {
    * Logout. Clear chrome storage. Leave socket room.
    */
   const handleLogout = async () => {
+    await analytics('Logged out', null, {});
+
     setLogoutLoading(true);
     const items = await get(null);
     // if (items?.user?.id) sendMessageToExtension({ type: SocketMessageType.LeaveRoom, userId: items.user.id });

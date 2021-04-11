@@ -24,6 +24,7 @@ import Post from '../../../entities/Post';
 import User from '../../../entities/User';
 import IUser from '../../../models/IUser';
 import { toArray } from '../../../utils';
+import { analytics } from '../../../utils/analytics';
 import { get, get1, updateItemInNotionStore } from '../../../utils/chrome/storage';
 import { MessageType, sendMessageToExtension } from '../../../utils/chrome/tabs';
 import Login from '../../Login';
@@ -395,8 +396,14 @@ export default function Tooltip(props: TooltipProps) {
           ),
         })) as AxiosRes;
       }
+
       // Add to our own servers
       if (res.success) {
+        analytics('Save Highlights To Notion Succeeded', user, {
+          url: window.location.href,
+          numHighlights: unsavedHighlights.length,
+        });
+
         setShowTooltip(false);
         setPropertyUpdates({});
         highlighter.reset();
@@ -422,7 +429,14 @@ export default function Tooltip(props: TooltipProps) {
             throw new ExtensionError(res.message!, 'Error creating highlight, try again!');
           }
         });
-      } else return res;
+      } else {
+        analytics('Save Highlights To Notion Failed', user, {
+          url: window.location.href,
+          numHighlights: unsavedHighlights.length,
+        });
+
+        return res;
+      }
     },
     [dropdownItem, propertyUpdates],
   );
@@ -482,6 +496,8 @@ export default function Tooltip(props: TooltipProps) {
         type: MessageType.DeletePost,
         id: highlight.data.id,
       });
+
+      analytics('Deleted Highlight', user, {});
     }
 
     highlighter.removeHighlight(highlightId);
@@ -614,6 +630,10 @@ export default function Tooltip(props: TooltipProps) {
           setPropertyUpdates({});
           setIsDBSupported(false);
           setPropertiesLoading(false);
+
+          analytics('Unsupported Notion Page', user, {
+            schema: res.schema,
+          });
         } else {
           // reset item for new properties to render
           if (isEqual(res.schema, dropdownItem.schema)) {
@@ -640,6 +660,15 @@ export default function Tooltip(props: TooltipProps) {
 
   const onKeyDownPage = useCallback(
     (e: KeyboardEvent) => {
+      // Analytics
+      if ((!isAuthenticated || !isExtensionOn) && isOsKeyPressed(e) && e.key == 'd') {
+        analytics('Attempted To Highlight While Unallowed', user, {
+          isAuthenticated,
+          isExtensionOn,
+        });
+      }
+
+      // Cases in which normal tooltip doesn't pop up
       if (!isAuthenticated) {
         if (isOsKeyPressed(e) && e.key === 'd') {
           e.preventDefault();
@@ -654,6 +683,7 @@ export default function Tooltip(props: TooltipProps) {
           // SOMETHING HERE!!!
         }
       }
+
       // Keyboard shortcuts
       else if (isOsKeyPressed(e) && e.key === 'd') {
         e.preventDefault();
@@ -668,6 +698,8 @@ export default function Tooltip(props: TooltipProps) {
             setDefaultPageLoading(false);
           });
           setShowTooltip(true);
+
+          analytics('Opened Tooltip', user, {});
         }
         if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
