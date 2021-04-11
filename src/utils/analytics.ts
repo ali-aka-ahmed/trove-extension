@@ -14,7 +14,7 @@ export const analytics = async (
     type: MessageType.Analytics,
     data: {
       userId: u.id,
-      traits: {
+      userTraits: {
         username: u.username,
       },
       eventName,
