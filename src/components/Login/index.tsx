@@ -68,7 +68,7 @@ export default function Login({ type, onCancel, onLogin }: LoginProps) {
           if (onLogin) onLogin();
         });
 
-      analytics('Logged In', res.user, {});
+      analytics('Logged In', res.user, {}, { email });
     });
   };
 
