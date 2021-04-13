@@ -110,7 +110,7 @@ export default function Dropdown(props: DropdownProps) {
             }),
           );
         });
-        Promise.all(promises).then((spacesPerEmail) => {
+        return Promise.all(promises).then((spacesPerEmail) => {
           let spaces: Array<Record> = [];
           spacesPerEmail.forEach((ss) => {
             spaces = spaces.concat(ss);
@@ -344,15 +344,23 @@ export default function Dropdown(props: DropdownProps) {
     }
 
     // for each email, render a different section
-    return emails.map((email) => {
-      const filteredSpaces = spaces.filter((space) => space?.email === email);
+    if (emails.length > 0) {
+      return emails.map((email) => {
+        const filteredSpaces = spaces.filter((space) => space?.email === email);
+        return (
+          <div className="TroveDropdown__Section" key={email}>
+            <div className="TroveDropdown__SectionName">{email}</div>
+            {filteredSpaces.map((s) => renderSpaceSection(s))}
+          </div>
+        );
+      });
+    } else {
       return (
-        <div className="TroveDropdown__Section" key={email}>
-          <div className="TroveDropdown__SectionName">{email}</div>
-          {filteredSpaces.map((s) => renderSpaceSection(s))}
+        <div className="TroveDropdown__Section" key={'spaces'}>
+          {spaces.map((s) => renderSpaceSection(s))}
         </div>
       );
-    });
+    }
   };
 
   const renderSpaceSection = (s: Record) => {
