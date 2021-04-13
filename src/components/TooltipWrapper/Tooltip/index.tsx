@@ -563,22 +563,22 @@ export default function Tooltip(props: TooltipProps) {
   }, [hoveredHighlightRect]);
 
   const renderButtonList = () => {
-    let onSave = () => {
+    const onSave = () => {
       setSaveLoading(true);
       handleSaveHighlights();
     };
-    let onCancel = handleCancelSaveHighlights;
+    const onCancel = handleCancelSaveHighlights;
 
     return (
       <div className="TroveContent__ButtonList" style={saveLoading ? { width: '156px' } : {}}>
         <button
-          onMouseEnter={() => ReactTooltip.show(cancel.current!)}
+          // onMouseEnter={() => ReactTooltip.show(cancel.current!)}
           onMouseLeave={() => ReactTooltip.hide(cancel.current!)}
-          data-tip={`
-            <div class="TroveHint__Content">
-              <p class="TroveHint__Content__PrimaryText">${getOsKeyChar()}+esc</p>
-            </div>
-          `}
+          // data-tip={`
+          //   <div class="TroveHint__Content">
+          //     <p class="TroveHint__Content__PrimaryText">${getOsKeyChar()}+esc</p>
+          //   </div>
+          // `}
           ref={cancel}
           className="Trove__Button--secondary"
           onClick={onCancel}
@@ -727,6 +727,7 @@ export default function Tooltip(props: TooltipProps) {
             url: window.location.href,
           });
         }
+
         if (selectionExists(selection) && /\S/.test(selection.toString())) {
           // New post on current selection
           addTempHighlight();
@@ -763,10 +764,11 @@ export default function Tooltip(props: TooltipProps) {
         // Save current highlight
         setSaveLoading(true);
         handleSaveHighlights();
-      } else if (isOsKeyPressed(e) && e.key === 'Escape' && showTooltip) {
-        e.preventDefault();
-        handleCancelSaveHighlights();
       }
+      // else if (isOsKeyPressed(e) && e.key === 'Escape' && showTooltip) {
+      //   e.preventDefault();
+      //   handleCancelSaveHighlights();
+      // }
     },
     [
       collapsed,
