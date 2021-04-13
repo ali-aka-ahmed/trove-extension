@@ -111,9 +111,6 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (!linkShowing && numTempHighlights === 0) {
       setShowTooltip(false);
-      analytics('Closed Tooltip', user, {
-        url: window.location.href,
-      });
       setPropertyUpdates({});
       highlighter.reset();
       setLinkShowing(true);
@@ -266,9 +263,6 @@ export default function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (!isExtensionOn) {
       setShowTooltip(false);
-      analytics('Closed Tooltip', user, {
-        url: window.location.href,
-      });
     }
   }, [isExtensionOn]);
 
@@ -415,9 +409,6 @@ export default function Tooltip(props: TooltipProps) {
         });
 
         setShowTooltip(false);
-        analytics('Closed Tooltip', user, {
-          url: window.location.href,
-        });
         setPropertyUpdates({});
         highlighter.reset();
         setLinkShowing(true);
